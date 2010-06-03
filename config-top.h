@@ -91,10 +91,10 @@
 #define DEFAULT_BASHRC "~/.bashrc"
 
 /* System-wide .bashrc file for interactive shells. */
-#define SYS_BASHRC "/system/etc/.bashrc"
+#define SYS_BASHRC "/system/etc/bash/bashrc"
 
 /* System-wide .bash_logout for login shells. */
-/* #define SYS_BASH_LOGOUT "/etc/bash.bash_logout" */
+#define SYS_BASH_LOGOUT "/system/etc/bash/bash_logout"
 
 /* Define this to make non-interactive shells begun with argv[0][0] == '-'
    run the startup files when not in posix mode. */
