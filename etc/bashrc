@@ -42,7 +42,7 @@ for i in cat chmod chown df insmod ln lsmod mkdir mount mv rm rmdir rmmod umount
 	eval alias ${i}=\"busybox ${i}\"
 done
 unset i
-alias ls='busybox ls --color'
+alias ls='busybox ls --color=auto'
 alias sysro='mount -o remount,ro /system'
 alias sysrw='mount -o remount,rw /system'
 
