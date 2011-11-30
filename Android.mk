@@ -49,14 +49,18 @@ include $(BUILD_EXECUTABLE)
 # ========================================================
 etc_files := $(shell ls -1 $(LOCAL_PATH)/etc/)
 
-copy_to := $(addprefix $(TARGET_OUT)/etc/$(LOCAL_MODULE)/,$(etc_files))
-copy_from := $(addprefix $(LOCAL_PATH)/etc/,$(etc_files))
+BASH_ETC := $(TARGET_OUT)/etc/$(LOCAL_MODULE)/
+BASH_CONFIGS := $(addprefix $(LOCAL_PATH)/etc/,$(etc_files))
+$(BASH_CONFIGS): BASH_BINARY := $(LOCAL_MODULE)
+$(BASH_CONFIGS): $(LOCAL_INSTALLED_MODULE)
+	@echo "Install: $@ -> $(BASH_ETC)"
+	@mkdir -p $(BASH_ETC)
+	$(hide) cp $@ $(BASH_ETC)
 
-$(copy_to) : PRIVATE_MODULE := system_etcdir
-$(copy_to) : $(TARGET_OUT)/etc/$(LOCAL_MODULE)/% : $(LOCAL_PATH)/etc/% | $(ACP)
-	$(transform-prebuilt-to-target)
+ALL_DEFAULT_INSTALLED_MODULES += $(BASH_CONFIGS)
 
-ALL_PREBUILT += $(copy_to)
+ALL_MODULES.$(LOCAL_MODULE).INSTALLED := \
+    $(ALL_MODULES.$(LOCAL_MODULE).INSTALLED) $(BASH_CONFIGS)
 
 # ========================================================
 include $(call all-makefiles-under,$(LOCAL_PATH))
