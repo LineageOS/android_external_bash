@@ -232,7 +232,7 @@ void
 sh_invalidnum (s)
      char *s;
 {
-  char *msg;
+  const char *msg;
 
   if (*s == '0' && isdigit (s[1]))
     msg = _("invalid octal number");
@@ -559,11 +559,13 @@ get_working_directory (for_whom)
        * out if PWD isn't defined when starting it up on bionic
        */
       char *d = (char *)malloc(sizeof(char) * PATH_MAX);
-      the_current_working_directory = getcwd (d, sizeof(d));
-      if (the_current_working_directory)
-        the_current_working_directory = d;
-      else
-        FREE (d);
+      if (d) {
+        the_current_working_directory = getcwd (d, sizeof(char) * PATH_MAX);
+        if (the_current_working_directory)
+          the_current_working_directory = d;
+        else
+          FREE (d);
+      }
 #else
 # if defined (GETCWD_BROKEN)
       the_current_working_directory = getcwd (0, PATH_MAX);
