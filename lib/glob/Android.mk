@@ -9,7 +9,8 @@ LOCAL_SRC_FILES:= \
 	glob.c \
 	smatch.c \
 	strmatch.c \
-	xmbsrtowcs.c
+	xmbsrtowcs.c \
+	gmisc.c
 
 LOCAL_C_INCLUDES += \
 	$(LOCAL_PATH)/../.. \

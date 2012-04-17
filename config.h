@@ -216,6 +216,9 @@
 /* The number of bytes in a double (hopefully 8). */
 #define SIZEOF_DOUBLE 8
 
+/* The number of bytes in an `intmax_t'. */
+#define SIZEOF_INTMAX_T 8
+
 /* The number of bytes in a `long long', if we have one. */
 #define SIZEOF_LONG_LONG 8
 
@@ -416,6 +419,8 @@
 
 #define HAVE_STRUCT_TIMEZONE 1
 
+#define WEXITSTATUS_OFFSET 8
+
 /* Characteristics of definitions in the system header files. */
 
 #define HAVE_GETPW_DECLS 1
@@ -547,17 +552,20 @@
 /* Define if you don't have vprintf but do have _doprnt.  */
 /* #undef HAVE_DOPRNT */
 
+/* Define if you have the dprintf function.  */
+#define HAVE_DPRINTF 1
+
 /* Define if you have the dup2 function.  */
 #define HAVE_DUP2 1
 
 /* Define if you have the eaccess function.  */
 /* #undef HAVE_EACCESS */
 
+/* Define if you have the faccessat function.  */
+/* #undef HAVE_FACCESSAT */
+
 /* Define if you have the fcntl function.  */
 #define HAVE_FCNTL 1
-
-/* Define if you have the fdprintf function. */
-/* #undef HAVE_FDPRINTF */
 
 /* Define if you have the fpurge/__fpurge function.  */
 #define HAVE_FPURGE 1
@@ -681,6 +689,9 @@
 /* Define if you have the mbscmp function. */
 /* #undef HAVE_MBSCMP */
 
+/* Define if you have the mbsnrtowcs function. */
+/* #undef HAVE_MBSNRTOWCS */
+
 /* Define if you have the mbsrtowcs function. */
 #define HAVE_MBSRTOWCS 1
 
@@ -762,6 +773,9 @@
 
 /* Define if you have the strchr function.  */
 #define HAVE_STRCHR 1
+
+/* Define if you have the strchrnul function.  */
+/* #undef HAVE_STRCHRNUL */
 
 /* Define if you have the strcoll function.  */
 #define HAVE_STRCOLL 1
@@ -867,6 +881,9 @@
 
 /* Define if you have the wctype function.  */
 #define HAVE_WCTYPE 1
+
+/* Define if you have the wcswidth function.  */
+#define HAVE_WCSWIDTH 1
 
 /* Define if you have the wcwidth function.  */
 #define HAVE_WCWIDTH 1
@@ -993,6 +1010,9 @@
 #ifndef HAVE_TERMIO_H
 #define HAVE_TERMIO_H 1
 #endif
+
+/* Define if you have the <ulimit.h> header file.  */
+#define HAVE_ULIMIT_H 1
 
 /* Define if you have the <termios.h> header file.  */
 #define HAVE_TERMIOS_H 1

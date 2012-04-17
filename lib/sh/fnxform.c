@@ -1,6 +1,6 @@
 /* fnxform - use iconv(3) to transform strings to and from "filename" format */
 
-/* Copyright (C) 2009 Free Software Foundation, Inc.
+/* Copyright (C) 2009-2010 Free Software Foundation, Inc.
 
    This file is part of GNU Bash, the Bourne Again SHell.
 
@@ -72,7 +72,7 @@ curencoding ()
   mod = strchr (dot, '@');
   if (mod)
     *mod = '\0';
-  return dot;
+  return ++dot;
 #endif
 }  
 
