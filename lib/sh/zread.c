@@ -29,7 +29,7 @@
 #include <errno.h>
 
 #if !defined (errno)
-extern int errno;
+#include <errno.h>
 #endif
 
 #ifndef SEEK_CUR

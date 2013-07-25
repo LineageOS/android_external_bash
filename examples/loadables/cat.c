@@ -29,7 +29,7 @@
 #include "shell.h"
 
 #ifndef errno
-extern int errno;
+#include <errno.h>
 #endif
 
 extern char *strerror ();

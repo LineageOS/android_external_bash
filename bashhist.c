@@ -60,7 +60,7 @@ extern int rl_done, rl_dispatching;	/* should really include readline.h */
 #endif
 
 #if !defined (errno)
-extern int errno;
+#include <errno.h>
 #endif
 
 static int histignore_item_func __P((struct ign *));

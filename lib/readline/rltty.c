@@ -46,7 +46,7 @@
 #include "rlprivate.h"
 
 #if !defined (errno)
-extern int errno;
+#include <errno.h>
 #endif /* !errno */
 
 rl_vintfunc_t *rl_prep_term_function = rl_prep_terminal;

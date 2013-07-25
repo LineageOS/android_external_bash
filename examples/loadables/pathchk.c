@@ -66,7 +66,7 @@
 #include "common.h"
 
 #if !defined (errno)
-extern int errno;
+#include <errno.h>
 #endif
 
 #if !defined (_POSIX_PATH_MAX)

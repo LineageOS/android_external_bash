@@ -44,7 +44,7 @@
 #include <tilde/tilde.h>
 
 #if !defined (errno)
-extern int errno;
+#include <errno.h>
 #endif /* !errno */
 
 extern int expand_aliases;

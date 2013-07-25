@@ -43,7 +43,7 @@
 #endif
 
 #if !defined (errno)
-extern int errno;
+#include <errno.h>
 #endif /* !errno */
 
 extern char *get_working_directory __P((char *));

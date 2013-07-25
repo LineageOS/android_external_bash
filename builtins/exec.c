@@ -33,7 +33,7 @@
 
 /* Not all systems declare ERRNO in errno.h... and some systems #define it! */
 #if !defined (errno)
-extern int errno;
+#include <errno.h>
 #endif /* !errno */
 
 extern int subshell_environment;

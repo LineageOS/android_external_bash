@@ -60,7 +60,7 @@
 #define input_tty() (shell_tty != -1) ? shell_tty : fileno (stderr)
 
 #if !defined (errno)
-extern int errno;
+#include <errno.h>
 #endif /* !errno */
 
 extern int shell_tty;

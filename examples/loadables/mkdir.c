@@ -37,7 +37,7 @@
 #include "common.h"
 
 #if !defined (errno)
-extern int errno;
+#include <errno.h>
 #endif
 
 #define ISOCTAL(c)	((c) >= '0' && (c) <= '7')

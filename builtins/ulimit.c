@@ -27,7 +27,7 @@
 #include "pipesize.h"
 
 #if !defined (errno)
-extern int errno;
+#include <errno.h>
 #endif
 
 /* For some reason, HPUX chose to make these definitions visible only if

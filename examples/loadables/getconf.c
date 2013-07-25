@@ -72,7 +72,7 @@
 #include "getconf.h"
 
 #ifndef errno
-extern int errno;
+#include <errno.h>
 #endif
 
 struct conf_variable

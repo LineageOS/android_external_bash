@@ -46,7 +46,7 @@ extern void exit();
 #endif
 
 #ifndef errno
-extern int errno;
+#include <errno.h>
 #endif
 
 #if defined (READLINE_LIBRARY)

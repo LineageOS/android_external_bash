@@ -36,7 +36,7 @@
 #include "input.h"	/* For bash_input */
 
 #ifndef errno
-extern int errno;
+#include <errno.h>
 #endif
 
 extern int dump_translatable_strings, dump_po_strings;

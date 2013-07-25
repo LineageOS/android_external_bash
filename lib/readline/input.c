@@ -55,7 +55,7 @@
 #include <errno.h>
 
 #if !defined (errno)
-extern int errno;
+#include <errno.h>
 #endif /* !errno */
 
 /* System-specific feature definitions and include files. */

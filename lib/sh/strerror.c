@@ -37,7 +37,7 @@
 #include <shell.h>
 
 #if !defined (errno)
-extern int errno;
+#include <errno.h>
 #endif /* !errno */
 
 /* Return a string corresponding to the error number E.  From

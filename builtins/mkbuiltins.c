@@ -56,7 +56,7 @@
 #define DOCFILE "builtins.texi"
 
 #ifndef errno
-extern int errno;
+#include <errno.h>
 #endif
 
 static char *xmalloc (), *xrealloc ();

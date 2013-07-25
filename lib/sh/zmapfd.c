@@ -33,7 +33,7 @@
 #include "general.h"
 
 #if !defined (errno)
-extern int errno;
+#include <errno.h>
 #endif
 
 extern ssize_t zread __P((int, char *, size_t));

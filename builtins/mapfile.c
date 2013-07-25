@@ -26,7 +26,7 @@
 #include "bashgetopt.h"
 
 #if !defined (errno)
-extern int errno;
+#include <errno.h>
 #endif
 
 #if defined (ARRAY_VARS)

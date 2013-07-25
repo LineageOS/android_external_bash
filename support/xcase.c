@@ -33,7 +33,7 @@
 #include <errno.h>
 
 #ifndef errno
-extern int errno;
+#include <errno.h>
 #endif
 
 #define LOWER	1

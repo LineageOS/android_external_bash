@@ -29020,7 +29020,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 #include <errno.h>
 
 #ifndef errno
-extern int errno;
+#include <errno.h>
 #endif
 main()
 {

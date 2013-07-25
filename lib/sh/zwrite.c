@@ -29,7 +29,7 @@
 #include <errno.h>
 
 #if !defined (errno)
-extern int errno;
+#include <errno.h>
 #endif
 
 /* Write NB bytes from BUF to file descriptor FD, retrying the write if

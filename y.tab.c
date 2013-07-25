@@ -279,7 +279,7 @@ extern sh_builtin_func_t *last_shell_builtin, *this_shell_builtin;
 extern int bash_input_fd_changed;
 #endif
 
-extern int errno;
+#include <errno.h>
 /* **************************************************************** */
 /*								    */
 /*		    "Forward" declarations			    */

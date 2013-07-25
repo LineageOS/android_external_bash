@@ -28,7 +28,7 @@
 #include "common.h"
 
 #if !defined (errno)
-extern int errno;
+#include <errno.h>
 #endif
 
 extern int current_command_line_count;

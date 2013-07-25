@@ -55,7 +55,7 @@ char *alloca ();
 
 #include <errno.h>
 #ifndef errno
-extern int errno;
+#include <errno.h>
 #endif
 #ifndef __set_errno
 # define __set_errno(val) errno = (val)

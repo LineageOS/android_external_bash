@@ -42,7 +42,7 @@
 
 #include <errno.h>
 #if !defined (errno)
-extern int errno;
+#include <errno.h>
 #endif /* !errno */
 
 #if !defined (_POSIX_VERSION) && defined (HAVE_SYS_FILE_H)

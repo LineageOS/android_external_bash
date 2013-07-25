@@ -56,7 +56,7 @@ struct utsname {
 #define FLAG_ALL	0x1f
 
 #ifndef errno
-extern int errno;
+#include <errno.h>
 #endif
 
 static void uprint();

@@ -54,7 +54,7 @@
 #include <errno.h>
 
 #if !defined (errno)
-extern int errno;
+#include <errno.h>
 #endif
 
 #define NEED_FPURGE_DECL

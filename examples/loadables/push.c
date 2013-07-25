@@ -32,7 +32,7 @@
 #include "common.h"
 
 #ifndef errno
-extern int errno;
+#include <errno.h>
 #endif
 
 extern int dollar_dollar_pid;

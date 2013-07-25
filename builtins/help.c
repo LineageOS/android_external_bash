@@ -31,7 +31,7 @@
 #include <glob/glob.h>
 
 #ifndef errno
-extern int errno;
+#include <errno.h>
 #endif
 
 extern const char * const bash_copyright;

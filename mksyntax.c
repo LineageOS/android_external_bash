@@ -37,7 +37,7 @@ extern int optind;
 extern char *optarg;
 
 #ifndef errno
-extern int errno;
+#include <errno.h>
 #endif
 
 #ifndef HAVE_STRERROR

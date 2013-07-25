@@ -55,7 +55,7 @@
 #include "builtext.h"
 
 #if !defined (errno)
-extern int errno;
+#include <errno.h>
 #endif
 
 #define IS_BUILTIN(s)	(builtin_address_internal(s, 0) != (struct builtin *)NULL)

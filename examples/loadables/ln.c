@@ -39,7 +39,7 @@
 #include "common.h"
 
 #if !defined (errno)
-extern int errno;
+#include <errno.h>
 #endif
 
 typedef int unix_link_syscall_t __P((const char *, const char *));

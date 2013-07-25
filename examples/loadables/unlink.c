@@ -35,7 +35,7 @@
 #include "common.h"
 
 #ifndef errno
-extern int errno;
+#include <errno.h>
 #endif
 
 unlink_builtin (list)

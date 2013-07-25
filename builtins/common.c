@@ -64,7 +64,7 @@
 #endif
 
 #if !defined (errno)
-extern int errno;   
+#include <errno.h>   
 #endif /* !errno */
 
 extern int indirection_level, subshell_environment;

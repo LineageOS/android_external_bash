@@ -26,7 +26,7 @@
 
 #include <errno.h>
 #ifndef errno
-extern int errno;
+#include <errno.h>
 #endif
 
 #include <chartypes.h>
