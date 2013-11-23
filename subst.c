@@ -366,6 +366,11 @@ dump_word_flags (flags)
       f &= ~W_ASSNBLTIN;
       fprintf (stderr, "W_ASSNBLTIN%s", f ? "|" : "");
     }
+  if (f & W_ASSNGLOBAL)
+    {
+      f &= ~W_ASSNGLOBAL;
+      fprintf (stderr, "W_ASSNGLOBAL%s", f ? "|" : "");
+    }
   if (f & W_COMPASSIGN)
     {
       f &= ~W_COMPASSIGN;
@@ -1379,10 +1384,12 @@ extract_dollar_brace_string (string, sindex, quoted, flags)
   slen = strlen (string + *sindex) + *sindex;
 
   /* The handling of dolbrace_state needs to agree with the code in parse.y:
-     parse_matched_pair() */
-  dolbrace_state = 0;
-  if (quoted & (Q_HERE_DOCUMENT|Q_DOUBLE_QUOTES))
-    dolbrace_state = (flags & SX_POSIXEXP) ? DOLBRACE_QUOTE : DOLBRACE_PARAM;
+     parse_matched_pair().  The different initial value is to handle the
+     case where this function is called to parse the word in
+     ${param op word} (SX_WORD). */
+  dolbrace_state = (flags & SX_WORD) ? DOLBRACE_WORD : DOLBRACE_PARAM;
+  if ((quoted & (Q_HERE_DOCUMENT|Q_DOUBLE_QUOTES)) && (flags & SX_POSIXEXP))
+    dolbrace_state = DOLBRACE_QUOTE;
 
   i = *sindex;
   while (c = string[i])
@@ -2801,7 +2808,7 @@ do_assignment_internal (word, expand)
     }
   else if (assign_list)
     {
-      if (word->flags & W_ASSIGNARG)
+      if ((word->flags & W_ASSIGNARG) && (word->flags & W_ASSNGLOBAL) == 0)
 	aflags |= ASS_MKLOCAL;
       if (word->flags & W_ASSIGNASSOC)
 	aflags |= ASS_MKASSOC;
@@ -3372,7 +3379,7 @@ expand_string_for_rhs (string, quoted, dollar_at_p, has_dollar_at)
   if (string == 0 || *string == '\0')
     return (WORD_LIST *)NULL;
 
-  td.flags = 0;
+  td.flags = W_NOSPLIT2;		/* no splitting, remove "" and '' */
   td.word = string;
   tresult = call_expand_word_internal (&td, quoted, 1, dollar_at_p, has_dollar_at);
   return (tresult);
@@ -3705,7 +3712,10 @@ remove_quoted_nulls (string)
 	    break;
 	}
       else if (string[i] == CTLNUL)
-	i++;
+	{
+	  i++;
+	  continue;
+	}
 
       prev_i = i;
       ADVANCE_CHAR (string, slen, i);
@@ -4157,7 +4167,7 @@ match_wpattern (wstring, indices, wstrlen, wpat, mtype, sp, ep)
   simple = (wpat[0] != L'\\' && wpat[0] != L'*' && wpat[0] != L'?' && wpat[0] != L'[');
 #if defined (EXTENDED_GLOB)
   if (extended_glob)
-    simple |= (wpat[1] != L'(' || (wpat[0] != L'*' && wpat[0] != L'?' && wpat[0] != L'+' && wpat[0] != L'!' && wpat[0] != L'@')); /*)*/
+    simple &= (wpat[1] != L'(' || (wpat[0] != L'*' && wpat[0] != L'?' && wpat[0] != L'+' && wpat[0] != L'!' && wpat[0] != L'@')); /*)*/
 #endif
 
   /* If the pattern doesn't match anywhere in the string, go ahead and
@@ -4608,6 +4618,7 @@ expand_word_unsplit (word, quoted)
   if (ifs_firstc == 0)
 #endif
     word->flags |= W_NOSPLIT;
+  word->flags |= W_NOSPLIT2;
   result = call_expand_word_internal (word, quoted, 0, (int *)NULL, (int *)NULL);
   expand_no_split_dollar_star = 0;
 
@@ -5113,6 +5124,10 @@ process_substitute (string, open_for_read_in_child)
   close (parent_pipe_fd);
   dev_fd_list[parent_pipe_fd] = 0;
 #endif /* HAVE_DEV_FD */
+
+  /* subshells shouldn't have this flag, which controls using the temporary
+     environment for variable lookups. */
+  expanding_redir = 0;
 
   result = parse_and_execute (string, "process substitution", (SEVAL_NONINT|SEVAL_NOHIST));
 
@@ -5799,6 +5814,16 @@ parameter_brace_expand_rhs (name, value, c, quoted, qdollaratp, hasdollarat)
 	 is the only expansion that creates more than one word. */
       if (qdollaratp && ((hasdol && quoted) || l->next))
 	*qdollaratp = 1;
+      /* If we have a quoted null result (QUOTED_NULL(temp)) and the word is
+	 a quoted null (l->next == 0 && QUOTED_NULL(l->word->word)), the
+	 flags indicate it (l->word->flags & W_HASQUOTEDNULL), and the
+	 expansion is quoted (quoted & (Q_HERE_DOCUMENT|Q_DOUBLE_QUOTES))
+	 (which is more paranoia than anything else), we need to return the
+	 quoted null string and set the flags to indicate it. */
+      if (l->next == 0 && (quoted & (Q_HERE_DOCUMENT|Q_DOUBLE_QUOTES)) && QUOTED_NULL(temp) && QUOTED_NULL(l->word->word) && (l->word->flags & W_HASQUOTEDNULL))
+	{
+	  w->flags |= W_HASQUOTEDNULL;
+	}
       dispose_words (l);
     }
   else if ((quoted & (Q_HERE_DOCUMENT|Q_DOUBLE_QUOTES)) && hasdol)
@@ -7177,7 +7202,7 @@ parameter_brace_expand (string, indexp, quoted, pflags, quoted_dollar_atp, conta
     {
       /* Extract the contents of the ${ ... } expansion
 	 according to the Posix.2 rules. */
-      value = extract_dollar_brace_string (string, &sindex, quoted, (c == '%' || c == '#') ? SX_POSIXEXP : 0);
+      value = extract_dollar_brace_string (string, &sindex, quoted, (c == '%' || c == '#' || c =='/' || c == '^' || c == ',' || c ==':') ? SX_POSIXEXP|SX_WORD : SX_WORD);
       if (string[sindex] == RBRACE)
 	sindex++;
       else
@@ -7269,6 +7294,7 @@ parameter_brace_expand (string, indexp, quoted, pflags, quoted_dollar_atp, conta
     default:
     case '\0':
     bad_substitution:
+      last_command_exit_value = EXECUTION_FAILURE;
       report_error (_("%s: bad substitution"), string ? string : "??");
       FREE (value);
       FREE (temp);
@@ -7901,7 +7927,7 @@ expand_word_internal (word, quoted, isexp, contains_dollar_at, expanded_somethin
 
   /* State flags */
   int had_quoted_null;
-  int has_dollar_at;
+  int has_dollar_at, temp_has_dollar_at;
   int tflag;
   int pflags;			/* flags passed to param_expand */
 
@@ -8106,13 +8132,14 @@ add_string:
 	  if (expanded_something)
 	    *expanded_something = 1;
 
-	  has_dollar_at = 0;
+	  temp_has_dollar_at = 0;
 	  pflags = (word->flags & W_NOCOMSUB) ? PF_NOCOMSUB : 0;
 	  if (word->flags & W_NOSPLIT2)
 	    pflags |= PF_NOSPLIT2;
 	  tword = param_expand (string, &sindex, quoted, expanded_something,
-			       &has_dollar_at, &quoted_dollar_at,
+			       &temp_has_dollar_at, &quoted_dollar_at,
 			       &had_quoted_null, pflags);
+	  has_dollar_at += temp_has_dollar_at;
 
 	  if (tword == &expand_wdesc_error || tword == &expand_wdesc_fatal)
 	    {
@@ -8129,6 +8156,14 @@ add_string:
 
 	  temp = tword->word;
 	  dispose_word_desc (tword);
+
+	  /* Kill quoted nulls; we will add them back at the end of
+	     expand_word_internal if nothing else in the string */
+	  if (had_quoted_null && temp && QUOTED_NULL (temp))
+	    {
+	      FREE (temp);
+	      temp = (char *)NULL;
+	    }
 
 	  goto add_string;
 	  break;
@@ -8245,9 +8280,10 @@ add_twochars:
 
 	      temp = (char *)NULL;
 
-	      has_dollar_at = 0;
+	      temp_has_dollar_at = 0;	/* XXX */
 	      /* Need to get W_HASQUOTEDNULL flag through this function. */
-	      list = expand_word_internal (tword, Q_DOUBLE_QUOTES, 0, &has_dollar_at, (int *)NULL);
+	      list = expand_word_internal (tword, Q_DOUBLE_QUOTES, 0, &temp_has_dollar_at, (int *)NULL);
+	      has_dollar_at += temp_has_dollar_at;
 
 	      if (list == &expand_word_error || list == &expand_word_fatal)
 		{
@@ -8534,7 +8570,7 @@ finished_with_string:
 	tword->flags |= W_NOEXPAND;	/* XXX */
       if (quoted & (Q_HERE_DOCUMENT|Q_DOUBLE_QUOTES))
 	tword->flags |= W_QUOTED;
-      if (had_quoted_null)
+      if (had_quoted_null && QUOTED_NULL (istring))
 	tword->flags |= W_HASQUOTEDNULL;
       list = make_word_list (tword, (WORD_LIST *)NULL);
     }
@@ -8565,7 +8601,7 @@ finished_with_string:
 	    tword->flags |= W_NOGLOB;
 	  if (word->flags & W_NOEXPAND)
 	    tword->flags |= W_NOEXPAND;
-	  if (had_quoted_null)
+	  if (had_quoted_null && QUOTED_NULL (istring))
 	    tword->flags |= W_HASQUOTEDNULL;	/* XXX */
 	  list = make_word_list (tword, (WORD_LIST *)NULL);
 	}

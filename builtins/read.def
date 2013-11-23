@@ -385,10 +385,20 @@ read_builtin (list)
 	{
 	  /* Tricky.  The top of the unwind-protect stack is the free of
 	     input_string.  We want to run all the rest and use input_string,
-	     so we have to remove it from the stack. */
-	  remove_unwind_protect ();
-	  run_unwind_frame ("read_builtin");
+	     so we have to save input_string temporarily, run the unwind-
+	     protects, then restore input_string so we can use it later. */
+
 	  input_string[i] = '\0';	/* make sure it's terminated */
+	  if (i == 0)
+	    {
+	      t = (char *)xmalloc (1);
+	      t[0] = 0;
+	    }
+	  else
+	    t = savestring (input_string);
+
+	  run_unwind_frame ("read_builtin");
+	  input_string = t;
 	  retval = 128+SIGALRM;
 	  goto assign_vars;
 	}
@@ -642,6 +652,12 @@ assign_vars:
 	  xfree (input_string);
 	  return EXECUTION_FAILURE;	/* readonly or noassign */
 	}
+      if (assoc_p (var))
+	{
+          builtin_error (_("%s: cannot convert associative to indexed array"), arrayname);
+	  xfree (input_string);
+	  return EXECUTION_FAILURE;	/* existing associative array */
+	}
       array_flush (array_cell (var));
 
       alist = list_string (input_string, ifs_chars, 0);
@@ -731,7 +747,7 @@ assign_vars:
 	      xfree (t1);
 	    }
 	  else
-	    var = bind_read_variable (varname, t);
+	    var = bind_read_variable (varname, t ? t : "");
 	}
       else
 	{
@@ -785,14 +801,14 @@ assign_vars:
     }
 #endif
 
-  if (saw_escape)
+  if (saw_escape && input_string && *input_string)
     {
       t = dequote_string (input_string);
       var = bind_read_variable (list->word->word, t);
       xfree (t);
     }
   else
-    var = bind_read_variable (list->word->word, input_string);
+    var = bind_read_variable (list->word->word, input_string ? input_string : "");
 
   if (var)
     {

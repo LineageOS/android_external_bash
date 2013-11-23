@@ -2196,6 +2196,7 @@ execute_pipeline (command, asynchronous, pipe_in, pipe_out, fds_to_close)
   if (ignore_return && cmd)
     cmd->flags |= CMD_IGNORE_RETURN;
 
+#if defined (JOB_CONTROL)
   lastpipe_flag = 0;
   begin_unwind_frame ("lastpipe-exec");
   lstdin = -1;
@@ -2204,7 +2205,7 @@ execute_pipeline (command, asynchronous, pipe_in, pipe_out, fds_to_close)
      current shell environment. */
   if (lastpipe_opt && job_control == 0 && asynchronous == 0 && pipe_out == NO_PIPE && prev > 0)
     {
-      lstdin = move_to_high_fd (0, 0, 255);
+      lstdin = move_to_high_fd (0, 1, -1);
       if (lstdin > 0)
 	{
 	  do_piping (prev, pipe_out);
@@ -2215,15 +2216,19 @@ execute_pipeline (command, asynchronous, pipe_in, pipe_out, fds_to_close)
 	  lastpipe_jid = stop_pipeline (0, (COMMAND *)NULL);	/* XXX */
 	  add_unwind_protect (lastpipe_cleanup, lastpipe_jid);
 	}
-      cmd->flags |= CMD_LASTPIPE;
+      if (cmd)
+	cmd->flags |= CMD_LASTPIPE;
     }	  
   if (prev >= 0)
     add_unwind_protect (close, prev);
+#endif
 
   exec_result = execute_command_internal (cmd, asynchronous, prev, pipe_out, fds_to_close);
 
+#if defined (JOB_CONTROL)
   if (lstdin > 0)
     restore_stdin (lstdin);
+#endif
 
   if (prev >= 0)
     close (prev);
@@ -2246,7 +2251,9 @@ execute_pipeline (command, asynchronous, pipe_in, pipe_out, fds_to_close)
       unfreeze_jobs_list ();
     }
 
+#if defined (JOB_CONTROL)
   discard_unwind_frame ("lastpipe-exec");
+#endif
 
   return (exec_result);
 }
@@ -3575,13 +3582,13 @@ fix_assignment_words (words)
 {
   WORD_LIST *w;
   struct builtin *b;
-  int assoc;
+  int assoc, global;
 
   if (words == 0)
     return;
 
   b = 0;
-  assoc = 0;
+  assoc = global = 0;
 
   for (w = words; w; w = w->next)
     if (w->word->flags & W_ASSIGNMENT)
@@ -3598,12 +3605,17 @@ fix_assignment_words (words)
 #if defined (ARRAY_VARS)
 	if (assoc)
 	  w->word->flags |= W_ASSIGNASSOC;
+	if (global)
+	  w->word->flags |= W_ASSNGLOBAL;
 #endif
       }
 #if defined (ARRAY_VARS)
     /* Note that we saw an associative array option to a builtin that takes
        assignment statements.  This is a bit of a kludge. */
-    else if (w->word->word[0] == '-' && strchr (w->word->word, 'A'))
+    else if (w->word->word[0] == '-' && (strchr (w->word->word+1, 'A') || strchr (w->word->word+1, 'g')))
+#else
+    else if (w->word->word[0] == '-' && strchr (w->word->word+1, 'g'))
+#endif
       {
 	if (b == 0)
 	  {
@@ -3613,10 +3625,11 @@ fix_assignment_words (words)
 	    else if (b && (b->flags & ASSIGNMENT_BUILTIN))
 	      words->word->flags |= W_ASSNBLTIN;
 	  }
-	if (words->word->flags & W_ASSNBLTIN)
+	if ((words->word->flags & W_ASSNBLTIN) && strchr (w->word->word+1, 'A'))
 	  assoc = 1;
+	if ((words->word->flags & W_ASSNBLTIN) && strchr (w->word->word+1, 'g'))
+	  global = 1;
       }
-#endif
 }
 
 /* Return 1 if the file found by searching $PATH for PATHNAME, defaulting

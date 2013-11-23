@@ -476,19 +476,23 @@ expassign ()
 
       if (special)
 	{
+	  if ((op == DIV || op == MOD) && value == 0)
+	    {
+	      if (noeval == 0)
+		evalerror (_("division by 0"));
+	      else
+	        value = 1;
+	    }
+
 	  switch (op)
 	    {
 	    case MUL:
 	      lvalue *= value;
 	      break;
 	    case DIV:
-	      if (value == 0)
-		evalerror (_("division by 0"));
 	      lvalue /= value;
 	      break;
 	    case MOD:
-	      if (value == 0)
-		evalerror (_("division by 0"));
 	      lvalue %= value;
 	      break;
 	    case PLUS:
@@ -804,7 +808,12 @@ exp2 ()
       val2 = exppower ();
 
       if (((op == DIV) || (op == MOD)) && (val2 == 0))
-	evalerror (_("division by 0"));
+	{
+	  if (noeval == 0)
+	    evalerror (_("division by 0"));
+	  else
+	    val2 = 1;
+	}
 
       if (op == MUL)
 	val1 *= val2;
@@ -1000,6 +1009,12 @@ expr_streval (tok, e, lvalue)
   arrayind_t ind;
 #endif
 
+/*itrace("expr_streval: %s: noeval = %d", tok, noeval);*/
+  /* If we are suppressing evaluation, just short-circuit here instead of
+     going through the rest of the evaluator. */
+  if (noeval)
+    return (0);
+
   /* [[[[[ */
 #if defined (ARRAY_VARS)
   v = (e == ']') ? array_variable_part (tok, (char **)0, (int *)0) : find_variable (tok);
@@ -1173,6 +1188,10 @@ readtok ()
 #endif /* ARRAY_VARS */
 
       *cp = '\0';
+      /* XXX - watch out for pointer aliasing issues here */
+      if (curlval.tokstr && curlval.tokstr == tokstr)
+	init_lvalue (&curlval);
+
       FREE (tokstr);
       tokstr = savestring (tp);
       *cp = c;
