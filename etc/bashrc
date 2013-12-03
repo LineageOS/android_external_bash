@@ -31,9 +31,9 @@ TERM=linux
 
 # enable colorful terminal
 if [[ ${EUID} == 0 ]] ; then
-	PS1='\[\033[01;31m\]\h\[\033[01;34m\] \W \$\[\033[00m\] '
+	PS1='\h \W \$ '
 else
-	PS1='\[\033[01;32m\]\u@\h\[\033[01;34m\] \w \$\[\033[00m\] '
+	PS1='\u@\h \w \$ '
 fi
 
 # Set up a ton of aliases to cover toolbox with the nice busybox
@@ -42,7 +42,7 @@ for i in cat chmod chown df insmod ln lsmod mkdir mount mv rm rmdir rmmod umount
 	eval alias ${i}=\"busybox ${i}\"
 done
 unset i
-alias ls='busybox ls --color=auto'
+alias ls='busybox ls'
 alias sysro='mount -o remount,ro /system'
 alias sysrw='mount -o remount,rw /system'
 
