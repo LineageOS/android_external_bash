@@ -1,6 +1,26 @@
 LOCAL_PATH:= $(call my-dir)
 
 # ========================================================
+# libtermcap
+# ========================================================
+
+include $(CLEAR_VARS)
+
+LOCAL_SRC_FILES := \
+	lib/termcap/termcap.c \
+	lib/termcap/tparam.c \
+	lib/termcap/version.c
+LOCAL_C_INCLUDES += \
+	$(LOCAL_PATH)/lib/termcap
+LOCAL_C_FLAGS += \
+	-DHAVE_CONFIG_H -DHAVE_STDLIB_H
+LOCAL_MODULE := libtermcap
+LOCAL_MODULE_TAGS := eng
+
+include $(BUILD_STATIC_LIBRARY)
+
+
+# ========================================================
 # bash
 # ========================================================
 include $(CLEAR_VARS)
@@ -27,8 +47,6 @@ LOCAL_CFLAGS += \
 	-DCONF_VENDOR=\"unknown\" \
 	-DLOCALEDIR=\"/data/locale\" \
 	-DSHELL
-LOCAL_SHARED_LIBRARIES += \
-	libncurses
 LOCAL_STATIC_LIBRARIES += \
 	libbuiltins \
 	libglob \
@@ -36,7 +54,7 @@ LOCAL_STATIC_LIBRARIES += \
 	libtilde \
 	libhistory \
 	libreadline \
-	libclearsilverregex
+	libtermcap
 LOCAL_MODULE := bash
 LOCAL_MODULE_PATH := $(TARGET_OUT_OPTIONAL_EXECUTABLES)
 
