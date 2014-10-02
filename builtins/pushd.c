@@ -11,7 +11,7 @@
 
 #if defined (PUSHD_AND_POPD)
 #include <stdio.h>
-#ifndef _MINIX
+#if defined (HAVE_SYS_PARAM_H)
 #  include <sys/param.h>
 #endif
 
@@ -124,7 +124,7 @@ pushd_builtin (list)
 	    {
 	      sh_invalidnum (list->word->word);
 	      builtin_usage ();
-	      return (EXECUTION_FAILURE);
+	      return (EX_USAGE);
 	    }
 
 	  if (direction == '-')
@@ -141,7 +141,7 @@ pushd_builtin (list)
 	{
 	  sh_invalidopt (list->word->word);
 	  builtin_usage ();
-	  return (EXECUTION_FAILURE);
+	  return (EX_USAGE);
 	}
       else
 	break;
@@ -235,7 +235,7 @@ popd_builtin (list)
 	    {
 	      sh_invalidnum (list->word->word);
 	      builtin_usage ();
-	      return (EXECUTION_FAILURE);
+	      return (EX_USAGE);
 	    }
 	  which_word = list->word->word;
 	}
@@ -243,7 +243,13 @@ popd_builtin (list)
 	{
 	  sh_invalidopt (list->word->word);
 	  builtin_usage ();
-	  return (EXECUTION_FAILURE);
+	  return (EX_USAGE);
+	}
+      else if (*list->word->word)
+	{
+	  builtin_error (_("%s: invalid argument"), list->word->word);
+	  builtin_usage ();
+	  return (EX_USAGE);
 	}
       else
 	break;
@@ -322,7 +328,7 @@ dirs_builtin (list)
 	    {
 	      sh_invalidnum (list->word->word);
 	      builtin_usage ();
-	      return (EXECUTION_FAILURE);
+	      return (EX_USAGE);
 	    }
 	  sign = (*list->word->word == '+') ? 1 : -1;
 	  desired_index = get_dirstack_index (i, sign, &index_flag);
@@ -331,7 +337,7 @@ dirs_builtin (list)
 	{
 	  sh_invalidopt (list->word->word);
 	  builtin_usage ();
-	  return (EXECUTION_FAILURE);
+	  return (EX_USAGE);
 	}
     }
 

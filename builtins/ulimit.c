@@ -1,14 +1,14 @@
 /* ulimit.c, created from ulimit.def. */
 #line 22 "./ulimit.def"
 
-#line 67 "./ulimit.def"
+#line 70 "./ulimit.def"
 
 #if !defined (_MINIX)
 
 #include <config.h>
 
 #include "../bashtypes.h"
-#ifndef _MINIX
+#if defined (HAVE_SYS_PARAM_H)
 #  include <sys/param.h>
 #endif
 
@@ -56,6 +56,10 @@
 #  undef HAVE_RESOURCE
 #endif
 
+#if !defined (HAVE_RESOURCE) && defined (HAVE_ULIMIT_H)
+#  include <ulimit.h>
+#endif
+
 #if !defined (RLIMTYPE)
 #  define RLIMTYPE long
 #  define string_to_rlimtype(s) strtol(s, (char **)NULL, 10)
@@ -99,6 +103,10 @@
 #  define RLIMIT_MAXUPROC	RLIMIT_NPROC
 #else
 #  define RLIMIT_MAXUPROC	260
+#endif
+
+#if !defined (RLIMIT_PTHREAD) && defined (RLIMIT_NTHR)
+#  define RLIMIT_PTHREAD RLIMIT_NTHR
 #endif
 
 #if !defined (RLIM_INFINITY)

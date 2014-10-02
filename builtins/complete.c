@@ -68,7 +68,7 @@ static const struct _compacts {
   { "export",    CA_EXPORT,    'e' },
   { "file",      CA_FILE,      'f' },
   { "function",  CA_FUNCTION,   0 },
-  { "helptopic", CA_BUILTIN,  0 },	/* for now */
+  { "helptopic", CA_HELPTOPIC,  0 },
   { "hostname",  CA_HOSTNAME,   0 },
   { "group",     CA_GROUP,     'g' },
   { "job",       CA_JOB,       'j' },
@@ -85,7 +85,7 @@ static const struct _compacts {
 };
 
 /* This should be a STRING_INT_ALIST */
-const static struct _compopt {
+static const struct _compopt {
   const char * const optname;
   int optflag;
 } compopts[] = {
@@ -93,6 +93,7 @@ const static struct _compopt {
   { "default",	COPT_DEFAULT },
   { "dirnames", COPT_DIRNAMES },
   { "filenames",COPT_FILENAMES},
+  { "noquote", COPT_NOQUOTE },
   { "nospace",	COPT_NOSPACE },
   { "plusdirs", COPT_PLUSDIRS },
   { (char *)NULL, 0 },
@@ -605,7 +606,7 @@ print_cmd_completions (list)
   return (sh_chkwrite (ret));
 }
 
-#line 665 "./complete.def"
+#line 666 "./complete.def"
 
 int
 compgen_builtin (list)
@@ -672,6 +673,7 @@ compgen_builtin (list)
   if ((sl == 0 || sl->list_len == 0) && (copts & COPT_DEFAULT))
     {
       matches = rl_completion_matches (word, rl_filename_completion_function);
+      strlist_dispose (sl);
       sl = completions_to_stringlist (matches);
       strvec_dispose (matches);
     }
@@ -690,7 +692,7 @@ compgen_builtin (list)
   return (rval);
 }
 
-#line 778 "./complete.def"
+#line 780 "./complete.def"
 
 int
 compopt_builtin (list)

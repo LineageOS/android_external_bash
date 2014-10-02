@@ -1,7 +1,7 @@
 /* caller.c, created from caller.def. */
-#line 22 "./caller.def"
+#line 23 "./caller.def"
 
-#line 40 "./caller.def"
+#line 41 "./caller.def"
 
 #include <config.h>
 #include <stdio.h>
@@ -86,7 +86,7 @@ caller_builtin (list)
     {
       sh_invalidnum (list->word->word);
       builtin_usage ();
-      return (EXECUTION_FAILURE);
+      return (EX_USAGE);
     }
 
   return (EXECUTION_SUCCESS);

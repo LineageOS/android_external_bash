@@ -13,7 +13,7 @@ LOCAL_SRC_FILES:= \
 	strtrans.c snprintf.c mailstat.c fmtulong.c \
 	fmtullong.c fmtumax.c zcatfd.c zmapfd.c winsize.c wcsdup.c \
 	fpurge.c zgetline.c mbscmp.c uconvert.c ufuncs.c casemod.c \
-	fdprintf.c input_avail.c mbscasecmp.c fnxform.c mbschr.c \
+	input_avail.c mbscasecmp.c fnxform.c mbschr.c \
 	shmbchar.c unicode.c
 
 LOCAL_C_INCLUDES += \

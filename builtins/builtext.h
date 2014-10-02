@@ -33,18 +33,6 @@ extern int false_builtin __P((WORD_LIST *));
 extern char * const false_doc[];
 extern int command_builtin __P((WORD_LIST *));
 extern char * const command_doc[];
-#if defined (PROGRAMMABLE_COMPLETION)
-extern int complete_builtin __P((WORD_LIST *));
-extern char * const complete_doc[];
-#endif /* PROGRAMMABLE_COMPLETION */
-#if defined (PROGRAMMABLE_COMPLETION)
-extern int compgen_builtin __P((WORD_LIST *));
-extern char * const compgen_doc[];
-#endif /* PROGRAMMABLE_COMPLETION */
-#if defined (PROGRAMMABLE_COMPLETION)
-extern int compopt_builtin __P((WORD_LIST *));
-extern char * const compopt_doc[];
-#endif /* PROGRAMMABLE_COMPLETION */
 extern int declare_builtin __P((WORD_LIST *));
 extern char * const declare_doc[];
 extern int declare_builtin __P((WORD_LIST *));
@@ -63,6 +51,8 @@ extern int enable_builtin __P((WORD_LIST *));
 extern char * const enable_doc[];
 extern int eval_builtin __P((WORD_LIST *));
 extern char * const eval_doc[];
+extern int getopts_builtin __P((WORD_LIST *));
+extern char * const getopts_doc[];
 extern int exec_builtin __P((WORD_LIST *));
 extern char * const exec_doc[];
 extern int exit_builtin __P((WORD_LIST *));
@@ -81,8 +71,6 @@ extern char * const fg_doc[];
 extern int bg_builtin __P((WORD_LIST *));
 extern char * const bg_doc[];
 #endif /* JOB_CONTROL */
-extern int getopts_builtin __P((WORD_LIST *));
-extern char * const getopts_doc[];
 extern int hash_builtin __P((WORD_LIST *));
 extern char * const hash_doc[];
 #if defined (HELP_BUILTIN)
@@ -93,10 +81,6 @@ extern char * const help_doc[];
 extern int history_builtin __P((WORD_LIST *));
 extern char * const history_doc[];
 #endif /* HISTORY */
-#if defined (apollo)
-extern int inlib_builtin __P((WORD_LIST *));
-extern char * const inlib_doc[];
-#endif /* apollo */
 #if defined (JOB_CONTROL)
 extern int jobs_builtin __P((WORD_LIST *));
 extern char * const jobs_doc[];
@@ -109,55 +93,20 @@ extern int kill_builtin __P((WORD_LIST *));
 extern char * const kill_doc[];
 extern int let_builtin __P((WORD_LIST *));
 extern char * const let_doc[];
-extern int mapfile_builtin __P((WORD_LIST *));
-extern char * const mapfile_doc[];
-extern int mapfile_builtin __P((WORD_LIST *));
-extern char * const readarray_doc[];
-extern int printf_builtin __P((WORD_LIST *));
-extern char * const printf_doc[];
-#if defined (PUSHD_AND_POPD)
-extern int pushd_builtin __P((WORD_LIST *));
-extern char * const pushd_doc[];
-#endif /* PUSHD_AND_POPD */
-#if defined (PUSHD_AND_POPD)
-extern int popd_builtin __P((WORD_LIST *));
-extern char * const popd_doc[];
-#endif /* PUSHD_AND_POPD */
-#if defined (PUSHD_AND_POPD)
-extern int dirs_builtin __P((WORD_LIST *));
-extern char * const dirs_doc[];
-#endif /* PUSHD_AND_POPD */
 extern int read_builtin __P((WORD_LIST *));
 extern char * const read_doc[];
-extern char * const for_doc[];
-extern char * const arith_for_doc[];
-extern char * const select_doc[];
-extern char * const time_doc[];
-extern char * const case_doc[];
-extern char * const if_doc[];
-extern char * const while_doc[];
-extern char * const until_doc[];
-extern char * const coproc_doc[];
-extern char * const function_doc[];
-extern char * const grouping_braces_doc[];
-extern char * const fg_percent_doc[];
-extern char * const arith_doc[];
-extern char * const conditional_doc[];
-extern char * const variable_help_doc[];
 extern int return_builtin __P((WORD_LIST *));
 extern char * const return_doc[];
-extern int export_builtin __P((WORD_LIST *));
-extern char * const export_doc[];
-extern int readonly_builtin __P((WORD_LIST *));
-extern char * const readonly_doc[];
 extern int set_builtin __P((WORD_LIST *));
 extern char * const set_doc[];
 extern int unset_builtin __P((WORD_LIST *));
 extern char * const unset_doc[];
+extern int export_builtin __P((WORD_LIST *));
+extern char * const export_doc[];
+extern int readonly_builtin __P((WORD_LIST *));
+extern char * const readonly_doc[];
 extern int shift_builtin __P((WORD_LIST *));
 extern char * const shift_doc[];
-extern int shopt_builtin __P((WORD_LIST *));
-extern char * const shopt_doc[];
 extern int source_builtin __P((WORD_LIST *));
 extern char * const source_doc[];
 extern int source_builtin __P((WORD_LIST *));
@@ -190,3 +139,50 @@ extern char * const wait_doc[];
 extern int wait_builtin __P((WORD_LIST *));
 extern char * const wait_doc[];
 #endif /* !JOB_CONTROL */
+extern char * const for_doc[];
+extern char * const arith_for_doc[];
+extern char * const select_doc[];
+extern char * const time_doc[];
+extern char * const case_doc[];
+extern char * const if_doc[];
+extern char * const while_doc[];
+extern char * const until_doc[];
+extern char * const coproc_doc[];
+extern char * const function_doc[];
+extern char * const grouping_braces_doc[];
+extern char * const fg_percent_doc[];
+extern char * const arith_doc[];
+extern char * const conditional_doc[];
+extern char * const variable_help_doc[];
+#if defined (PUSHD_AND_POPD)
+extern int pushd_builtin __P((WORD_LIST *));
+extern char * const pushd_doc[];
+#endif /* PUSHD_AND_POPD */
+#if defined (PUSHD_AND_POPD)
+extern int popd_builtin __P((WORD_LIST *));
+extern char * const popd_doc[];
+#endif /* PUSHD_AND_POPD */
+#if defined (PUSHD_AND_POPD)
+extern int dirs_builtin __P((WORD_LIST *));
+extern char * const dirs_doc[];
+#endif /* PUSHD_AND_POPD */
+extern int shopt_builtin __P((WORD_LIST *));
+extern char * const shopt_doc[];
+extern int printf_builtin __P((WORD_LIST *));
+extern char * const printf_doc[];
+#if defined (PROGRAMMABLE_COMPLETION)
+extern int complete_builtin __P((WORD_LIST *));
+extern char * const complete_doc[];
+#endif /* PROGRAMMABLE_COMPLETION */
+#if defined (PROGRAMMABLE_COMPLETION)
+extern int compgen_builtin __P((WORD_LIST *));
+extern char * const compgen_doc[];
+#endif /* PROGRAMMABLE_COMPLETION */
+#if defined (PROGRAMMABLE_COMPLETION)
+extern int compopt_builtin __P((WORD_LIST *));
+extern char * const compopt_doc[];
+#endif /* PROGRAMMABLE_COMPLETION */
+extern int mapfile_builtin __P((WORD_LIST *));
+extern char * const mapfile_doc[];
+extern int mapfile_builtin __P((WORD_LIST *));
+extern char * const readarray_doc[];

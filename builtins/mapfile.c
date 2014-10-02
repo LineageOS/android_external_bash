@@ -1,9 +1,9 @@
 /* mapfile.c, created from mapfile.def. */
 #line 23 "./mapfile.def"
 
-#line 56 "./mapfile.def"
+#line 57 "./mapfile.def"
 
-#line 64 "./mapfile.def"
+#line 65 "./mapfile.def"
 
 #include <config.h>
 
@@ -31,7 +31,10 @@
 
 #if defined (ARRAY_VARS)
 
+static int run_callback __P((const char *, unsigned int, const char *));
+
 #define DEFAULT_ARRAY_NAME	"MAPFILE"
+#define DEFAULT_VARIABLE_NAME	"MAPLINE"	/* not used right now */
 
 /* The value specifying how frequently `mapfile'  calls the callback. */
 #define DEFAULT_QUANTUM 5000
@@ -41,18 +44,20 @@
 #define MAPF_CHOP	0x02
 
 static int
-run_callback(callback, current_index)
+run_callback (callback, curindex, curline)
      const char *callback;
-     unsigned int current_index;
+     unsigned int curindex;
+     const char *curline;
 {
   unsigned int execlen;
-  char  *execstr;
+  char  *execstr, *qline;
   int flags;
 
-  execlen = strlen (callback) + 10;
-  /* 1 for space between %s and %d,
+  qline = sh_single_quote (curline);
+  execlen = strlen (callback) + strlen (qline) + 10;
+  /* 1 for each space between %s and %d,
      another 1 for the last nul char for C string. */
-  execlen += 2;
+  execlen += 3;
   execstr = xmalloc (execlen);
 
   flags = SEVAL_NOHIST;
@@ -60,8 +65,9 @@ run_callback(callback, current_index)
   if (interactive)
     flags |= SEVAL_INTERACT;
 #endif
-  snprintf (execstr, execlen, "%s %d", callback, current_index);
-  return parse_and_execute(execstr, NULL, flags);
+  snprintf (execstr, execlen, "%s %d %s", callback, curindex, qline);
+  free (qline);
+  return evalstring (execstr, NULL, flags);
 }
 
 static void
@@ -108,6 +114,8 @@ mapfile (fd, line_count_goal, origin, nskip, callback_quantum, callback, array_n
       builtin_error (_("%s: not an indexed array"), array_name);
       return (EXECUTION_FAILURE);
     }
+  else if (invisible_p (entry))
+    VUNSETATTR (entry, att_invisible);	/* no longer invisible */
       
   if (flags & MAPF_CLEARARRAY)
     array_flush (array_cell (entry));
@@ -129,15 +137,10 @@ mapfile (fd, line_count_goal, origin, nskip, callback_quantum, callback, array_n
   line_length = 0;    
 
   /* Reset the buffer for bash own stream */
-  interrupt_immediately++;
   for (array_index = origin, line_count = 1; 
-       zgetline (fd, &line, &line_length, unbuffered_read) != -1;
-       array_index++, line_count++) 
+ 	zgetline (fd, &line, &line_length, unbuffered_read) != -1;
+	array_index++) 
     {
-      /* Have we exceeded # of lines to store? */
-      if (line_count_goal != 0 && line_count > line_count_goal) 
-	break;
-
       /* Remove trailing newlines? */
       if (flags & MAPF_CHOP)
 	do_chop (line);
@@ -145,14 +148,21 @@ mapfile (fd, line_count_goal, origin, nskip, callback_quantum, callback, array_n
       /* Has a callback been registered and if so is it time to call it? */
       if (callback && line_count && (line_count % callback_quantum) == 0) 
 	{
-	  run_callback (callback, array_index);
+	  run_callback (callback, array_index, line);
 
 	  /* Reset the buffer for bash own stream. */
 	  if (unbuffered_read == 0)
 	    zsyncfd (fd);
 	}
 
+      /* XXX - bad things can happen if the callback modifies ENTRY, e.g.,
+	 unsetting it or changing it to a non-indexed-array type. */
       bind_array_element (entry, array_index, line, 0);
+
+      /* Have we exceeded # of lines to store? */
+      line_count++;
+      if (line_count_goal != 0 && line_count > line_count_goal) 
+	break;
     }
 
   xfree (line);
@@ -160,7 +170,6 @@ mapfile (fd, line_count_goal, origin, nskip, callback_quantum, callback, array_n
   if (unbuffered_read == 0)
     zsyncfd (fd);
 
-  interrupt_immediately--;
   return EXECUTION_SUCCESS;
 }
 

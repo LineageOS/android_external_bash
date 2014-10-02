@@ -78,6 +78,7 @@ extern void xtrace_print_cond_term __P((int, int, WORD_DESC *, char *, char *));
 /* Functions from shell.c. */
 extern void exit_shell __P((int)) __attribute__((__noreturn__));
 extern void sh_exit __P((int)) __attribute__((__noreturn__));
+extern void subshell_exit __P((int)) __attribute__((__noreturn__));
 extern void disable_priv_mode __P((void));
 extern void unbind_args __P((void));
 
@@ -106,7 +107,13 @@ extern char *xparse_dolparen __P((char *, char *, int *, int));
 extern void reset_parser __P((void));
 extern WORD_LIST *parse_string_to_word_list __P((char *, int, const char *));
 
+extern int parser_in_command_position __P((void));
+
 extern void free_pushed_string_input __P((void));
+
+extern int parser_expanding_alias __P((void));
+extern void parser_save_alias __P((void));
+extern void parser_restore_alias __P((void));
 
 extern char *decode_prompt_string __P((char *));
 
@@ -180,7 +187,7 @@ extern void print_clock_t ();
 
 /* Declarations for functions defined in lib/sh/dprintf.c */
 #if !defined (HAVE_DPRINTF)
-extern void dprintf __P((int, const char *, ...))  __attribute__((__format__ (printf, 2, 3)));
+extern int dprintf __P((int, const char *, ...))  __attribute__((__format__ (printf, 2, 3)));
 #endif
 
 /* Declarations for functions defined in lib/sh/fmtulong.c */
@@ -227,6 +234,7 @@ extern int input_avail __P((int));
 /* Declarations for functions defined in lib/sh/itos.c */
 extern char *inttostr __P((intmax_t, char *, size_t));
 extern char *itos __P((intmax_t));
+extern char *mitos __P((intmax_t));
 extern char *uinttostr __P((uintmax_t, char *, size_t));
 extern char *uitos __P((uintmax_t));
 
@@ -306,15 +314,17 @@ extern int sh_regmatch __P((const char *, const char *, int));
 /* declarations for functions defined in lib/sh/shmbchar.c */
 extern size_t mbstrlen __P((const char *));
 extern char *mbsmbchar __P((const char *));
+extern int sh_mbsnlen __P((const char *, size_t, int));
 
 /* declarations for functions defined in lib/sh/shquote.c */
 extern char *sh_single_quote __P((const char *));
 extern char *sh_double_quote __P((const char *));
 extern char *sh_mkdoublequoted __P((const char *, int, int));
 extern char *sh_un_double_quote __P((char *));
-extern char *sh_backslash_quote __P((char *));
+extern char *sh_backslash_quote __P((char *, const char *, int));
 extern char *sh_backslash_quote_for_double_quotes __P((char *));
 extern int sh_contains_shell_metas __P((char *));
+extern int sh_contains_quotes __P((char *));
 
 /* declarations for functions defined in lib/sh/spell.c */
 extern int spname __P((char *, char *));
@@ -374,6 +384,8 @@ extern void strlist_sort __P((STRINGLIST *));
 
 extern char **strvec_create __P((int));
 extern char **strvec_resize __P((char **, int));
+extern char **strvec_mcreate __P((int));
+extern char **strvec_mresize __P((char **, int));
 extern void strvec_flush __P((char **));
 extern void strvec_dispose __P((char **));
 extern int strvec_remove __P((char **, char *));
@@ -461,6 +473,12 @@ extern unsigned int fsleep __P((unsigned int, unsigned int));
 
 /* declarations for functions defined in lib/sh/unicode.c */
 extern int u32cconv __P((unsigned long, char *));
+extern void u32reset __P((void));
+
+/* declarations for functions defined in lib/sh/wcsnwidth.c */
+#if defined (HANDLE_MULTIBYTE)
+extern int wcsnwidth __P((const wchar_t *, size_t, int));
+#endif
 
 /* declarations for functions defined in lib/sh/winsize.c */
 extern void get_new_window_size __P((int, int *, int *));
@@ -480,6 +498,7 @@ extern ssize_t zreadretry __P((int, char *, size_t));
 extern ssize_t zreadintr __P((int, char *, size_t));
 extern ssize_t zreadc __P((int, char *));
 extern ssize_t zreadcintr __P((int, char *));
+extern ssize_t zreadn __P((int, char *, size_t));
 extern void zreset __P((void));
 extern void zsyncfd __P((int));
 

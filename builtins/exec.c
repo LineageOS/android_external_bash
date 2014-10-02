@@ -38,6 +38,7 @@
 
 extern int subshell_environment;
 extern REDIRECT *redirection_undo_list;
+extern char *exec_argv0;
 
 int no_exit_on_failed_exec;
 
@@ -64,7 +65,7 @@ exec_builtin (list)
   char *argv0, *command, **args, **env, *newname, *com2;
 
   cleanenv = login = 0;
-  argv0 = (char *)NULL;
+  exec_argv0 = argv0 = (char *)NULL;
 
   reset_internal_getopt ();
   while ((opt = internal_getopt (list, "cla:")) != -1)
@@ -105,12 +106,24 @@ exec_builtin (list)
   args = strvec_from_word_list (list, 1, 0, (int *)NULL);
 
   /* A command with a slash anywhere in its name is not looked up in $PATH. */
-  command = absolute_program (args[0]) ? args[0] : search_for_command (args[0]);
+  command = absolute_program (args[0]) ? args[0] : search_for_command (args[0], 1);
 
   if (command == 0)
     {
-      sh_notfound (args[0]);
-      exit_value = EX_NOTFOUND;	/* As per Posix.2, 3.14.6 */
+      if (file_isdir (args[0]))
+	{
+#if defined (EISDIR)
+	  builtin_error (_("%s: cannot execute: %s"), args[0], strerror (EISDIR));
+#else
+	  builtin_error (_("%s: cannot execute: %s"), args[0], strerror (errno));
+#endif
+	  exit_value = EX_NOEXEC;
+	}
+      else
+	{
+	  sh_notfound (args[0]);
+	  exit_value = EX_NOTFOUND;	/* As per Posix.2, 3.14.6 */
+	}
       goto failed_exec;
     }
 
@@ -126,6 +139,7 @@ exec_builtin (list)
     {
       free (args[0]);
       args[0] = login ? mkdashname (argv0) : savestring (argv0);
+      exec_argv0 = savestring (args[0]);
     }
   else if (login)
     {
@@ -160,7 +174,7 @@ exec_builtin (list)
     end_job_control ();
 #endif /* JOB_CONTROL */
 
-  shell_execve (command, args, env);
+  exit_value = shell_execve (command, args, env);
 
   /* We have to set this to NULL because shell_execve has called realloc()
      to stuff more items at the front of the array, which may have caused
@@ -169,7 +183,9 @@ exec_builtin (list)
   if (cleanenv == 0)
     adjust_shell_level (1);
 
-  if (executable_file (command) == 0)
+  if (exit_value == EX_NOTFOUND)	/* no duplicate error message */
+    goto failed_exec;
+  else if (executable_file (command) == 0)
     {
       builtin_error (_("%s: cannot execute: %s"), command, strerror (errno));
       exit_value = EX_NOEXEC;	/* As per Posix.2, 3.14.6 */
