@@ -1,9 +1,9 @@
 /* declare.c, created from declare.def. */
 #line 22 "./declare.def"
 
-#line 58 "./declare.def"
+#line 62 "./declare.def"
 
-#line 66 "./declare.def"
+#line 70 "./declare.def"
 
 #include <config.h>
 
@@ -37,7 +37,7 @@ declare_builtin (list)
   return (declare_internal (list, 0));
 }
 
-#line 114 "./declare.def"
+#line 118 "./declare.def"
 int
 local_builtin (list)
      register WORD_LIST *list;
@@ -52,9 +52,9 @@ local_builtin (list)
 }
 
 #if defined (ARRAY_VARS)
-#  define DECLARE_OPTS	"+acfilprtuxAF"
+#  define DECLARE_OPTS	"+acfgilnprtuxAF"
 #else
-#  define DECLARE_OPTS	"+cfilprtuxF"
+#  define DECLARE_OPTS	"+cfgilnprtuxF"
 #endif
 
 /* The workhorse function. */
@@ -64,12 +64,13 @@ declare_internal (list, local_var)
      int local_var;
 {
   int flags_on, flags_off, *flags;
-  int any_failed, assign_error, pflag, nodefs, opt;
+  int any_failed, assign_error, pflag, nodefs, opt, mkglobal, onref, offref;
   char *t, *subscript_start;
-  SHELL_VAR *var;
+  SHELL_VAR *var, *refvar, *v;
   FUNCTION_DEF *shell_fn;
 
-  flags_on = flags_off = any_failed = assign_error = pflag = nodefs = 0;
+  flags_on = flags_off = any_failed = assign_error = pflag = nodefs = mkglobal = 0;
+  refvar = (SHELL_VAR *)NULL;
   reset_internal_getopt ();
   while ((opt = internal_getopt (list, DECLARE_OPTS)) != EOF)
     {
@@ -104,8 +105,15 @@ declare_internal (list, local_var)
 	case 'f':
 	  *flags |= att_function;
 	  break;
+	case 'g':
+	  if (flags == &flags_on)
+	    mkglobal = 1;
+	  break;
 	case 'i':
 	  *flags |= att_integer;
+	  break;
+	case 'n':
+	  *flags |= att_nameref;
 	  break;
 	case 'r':
 	  *flags |= att_readonly;
@@ -179,7 +187,10 @@ declare_internal (list, local_var)
     {
       for (any_failed = 0; list; list = list->next)
 	{
-	  pflag = show_name_attributes (list->word->word, nodefs);
+	  if (flags_on & att_function)
+	    pflag = show_func_attributes (list->word->word, nodefs);
+	  else
+	    pflag = show_name_attributes (list->word->word, nodefs);
 	  if (pflag)
 	    {
 	      sh_notfound (list->word->word);
@@ -216,6 +227,28 @@ declare_internal (list, local_var)
 	}
       else
 	value = "";
+
+      /* Do some lexical error checking on the LHS and RHS of the assignment
+	 that is specific to nameref variables. */
+      if (flags_on & att_nameref)
+	{
+#if defined (ARRAY_VARIABLES)
+	  if (valid_array_reference (name))
+	    {
+	      builtin_error (_("%s: reference variable cannot be an array"), name);
+	      assign_error++;
+	      NEXT_VARIABLE ();
+	    }
+	  else
+#endif
+	  /* disallow self references at global scope */
+	  if (STREQ (name, value) && variable_context == 0)
+	    {
+	      builtin_error (_("%s: nameref variable self references not allowed"), name);
+	      assign_error++;
+	      NEXT_VARIABLE ();
+	    }
+	}
 
 #if defined (ARRAY_VARS)
       compound_array_assign = simple_array_assign = 0;
@@ -255,16 +288,17 @@ declare_internal (list, local_var)
       /* XXX - this has consequences when we're making a local copy of a
 	       variable that was in the temporary environment.  Watch out
 	       for this. */
-      if (variable_context && ((flags_on & att_function) == 0))
+      refvar = (SHELL_VAR *)NULL;
+      if (variable_context && mkglobal == 0 && ((flags_on & att_function) == 0))
 	{
 #if defined (ARRAY_VARS)
 	  if (flags_on & att_assoc)
 	    var = make_local_assoc_variable (name);
 	  else if ((flags_on & att_array) || making_array_special)
-	    var = make_local_array_variable (name);
+	    var = make_local_array_variable (name, making_array_special);
 	  else
 #endif
-	  var = make_local_variable (name);
+	    var = make_local_variable (name);	/* sets att_invisible for new vars */
 	  if (var == 0)
 	    {
 	      any_failed++;
@@ -336,26 +370,73 @@ declare_internal (list, local_var)
       else		/* declare -[aAirx] name [name...] */
 	{
 	  /* Non-null if we just created or fetched a local variable. */
+	  /* Here's what ksh93 seems to do.  If we are modifying an existing
+	     nameref variable, we don't follow the nameref chain past the last
+	     nameref, and we set the nameref variable's value so future
+	     references to that variable will return the value of the variable
+	     we're assigning right now. */
+	  if (var == 0 && (flags_on & att_nameref))
+	    {
+	      /* See if we are trying to modify an existing nameref variable */
+	      var = mkglobal ? find_global_variable_last_nameref (name) : find_variable_last_nameref (name);
+	      if (var && nameref_p (var) == 0)
+		var = 0;
+	    }
+	  /* However, if we're turning off the nameref attribute on an existing
+	     nameref variable, we first follow the nameref chain to the end,
+	     modify the value of the variable this nameref variable references,
+	     *CHANGING ITS VALUE AS A SIDE EFFECT* then turn off the nameref
+	     flag *LEAVING THE NAMEREF VARIABLE'S VALUE UNCHANGED* */
+	  else if (var == 0 && (flags_off & att_nameref))
+	    {
+	      /* See if we are trying to modify an existing nameref variable */
+	      refvar = mkglobal ? find_global_variable_last_nameref (name) : find_variable_last_nameref (name);
+	      if (refvar && nameref_p (refvar) == 0)
+		refvar = 0;
+	      if (refvar)
+		var = mkglobal ? find_global_variable (nameref_cell (refvar)) : find_variable (nameref_cell (refvar));
+	    }
+	
 	  if (var == 0)
-	    var = find_variable (name);
+	    var = mkglobal ? find_global_variable (name) : find_variable (name);
 
 	  if (var == 0)
 	    {
 #if defined (ARRAY_VARS)
 	      if (flags_on & att_assoc)
-		var = make_new_assoc_variable (name);
+		{
+		  var = make_new_assoc_variable (name);
+		  if (offset == 0)
+		    VSETATTR (var, att_invisible);
+		}
 	      else if ((flags_on & att_array) || making_array_special)
-		var = make_new_array_variable (name);
+		{
+		  var = make_new_array_variable (name);
+		  if (offset == 0)
+		    VSETATTR (var, att_invisible);
+		}
 	      else
 #endif
 
 	      if (offset)
-		var = bind_variable (name, "", 0);
+		var = mkglobal ? bind_global_variable (name, "", 0) : bind_variable (name, "", 0);
 	      else
 		{
-		  var = bind_variable (name, (char *)NULL, 0);
+		  var = mkglobal ? bind_global_variable (name, (char *)NULL, 0) : bind_variable (name, (char *)NULL, 0);
 		  VSETATTR (var, att_invisible);
 		}
+	    }
+	  /* Can't take an existing array variable and make it a nameref */
+	  else if ((array_p (var) || assoc_p (var)) && (flags_on & att_nameref))
+	    {
+	      builtin_error (_("%s: reference variable cannot be an array"), name);
+	      assign_error++;
+	      NEXT_VARIABLE ();
+	    }
+	  else if (flags_on & att_nameref)
+	    {
+	      /* ksh93 compat: turning on nameref attribute turns off -ilu */
+	      VUNSETATTR (var, att_integer|att_uppercase|att_lowercase|att_capcase);
 	    }
 
 	  /* Cannot use declare +r to turn off readonly attribute. */ 
@@ -422,6 +503,25 @@ declare_internal (list, local_var)
 	    var = convert_var_to_array (var);
 #endif /* ARRAY_VARS */
 
+	  /* XXX - we note that we are turning on nameref attribute and defer
+	     setting it until the assignment has been made so we don't do an
+	     inadvertent nameref lookup.  Might have to do the same thing for
+	     flags_off&att_nameref. */
+	  /* XXX - ksh93 makes it an error to set a readonly nameref variable
+	     using a single typeset command. */
+	  onref = (flags_on & att_nameref);
+	  flags_on &= ~att_nameref;
+#if defined (ARRAY_VARS)
+	  if (array_p (var) || assoc_p (var)
+		|| (offset && compound_array_assign)
+		|| simple_array_assign)
+	    onref = 0;		/* array variables may not be namerefs */
+#endif
+
+	  /* ksh93 seems to do this */
+	  offref = (flags_off & att_nameref);
+	  flags_off &= ~att_nameref;
+
 	  VSETATTR (var, flags_on);
 	  VUNSETATTR (var, flags_off);
 
@@ -434,12 +534,19 @@ declare_internal (list, local_var)
 	      *subscript_start = '[';	/* ] */
 	      var = assign_array_element (name, value, 0);	/* XXX - not aflags */
 	      *subscript_start = '\0';
+	      if (var == 0)	/* some kind of assignment error */
+		{
+		  assign_error++;
+		  flags_on |= onref;
+		  flags_off |= offref;
+		  NEXT_VARIABLE ();
+		}
 	    }
 	  else if (simple_array_assign)
 	    {
 	      /* let bind_{array,assoc}_variable take care of this. */
 	      if (assoc_p (var))
-		bind_assoc_variable (var, name, "0", value, aflags);
+		bind_assoc_variable (var, name, savestring ("0"), value, aflags);
 	      else
 		bind_array_variable (name, 0, value, aflags);
 	    }
@@ -448,7 +555,19 @@ declare_internal (list, local_var)
 	  /* bind_variable_value duplicates the essential internals of
 	     bind_variable() */
 	  if (offset)
-	    bind_variable_value (var, value, aflags);
+	    {
+	      if (onref)
+		aflags |= ASS_NAMEREF;
+	      v = bind_variable_value (var, value, aflags);
+	      if (v == 0 && onref)
+		{
+		  sh_invalidid (value);
+		  assign_error++;
+		  /* XXX - unset this variable? or leave it as normal var? */
+		  delete_var (var->name, mkglobal ? global_variables : shell_variables);
+		  NEXT_VARIABLE ();
+		}
+	    }
 
 	  /* If we found this variable in the temporary environment, as with
 	     `var=value declare -x var', make sure it is treated identically
@@ -477,6 +596,17 @@ declare_internal (list, local_var)
 	      VSETATTR (var, att_propagate);
 	    }
 	}
+
+      /* Turn on nameref attribute we deferred above. */
+      /* XXX - should we turn on the noassign attribute for consistency with
+	 ksh93 when we turn on the nameref attribute? */
+      VSETATTR (var, onref);
+      flags_on |= onref;
+      VUNSETATTR (var, offref);
+      flags_off |= offref;
+      /* Yuck.  ksh93 compatibility */
+      if (refvar)
+ 	VUNSETATTR (refvar, flags_off);
 
       stupidly_hack_special_variables (name);
 

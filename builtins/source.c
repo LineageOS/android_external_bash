@@ -34,6 +34,8 @@
 #endif /* !errno */
 
 extern int posixly_correct;
+extern int last_command_exit_value;
+extern int executing_command_builtin;
 
 static void maybe_pop_dollar_vars __P((void));
 
@@ -105,6 +107,11 @@ source_builtin (list)
       if (source_searches_cwd == 0)
 	{
 	  builtin_error (_("%s: file not found"), list->word->word);
+	  if (posixly_correct && interactive_shell == 0 && executing_command_builtin == 0)
+	    {
+	      last_command_exit_value = 1;
+	      jump_to_top_level (EXITPROG);
+	    }
 	  return (EXECUTION_FAILURE);
 	}
       else

@@ -1,7 +1,7 @@
 /* printf.c, created from printf.def. */
 #line 22 "./printf.def"
 
-#line 48 "./printf.def"
+#line 55 "./printf.def"
 
 #include <config.h>
 
@@ -29,8 +29,11 @@
 #  include <inttypes.h>
 #endif
 
+#include "posixtime.h"
 #include "../bashansi.h"
 #include "../bashintl.h"
+
+#define NEED_STRFTIME_DECL
 
 #include "../shell.h"
 #include "shmbutil.h"
@@ -110,7 +113,8 @@
       else if (vbuf) \
 	vbuf[0] = 0; \
       terminate_immediately--; \
-      fflush (stdout); \
+      if (ferror (stdout) == 0) \
+	fflush (stdout); \
       if (ferror (stdout)) \
 	{ \
 	  sh_wrerror (); \
@@ -124,6 +128,8 @@
 #define SKIP1 "#'-+ 0"
 #define LENMODS "hjlLtz"
 
+extern time_t shell_start_time;
+
 #if !HAVE_ASPRINTF
 extern int asprintf __P((char **, const char *, ...)) __attribute__((__format__ (printf, 2, 3)));
 #endif
@@ -134,7 +140,7 @@ extern int vsnprintf __P((char *, size_t, const char *, va_list)) __attribute__(
 
 static void printf_erange __P((char *));
 static int printstr __P((char *, char *, int, int, int));
-static int tescape __P((char *, char *, int *));
+static int tescape __P((char *, char *, int *, int *));
 static char *bexpand __P((char *, int, int *, int *));
 static char *vbadd __P((char *, int));
 static int vbprintf __P((const char *, ...)) __attribute__((__format__ (printf, 1, 2)));
@@ -181,6 +187,10 @@ printf_builtin (list)
   int ch, fieldwidth, precision;
   int have_fieldwidth, have_precision;
   char convch, thisch, nextch, *format, *modstart, *fmt, *start;
+#if defined (HANDLE_MULTIBYTE)
+  char mbch[25];		/* 25 > MB_LEN_MAX, plus can handle 4-byte UTF-8 and large Unicode characters*/
+  int mbind, mblen;
+#endif
 
   conversion_error = 0;
   retval = EXECUTION_SUCCESS;
@@ -201,6 +211,8 @@ printf_builtin (list)
 #endif
 	    {
 	      vflag = 1;
+	      if (vbsize == 0)
+		vbuf = xmalloc (vbsize = 16);
 	      vblen = 0;
 	      if (vbuf)
 		vbuf[0] = 0;
@@ -258,8 +270,17 @@ printf_builtin (list)
 	      fmt++;
 	      /* A NULL third argument to tescape means to bypass the
 		 special processing for arguments to %b. */
-	      fmt += tescape (fmt, &nextch, (int *)NULL);
+#if defined (HANDLE_MULTIBYTE)
+	      /* Accommodate possible use of \u or \U, which can result in
+		 multibyte characters */
+	      memset (mbch, '\0', sizeof (mbch));
+	      fmt += tescape (fmt, mbch, &mblen, (int *)NULL);
+	      for (mbind = 0; mbind < mblen; mbind++)
+	        PC (mbch[mbind]);
+#else
+	      fmt += tescape (fmt, &nextch, (int *)NULL, (int *)NULL);
 	      PC (nextch);
+#endif
 	      fmt--;	/* for loop will increment it for us again */
 	      continue;
 	    }
@@ -358,6 +379,82 @@ printf_builtin (list)
 		break;
 	      }
 
+	    case '(':
+	      {
+		char *timefmt, timebuf[128], *t;
+		int n;
+		intmax_t arg;
+		time_t secs;
+		struct tm *tm;
+
+		modstart[1] = nextch;	/* restore char after left paren */
+		timefmt = xmalloc (strlen (fmt) + 3);
+		fmt++;	/* skip over left paren */
+		for (t = timefmt, n = 1; *fmt; )
+		  {
+		    if (*fmt == '(')
+		      n++;
+		    else if (*fmt == ')')
+		      n--;
+		    if (n == 0)
+		      break;
+		    *t++ = *fmt++;
+		  }
+		*t = '\0';
+		if (*++fmt != 'T')
+		  {
+		    builtin_warning (_("`%c': invalid time format specification"), *fmt);
+		    fmt = start;
+		    free (timefmt);
+		    PC (*fmt);
+		    continue;
+		  }
+		if (timefmt[0] == '\0')
+		  {
+		    timefmt[0] = '%';
+		    timefmt[1] = 'X';	/* locale-specific current time - should we use `+'? */
+		    timefmt[2] = '\0';
+		  }
+		/* argument is seconds since the epoch with special -1 and -2 */
+		/* default argument is equivalent to -1; special case */
+		arg = garglist ? getintmax () : -1;
+		if (arg == -1)
+		  secs = NOW;		/* roughly date +%s */
+		else if (arg == -2)
+		  secs = shell_start_time;	/* roughly $SECONDS */
+		else
+		  secs = arg;
+#if defined (HAVE_TZSET)
+		sv_tz ("TZ");		/* XXX -- just make sure */
+#endif
+		tm = localtime (&secs);
+		if (tm == 0)
+		  {
+		    secs = 0;
+		    tm = localtime (&secs);
+		  }
+		n = tm ? strftime (timebuf, sizeof (timebuf), timefmt, tm) : 0;
+		free (timefmt);
+		if (n == 0)
+		  timebuf[0] = '\0';
+		else
+		  timebuf[sizeof(timebuf) - 1] = '\0';
+		/* convert to %s format that preserves fieldwidth and precision */
+		modstart[0] = 's';
+		modstart[1] = '\0';
+		n = printstr (start, timebuf, strlen (timebuf), fieldwidth, precision);	/* XXX - %s for now */
+		if (n < 0)
+		  {
+		    if (ferror (stdout) == 0)
+		      {
+			sh_wrerror ();
+			clearerr (stdout);
+		      }
+		    PRETURN (EXECUTION_FAILURE);
+		  }
+		break;
+	      }
+
 	    case 'n':
 	      {
 		char *var;
@@ -392,8 +489,11 @@ printf_builtin (list)
 		    r = printstr (start, xp, rlen, fieldwidth, precision);
 		    if (r < 0)
 		      {
-		        sh_wrerror ();
-			clearerr (stdout);
+			if (ferror (stdout) == 0)
+			  {
+		            sh_wrerror ();
+			    clearerr (stdout);
+			  }
 		        retval = EXECUTION_FAILURE;
 		      }
 		    free (xp);
@@ -416,7 +516,7 @@ printf_builtin (list)
 		else if (ansic_shouldquote (p))
 		  xp = ansic_quote (p, 0, (int *)0);
 		else
-		  xp = sh_backslash_quote (p);
+		  xp = sh_backslash_quote (p, 0, 1);
 		if (xp)
 		  {
 		    /* Use printstr to get fieldwidth and precision right. */
@@ -515,8 +615,7 @@ printf_builtin (list)
 
       if (ferror (stdout))
 	{
-	  sh_wrerror ();
-	  clearerr (stdout);
+	  /* PRETURN will print error message. */
 	  PRETURN (EXECUTION_FAILURE);
 	}
     }
@@ -549,12 +648,9 @@ printstr (fmt, string, len, fieldwidth, precision)
 #endif
   int padlen, nc, ljust, i;
   int fw, pr;			/* fieldwidth and precision */
+  intmax_t mfw, mpr;
 
-#if 0
-  if (string == 0 || *string == '\0')
-#else
   if (string == 0 || len == 0)
-#endif
     return 0;
 
 #if 0
@@ -565,6 +661,8 @@ printstr (fmt, string, len, fieldwidth, precision)
 
   ljust = fw = 0;
   pr = -1;
+  mfw = 0;
+  mpr = -1;
 
   /* skip flags */
   while (strchr (SKIP1, *fmt))
@@ -574,7 +672,7 @@ printstr (fmt, string, len, fieldwidth, precision)
       fmt++;
     }
 
-  /* get fieldwidth, if present */
+  /* get fieldwidth, if present.  rely on caller to clamp fieldwidth at INT_MAX */
   if (*fmt == '*')
     {
       fmt++;
@@ -587,9 +685,11 @@ printstr (fmt, string, len, fieldwidth, precision)
     }
   else if (DIGIT (*fmt))
     {
-      fw = *fmt++ - '0';
+      mfw = *fmt++ - '0';
       while (DIGIT (*fmt))
-	fw = (fw * 10) + (*fmt++ - '0');
+	mfw = (mfw * 10) + (*fmt++ - '0');
+      /* Error if fieldwidth > INT_MAX here? */
+      fw = (mfw < 0 || mfw > INT_MAX) ? INT_MAX : mfw;
     }
 
   /* get precision, if present */
@@ -603,9 +703,11 @@ printstr (fmt, string, len, fieldwidth, precision)
 	}
       else if (DIGIT (*fmt))
 	{
-	  pr = *fmt++ - '0';
+	  mpr = *fmt++ - '0';
 	  while (DIGIT (*fmt))
-	    pr = (pr * 10) + (*fmt++ - '0');
+	    mpr = (mpr * 10) + (*fmt++ - '0');
+	  /* Error if precision > INT_MAX here? */
+	  pr = (mpr < 0 || mpr > INT_MAX) ? INT_MAX : mpr;
 	}
     }
 
@@ -613,7 +715,7 @@ printstr (fmt, string, len, fieldwidth, precision)
   /* If we remove this, get rid of `s'. */
   if (*fmt != 'b' && *fmt != 'q')
     {
-      internal_error ("format parsing problem: %s", s);
+      internal_error (_("format parsing problem: %s"), s);
       fw = pr = 0;
     }
 #endif
@@ -656,15 +758,18 @@ printstr (fmt, string, len, fieldwidth, precision)
    do the \c short-circuiting, and \c is treated as an unrecognized escape
    sequence; we also bypass the other processing specific to %b arguments.  */
 static int
-tescape (estart, cp, sawc)
+tescape (estart, cp, lenp, sawc)
      char *estart;
      char *cp;
-     int *sawc;
+     int *lenp, *sawc;
 {
   register char *p;
   int temp, c, evalue;
+  unsigned long uvalue;
 
   p = estart;
+  if (lenp)
+    *lenp = 1;
 
   switch (c = *p++)
     {
@@ -700,14 +805,10 @@ tescape (estart, cp, sawc)
 	*cp = evalue & 0xFF;
 	break;
 
-      /* And, as another extension, we allow \xNNN, where each N is a
+      /* And, as another extension, we allow \xNN, where each N is a
 	 hex digit. */
       case 'x':
-#if 0
-	for (evalue = 0; ISXDIGIT ((unsigned char)*p); p++)
-#else
 	for (temp = 2, evalue = 0; ISXDIGIT ((unsigned char)*p) && temp--; p++)
-#endif
 	  evalue = (evalue * 16) + HEXVALUE (*p);
 	if (p == estart + 1)
 	  {
@@ -718,6 +819,30 @@ tescape (estart, cp, sawc)
 	*cp = evalue & 0xFF;
 	break;
 
+#if defined (HANDLE_MULTIBYTE)
+      case 'u':
+      case 'U':
+	temp = (c == 'u') ? 4 : 8;	/* \uNNNN \UNNNNNNNN */
+	for (uvalue = 0; ISXDIGIT ((unsigned char)*p) && temp--; p++)
+	  uvalue = (uvalue * 16) + HEXVALUE (*p);
+	if (p == estart + 1)
+	  {
+	    builtin_error (_("missing unicode digit for \\%c"), c);
+	    *cp = '\\';
+	    return 0;
+	  }
+	if (uvalue <= 0x7f)		/* <= 0x7f translates directly */
+	  *cp = uvalue;
+	else
+	  {
+	    temp = u32cconv (uvalue, cp);
+	    cp[temp] = '\0';
+	    if (lenp)
+	      *lenp = temp;
+	  }
+	break;
+#endif
+	
       case '\\':	/* \\ -> \ */
 	*cp = c;
 	break;
@@ -756,12 +881,12 @@ bexpand (string, len, sawc, lenp)
 {
   int temp;
   char *ret, *r, *s, c;
-
-#if 0
-  if (string == 0 || *string == '\0')
-#else
-  if (string == 0 || len == 0)
+#if defined (HANDLE_MULTIBYTE)
+  char mbch[25];
+  int mbind, mblen;
 #endif
+
+  if (string == 0 || len == 0)
     {
       if (sawc)
 	*sawc = 0;
@@ -780,7 +905,12 @@ bexpand (string, len, sawc, lenp)
 	  continue;
 	}
       temp = 0;
-      s += tescape (s, &c, &temp);
+#if defined (HANDLE_MULTIBYTE)
+      memset (mbch, '\0', sizeof (mbch));
+      s += tescape (s, mbch, &mblen, &temp);
+#else
+      s += tescape (s, &c, (int *)NULL, &temp);
+#endif
       if (temp)
 	{
 	  if (sawc)
@@ -788,7 +918,12 @@ bexpand (string, len, sawc, lenp)
 	  break;
 	}
 
+#if defined (HANDLE_MULTIBYTE)
+      for (mbind = 0; mbind < mblen; mbind++)
+	*r++ = mbch[mbind];
+#else
       *r++ = c;
+#endif      
     }
 
   *r = '\0';
@@ -923,6 +1058,9 @@ getint ()
   intmax_t ret;
 
   ret = getintmax ();
+
+  if (garglist == 0)
+    return ret;
 
   if (ret > INT_MAX)
     {
@@ -1064,12 +1202,19 @@ bind_printf_variable (name, value, flags)
      char *value;
      int flags;
 {
+  SHELL_VAR *v;
+
 #if defined (ARRAY_VARS)
   if (valid_array_reference (name) == 0)
-    return (bind_variable (name, value, flags));
+    v = bind_variable (name, value, flags);
   else
-    return (assign_array_element (name, value, flags));
+    v = assign_array_element (name, value, flags);
 #else /* !ARRAY_VARS */
-  return bind_variable (name, value, flags);
+  v = bind_variable (name, value, flags);
 #endif /* !ARRAY_VARS */
+
+  if (v && readonly_p (v) == 0 && noassign_p (v) == 0)
+    VUNSETATTR (v, att_invisible);
+
+  return v;
 }

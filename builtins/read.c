@@ -1,7 +1,7 @@
 /* read.c, created from read.def. */
 #line 22 "./read.def"
 
-#line 65 "./read.def"
+#line 67 "./read.def"
 
 #include <config.h>
 
@@ -41,9 +41,16 @@
 #  include "input.h"
 #endif
 
+#include "shmbutil.h"
+
 #if !defined(errno)
 #include <errno.h>
 #endif
+
+extern void run_pending_traps __P((void));
+
+extern int posixly_correct;
+extern int trapped_signal_received;
 
 struct ttsave
 {
@@ -67,15 +74,26 @@ static void ttyrestore __P((struct ttsave *));
 static sighandler sigalrm __P((int));
 static void reset_alarm __P((void));
 
-static procenv_t alrmbuf;
+/* Try this to see what the rest of the shell can do with the information. */
+procenv_t alrmbuf;
+int sigalrm_seen;
+
+static int reading;
 static SigHandler *old_alrm;
 static unsigned char delim;
 
+/* In all cases, SIGALRM just sets a flag that we check periodically.  This
+   avoids problems with the semi-tricky stuff we do with the xfree of
+   input_string at the top of the unwind-protect list (see below). */
+
+/* Set a flag that CHECK_ALRM can check.  This relies on zread calling
+   trap.c:check_signals_and_traps(), which knows about sigalrm_seen and
+   alrmbuf. */
 static sighandler
 sigalrm (s)
      int s;
 {
-  longjmp (alrmbuf, 1);
+  sigalrm_seen = 1;
 }
 
 static void
@@ -98,7 +116,7 @@ read_builtin (list)
   register char *varname;
   int size, i, nr, pass_next, saw_escape, eof, opt, retval, code, print_ps2;
   int input_is_tty, input_is_pipe, unbuffered_read, skip_ctlesc, skip_ctlnul;
-  int raw, edit, nchars, silent, have_timeout, ignore_delim, fd;
+  int raw, edit, nchars, silent, have_timeout, ignore_delim, fd, lastsig, t_errno;
   unsigned int tmsec, tmusec;
   long ival, uval;
   intmax_t intval;
@@ -139,6 +157,9 @@ read_builtin (list)
 #endif
   USE_VAR(list);
   USE_VAR(ps2);
+  USE_VAR(lastsig);
+
+  sigalrm_seen = reading = 0;
 
   i = 0;		/* Index into the string that we are reading. */
   raw = edit = 0;	/* Not reading raw input by default. */
@@ -246,6 +267,18 @@ read_builtin (list)
     return (input_avail (fd) ? EXECUTION_SUCCESS : EXECUTION_FAILURE);
 #endif
 
+  /* Convenience: check early whether or not the first of possibly several
+     variable names is a valid identifier, and bail early if so. */
+#if defined (ARRAY_VARS)
+  if (list && legal_identifier (list->word->word) == 0 && valid_array_reference (list->word->word) == 0)
+#else
+  if (list && legal_identifier (list->word->word) == 0)
+#endif
+    {
+      sh_invalidid (list->word->word);
+      return (EXECUTION_FAILURE);
+    }
+
   /* If we're asked to ignore the delimiter, make sure we do. */
   if (ignore_delim)
     delim = -1;
@@ -320,15 +353,26 @@ read_builtin (list)
 
   if (tmsec > 0 || tmusec > 0)
     {
-      code = setjmp (alrmbuf);
+      code = setjmp_nosigs (alrmbuf);
       if (code)
 	{
+	  sigalrm_seen = 0;
 	  /* Tricky.  The top of the unwind-protect stack is the free of
 	     input_string.  We want to run all the rest and use input_string,
-	     so we have to remove it from the stack. */
-	  remove_unwind_protect ();
-	  run_unwind_frame ("read_builtin");
+	     so we have to save input_string temporarily, run the unwind-
+	     protects, then restore input_string so we can use it later */
+	  orig_input_string = 0;
 	  input_string[i] = '\0';	/* make sure it's terminated */
+	  if (i == 0)
+	    {
+	      t = (char *)xmalloc (1);
+	      t[0] = 0;
+	    }
+	  else
+	    t = savestring (input_string);
+
+	  run_unwind_frame ("read_builtin");
+	  input_string = t;
 	  retval = 128+SIGALRM;
 	  goto assign_vars;
 	}
@@ -336,7 +380,10 @@ read_builtin (list)
       add_unwind_protect (reset_alarm, (char *)NULL);
 #if defined (READLINE)
       if (edit)
-	add_unwind_protect (reset_attempted_completion_function, (char *)NULL);
+	{
+	  add_unwind_protect (reset_attempted_completion_function, (char *)NULL);
+	  add_unwind_protect (bashline_reset_event_hook, (char *)NULL);
+	}
 #endif
       falarm (tmsec, tmusec);
     }
@@ -394,10 +441,12 @@ read_builtin (list)
   /* This *must* be the top unwind-protect on the stack, so the manipulation
      of the unwind-protect stack after the realloc() works right. */
   add_unwind_protect (xfree, input_string);
-  interrupt_immediately++;
-  terminate_immediately++;
 
-  unbuffered_read = (nchars > 0) || (delim != '\n') || input_is_pipe;
+  CHECK_ALRM;
+  if ((nchars > 0) && (input_is_tty == 0) && ignore_delim)	/* read -N */
+    unbuffered_read = 2;
+  else if ((nchars > 0) || (delim != '\n') || input_is_pipe)
+    unbuffered_read = 1;
 
   if (prompt && edit == 0)
     {
@@ -412,6 +461,8 @@ read_builtin (list)
   ps2 = 0;
   for (print_ps2 = eof = retval = 0;;)
     {
+      CHECK_ALRM;
+
 #if defined (READLINE)
       if (edit)
 	{
@@ -422,7 +473,9 @@ read_builtin (list)
 	    }
 	  if (rlbuf == 0)
 	    {
+	      reading = 1;
 	      rlbuf = edit_line (prompt ? prompt : "", itext);
+	      reading = 0;
 	      rlind = 0;
 	    }
 	  if (rlbuf == 0)
@@ -445,26 +498,58 @@ read_builtin (list)
 	  print_ps2 = 0;
 	}
 
-      if (unbuffered_read)
-	retval = zread (fd, &c, 1);
+#if 0
+      if (posixly_correct == 0)
+	interrupt_immediately++;
+#endif
+      reading = 1;
+      if (unbuffered_read == 2)
+	retval = posixly_correct ? zreadintr (fd, &c, 1) : zreadn (fd, &c, nchars - nr);
+      else if (unbuffered_read)
+	retval = posixly_correct ? zreadintr (fd, &c, 1) : zread (fd, &c, 1);
       else
-	retval = zreadc (fd, &c);
+	retval = posixly_correct ? zreadcintr (fd, &c) : zreadc (fd, &c);
+      reading = 0;
+#if 0
+      if (posixly_correct == 0)
+	interrupt_immediately--;
+#endif
 
       if (retval <= 0)
 	{
+	  if (retval < 0 && errno == EINTR)
+	    {
+	      lastsig = LASTSIG();
+	      if (lastsig == 0)
+		lastsig = trapped_signal_received;
+	      run_pending_traps ();	/* because interrupt_immediately is not set */
+	    }
+	  else
+	    lastsig = 0;
+	  CHECK_TERMSIG;
 	  eof = 1;
 	  break;
 	}
+
+      CHECK_ALRM;
 
 #if defined (READLINE)
 	}
 #endif
 
+      CHECK_ALRM;
       if (i + 4 >= size)	/* XXX was i + 2; use i + 4 for multibyte/read_mbchar */
 	{
-	  input_string = (char *)xrealloc (input_string, size += 128);
-	  remove_unwind_protect ();
-	  add_unwind_protect (xfree, input_string);
+	  char *t;
+	  t = (char *)xrealloc (input_string, size += 128);
+
+	  /* Only need to change unwind-protect if input_string changes */
+	  if (t != input_string)
+	    {
+	      input_string = t;
+	      remove_unwind_protect ();
+	      add_unwind_protect (xfree, input_string);
+	    }
 	}
 
       /* If the next character is to be accepted verbatim, a backslash
@@ -495,8 +580,11 @@ read_builtin (list)
 	  continue;
 	}
 
-      if ((unsigned char)c == delim)
+      if (ignore_delim == 0 && (unsigned char)c == delim)
 	break;
+
+      if (c == '\0' && delim != '\0')
+	continue;		/* skip NUL bytes in input */
 
       if ((skip_ctlesc == 0 && c == CTLESC) || (skip_ctlnul == 0 && c == CTLNUL))
 	{
@@ -506,9 +594,10 @@ read_builtin (list)
 
 add_char:
       input_string[i++] = c;
+      CHECK_ALRM;
 
 #if defined (HANDLE_MULTIBYTE)
-      if (nchars > 0 && MB_CUR_MAX > 1)
+      if (nchars > 0 && MB_CUR_MAX > 1 && is_basic (c) == 0)
 	{
 	  input_string[i] = '\0';	/* for simplicity and debugging */
 	  i += read_mbchar (fd, input_string, i, c, unbuffered_read);
@@ -521,15 +610,16 @@ add_char:
 	break;
     }
   input_string[i] = '\0';
+  CHECK_ALRM;
 
-#if 1
   if (retval < 0)
     {
-      builtin_error (_("read error: %d: %s"), fd, strerror (errno));
+      t_errno = errno;
+      if (errno != EINTR)
+	builtin_error (_("read error: %d: %s"), fd, strerror (errno));
       run_unwind_frame ("read_builtin");
-      return (EXECUTION_FAILURE);
+      return ((t_errno != EINTR) ? EXECUTION_FAILURE : 128+lastsig);
     }
-#endif
 
   if (tmsec > 0 || tmusec > 0)
     reset_alarm ();
@@ -561,9 +651,6 @@ add_char:
 
 assign_vars:
 
-  interrupt_immediately--;
-  terminate_immediately--;
-
 #if defined (ARRAY_VARS)
   /* If -a was given, take the string read, break it into a list of words,
      an assign them to `arrayname' in turn. */
@@ -582,6 +669,14 @@ assign_vars:
 	  xfree (input_string);
 	  return EXECUTION_FAILURE;	/* readonly or noassign */
 	}
+      if (assoc_p (var))
+	{
+          builtin_error (_("%s: cannot convert associative to indexed array"), arrayname);
+	  xfree (input_string);
+	  return EXECUTION_FAILURE;	/* existing associative array */
+	}
+      else if (invisible_p (var))
+	VUNSETATTR (var, att_invisible);
       array_flush (array_cell (var));
 
       alist = list_string (input_string, ifs_chars, 0);
@@ -627,7 +722,7 @@ assign_vars:
 	var = bind_variable ("REPLY", input_string, 0);
       VUNSETATTR (var, att_invisible);
 
-      free (input_string);
+      xfree (input_string);
       return (retval);
     }
 
@@ -671,7 +766,7 @@ assign_vars:
 	      xfree (t1);
 	    }
 	  else
-	    var = bind_read_variable (varname, t);
+	    var = bind_read_variable (varname, t ? t : "");
 	}
       else
 	{
@@ -725,19 +820,24 @@ assign_vars:
     }
 #endif
 
-  if (saw_escape)
+  if (saw_escape && input_string && *input_string)
     {
       t = dequote_string (input_string);
       var = bind_read_variable (list->word->word, t);
       xfree (t);
     }
   else
-    var = bind_read_variable (list->word->word, input_string);
-  stupidly_hack_special_variables (list->word->word);
-  FREE (tofree);
+    var = bind_read_variable (list->word->word, input_string ? input_string : "");
 
   if (var)
-    VUNSETATTR (var, att_invisible);
+    {
+      stupidly_hack_special_variables (list->word->word);
+      VUNSETATTR (var, att_invisible);
+    }
+  else
+    retval = EXECUTION_FAILURE;
+
+  FREE (tofree);
   xfree (orig_input_string);
 
   return (retval);
@@ -747,14 +847,18 @@ static SHELL_VAR *
 bind_read_variable (name, value)
      char *name, *value;
 {
+  SHELL_VAR *v;
+
 #if defined (ARRAY_VARS)
   if (valid_array_reference (name) == 0)
-    return (bind_variable (name, value, 0));
+    v = bind_variable (name, value, 0);
   else
-    return (assign_array_element (name, value, 0));
+    v = assign_array_element (name, value, 0);
 #else /* !ARRAY_VARS */
-  return bind_variable (name, value, 0);
+  v = bind_variable (name, value, 0);
 #endif /* !ARRAY_VARS */
+  return (v == 0 ? v
+		 : ((readonly_p (v) || noassign_p (v)) ? (SHELL_VAR *)NULL : v));
 }
 
 #if defined (HANDLE_MULTIBYTE)
@@ -783,6 +887,7 @@ read_mbchar (fd, string, ind, ch, unbuffered)
       if (ret == (size_t)-2)
 	{
 	  ps = ps_back;
+	  /* We don't want to be interrupted during a multibyte char read */
 	  if (unbuffered)
 	    r = zread (fd, &c, 1);
 	  else
@@ -857,15 +962,19 @@ edit_line (p, itext)
 
   old_attempted_completion_function = rl_attempted_completion_function;
   rl_attempted_completion_function = (rl_completion_func_t *)NULL;
+  bashline_set_event_hook ();
   if (itext)
     {
       old_startup_hook = rl_startup_hook;
       rl_startup_hook = set_itext;
       deftext = itext;
     }
+
   ret = readline (p);
+
   rl_attempted_completion_function = old_attempted_completion_function;
   old_attempted_completion_function = (rl_completion_func_t *)NULL;
+  bashline_reset_event_hook ();
 
   if (ret == 0)
     return ret;

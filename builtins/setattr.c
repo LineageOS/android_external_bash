@@ -44,7 +44,7 @@ export_builtin (list)
   return (set_or_show_attributes (list, att_exported, 0));
 }
 
-#line 103 "./setattr.def"
+#line 104 "./setattr.def"
 
 /* For each variable name in LIST, make that variable readonly.  Given an
    empty LIST, print out all existing readonly variables. */
@@ -313,6 +313,9 @@ show_var_attributes (var, pattr, nodefs)
       if (integer_p (var))
 	flags[i++] = 'i';
 
+      if (nameref_p (var))
+	flags[i++] = 'n';
+
       if (readonly_p (var))
 	flags[i++] = 'r';
 
@@ -378,11 +381,11 @@ show_var_attributes (var, pattr, nodefs)
     printf ("%s\n", var->name);
   else if (function_p (var))
     printf ("%s\n", named_function_string (var->name, function_cell (var), FUNC_MULTILINE|FUNC_EXTERNAL));
-  else if (invisible_p (var))
+  else if (invisible_p (var) || var_isset (var) == 0)
     printf ("%s\n", var->name);
   else
     {
-      x = sh_double_quote (var_isset (var) ? value_cell (var) : "");
+      x = sh_double_quote (value_cell (var));
       printf ("%s=%s\n", var->name, x);
       free (x);
     }
@@ -396,9 +399,31 @@ show_name_attributes (name, nodefs)
 {
   SHELL_VAR *var;
 
-  var = find_variable_internal (name, 1);
+#if 0
+  var = find_variable_tempenv (name);
+#else
+  var = find_variable_noref (name);
+#endif
 
   if (var && invisible_p (var) == 0)
+    {
+      show_var_attributes (var, READONLY_OR_EXPORT, nodefs);
+      return (0);
+    }
+  else
+    return (1);
+}
+
+int
+show_func_attributes (name, nodefs)
+     char *name;
+     int nodefs;
+{
+  SHELL_VAR *var;
+
+  var = find_function (name);
+
+  if (var)
     {
       show_var_attributes (var, READONLY_OR_EXPORT, nodefs);
       return (0);
@@ -412,7 +437,7 @@ set_var_attribute (name, attribute, undo)
      char *name;
      int attribute, undo;
 {
-  SHELL_VAR *var, *tv;
+  SHELL_VAR *var, *tv, *v;
   char *tvalue;
 
   if (undo)
@@ -429,7 +454,18 @@ set_var_attribute (name, attribute, undo)
 
 	  var = bind_variable (tv->name, tvalue, 0);
 	  var->attributes |= tv->attributes & ~att_tempvar;
-	  VSETATTR (tv, att_propagate);
+	  /* This avoids an error message when propagating a read-only var
+	     later on. */
+	  if (var->context == 0 && (attribute & att_readonly))
+	    {
+	      /* Don't bother to set the `propagate to the global variables
+		 table' flag if we've just bound the variable in that table */
+	      v = find_global_variable (tv->name);
+	      if (v != var)
+		VSETATTR (tv, att_propagate);
+	    }
+	  else
+	    VSETATTR (tv, att_propagate);
 	  if (var->context != 0)
 	    VSETATTR (var, att_propagate);
 	  SETVARATTR (tv, attribute, undo);	/* XXX */
@@ -440,7 +476,7 @@ set_var_attribute (name, attribute, undo)
 	}
       else
 	{
-	  var = find_variable_internal (name, 0);
+	  var = find_variable_notempenv (name);
 	  if (var == 0)
 	    {
 	      var = bind_variable (name, (char *)NULL, 0);

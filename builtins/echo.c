@@ -13,9 +13,9 @@
 
 #include "common.h"
 
-#line 67 "./echo.def"
+#line 69 "./echo.def"
 
-#line 82 "./echo.def"
+#line 84 "./echo.def"
 
 #if defined (V9_ECHO)
 #  define VALID_ECHO_OPTIONS "neE"

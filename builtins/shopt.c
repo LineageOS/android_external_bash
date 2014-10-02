@@ -23,6 +23,10 @@
 #include "common.h"
 #include "bashgetopt.h"
 
+#if defined (READLINE)
+#  include "../bashline.h"
+#endif
+
 #if defined (HISTORY)
 #  include "../bashhist.h"
 #endif
@@ -46,6 +50,8 @@ extern int gnu_error_format;
 extern int check_jobs_at_exit;
 extern int autocd;
 extern int glob_star;
+extern int glob_asciirange;
+extern int lastpipe_opt;
 
 #if defined (EXTENDED_GLOB)
 extern int extended_glob;
@@ -55,7 +61,8 @@ extern int extended_glob;
 extern int hist_verify, history_reediting, perform_hostname_completion;
 extern int no_empty_command_completion;
 extern int force_fignore;
-extern int dircomplete_spelling;
+extern int dircomplete_spelling, dircomplete_expand;
+extern int complete_fullquote;
 
 extern int enable_hostname_completion __P((int));
 #endif
@@ -82,10 +89,16 @@ static int set_compatibility_level __P((char *, int));
 static int set_restricted_shell __P((char *, int));
 #endif
 
+#if defined (READLINE)
+static int shopt_set_complete_direxpand __P((char *, int));
+#endif
+
 static int shopt_login_shell;
 static int shopt_compat31;
 static int shopt_compat32;
 static int shopt_compat40;
+static int shopt_compat41;
+static int shopt_compat42;
 
 typedef int shopt_set_func_t __P((char *, int));
 
@@ -108,7 +121,11 @@ static struct {
   { "compat31", &shopt_compat31, set_compatibility_level },
   { "compat32", &shopt_compat32, set_compatibility_level },
   { "compat40", &shopt_compat40, set_compatibility_level },
+  { "compat41", &shopt_compat41, set_compatibility_level },
+  { "compat42", &shopt_compat41, set_compatibility_level },
 #if defined (READLINE)
+  { "complete_fullquote", &complete_fullquote, (shopt_set_func_t *)NULL},
+  { "direxpand", &dircomplete_expand, shopt_set_complete_direxpand },
   { "dirspell", &dircomplete_spelling, (shopt_set_func_t *)NULL },
 #endif
   { "dotglob", &glob_dot_filenames, (shopt_set_func_t *)NULL },
@@ -126,6 +143,7 @@ static struct {
   { "force_fignore", &force_fignore, (shopt_set_func_t *)NULL },
 #endif
   { "globstar", &glob_star, (shopt_set_func_t *)NULL },
+  { "globasciiranges", &glob_asciirange, (shopt_set_func_t *)NULL },
   { "gnu_errfmt", &gnu_error_format, (shopt_set_func_t *)NULL },
 #if defined (HISTORY)
   { "histappend", &force_append_history, (shopt_set_func_t *)NULL },
@@ -137,6 +155,7 @@ static struct {
 #endif
   { "huponexit", &hup_on_exit, (shopt_set_func_t *)NULL },
   { "interactive_comments", &interactive_comments, set_shellopts_after_change },
+  { "lastpipe", &lastpipe_opt, (shopt_set_func_t *)NULL },
 #if defined (HISTORY)
   { "lithist", &literal_history, (shopt_set_func_t *)NULL },
 #endif
@@ -247,9 +266,11 @@ reset_shopt_options ()
   allow_null_glob_expansion = glob_dot_filenames = 0;
   cdable_vars = mail_warning = 0;
   no_exit_on_failed_exec = print_shift_error = 0;
-  check_hashed_filenames = cdspelling = expand_aliases = check_window_size = 0;
+  check_hashed_filenames = cdspelling = expand_aliases = 0;
 
   source_uses_path = promptvars = 1;
+
+  check_window_size = CHECKWINSIZE_DEFAULT;
 
 #if defined (EXTENDED_GLOB)
   extended_glob = 0;
@@ -470,16 +491,18 @@ set_compatibility_level (option_name, mode)
      char *option_name;
      int mode;
 {
-  /* Need to change logic here as we add more compatibility levels */
+  int ind;
 
-  /* First, check option_name so we can turn off other compat options when
-     one is set. */
-  if (mode && option_name[6] == '3' && option_name[7] == '1')
-    shopt_compat32 = shopt_compat40 = 0;
-  else if (mode && option_name[6] == '3' && option_name[7] == '2')
-    shopt_compat31 = shopt_compat40 = 0;
-  else if (mode && option_name[6] == '4' && option_name[7] == '0')
-    shopt_compat31 = shopt_compat32 = 0;
+  /* If we're setting something, redo some of the work we did above in
+     toggle_shopt().  Unset everything and reset the appropriate option
+     based on OPTION_NAME. */
+  if (mode)
+    {
+      shopt_compat31 = shopt_compat32 = 0;
+      shopt_compat40 = shopt_compat41 = shopt_compat42 = 0;
+      ind = find_shopt (option_name);
+      *shopt_vars[ind].value = mode;
+    }
 
   /* Then set shell_compatibility_level based on what remains */
   if (shopt_compat31)
@@ -488,10 +511,49 @@ set_compatibility_level (option_name, mode)
     shell_compatibility_level = 32;
   else if (shopt_compat40)
     shell_compatibility_level = 40;
+  else if (shopt_compat41)
+    shell_compatibility_level = 41;
+  else if (shopt_compat42)
+    shell_compatibility_level = 42;
   else
     shell_compatibility_level = DEFAULT_COMPAT_LEVEL;
+
   return 0;
 }
+
+/* Set and unset the various compatibility options from the value of
+   shell_compatibility_level; used by sv_shcompat */
+void
+set_compatibility_opts ()
+{
+  shopt_compat31 = shopt_compat32 = shopt_compat40 = shopt_compat41 = shopt_compat42 = 0;
+  switch (shell_compatibility_level)
+    {
+      case DEFAULT_COMPAT_LEVEL:
+	break;
+      case 42:
+	shopt_compat42 = 1; break;
+      case 41:
+	shopt_compat41 = 1; break;
+      case 40:
+	shopt_compat40 = 1; break;
+      case 32:
+	shopt_compat32 = 1; break;
+      case 31:
+	shopt_compat31 = 1; break;
+    }
+}
+
+#if defined (READLINE)
+static int
+shopt_set_complete_direxpand (option_name, mode)
+     char *option_name;
+     int mode;
+{
+  set_directory_hook ();
+  return 0;
+}
+#endif
 
 #if defined (RESTRICTED_SHELL)
 /* Don't allow the value of restricted_shell to be modified. */

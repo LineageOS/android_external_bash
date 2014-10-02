@@ -1,6 +1,6 @@
 /* xmbsrtowcs.c -- replacement function for mbsrtowcs */
 
-/* Copyright (C) 2002-2010 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2013 Free Software Foundation, Inc.
 
    This file is part of GNU Bash, the Bourne Again SHell.
 
@@ -34,6 +34,8 @@
 #include <shmbutil.h>
 
 #if HANDLE_MULTIBYTE
+
+#define WSBUF_INC 32
 
 #ifndef FREE
 #  define FREE(x)	do { if (x) free (x); } while (0)
@@ -148,7 +150,7 @@ xdupmbstowcs2 (destp, src)
   size_t wsbuf_size;	/* Size of WSBUF */
   size_t wcnum;		/* Number of wide characters in WSBUF */
   mbstate_t state;	/* Conversion State */
-  size_t wcslength;	/* Number of wide characters produced by the conversion. */
+  size_t n, wcslength;	/* Number of wide characters produced by the conversion. */
   const char *end_or_backslash;
   size_t nms;	/* Number of multibyte characters to convert at one time. */
   mbstate_t tmp_state;
@@ -164,14 +166,25 @@ xdupmbstowcs2 (destp, src)
   do
     {
       end_or_backslash = strchrnul(p, '\\');
-      nms = (end_or_backslash - p);
+      nms = end_or_backslash - p;
       if (*end_or_backslash == '\0')
 	nms++;
 
       /* Compute the number of produced wide-characters. */
       tmp_p = p;
       tmp_state = state;
-      wcslength = mbsnrtowcs(NULL, &tmp_p, nms, 0, &tmp_state);
+
+      if (nms == 0 && *p == '\\')	/* special initial case */
+	nms = wcslength = 1;
+      else
+	wcslength = mbsnrtowcs (NULL, &tmp_p, nms, 0, &tmp_state);
+
+      if (wcslength == 0)
+	{
+	  tmp_p = p;		/* will need below */
+	  tmp_state = state;
+	  wcslength = 1;	/* take a single byte */
+	}
 
       /* Conversion failed. */
       if (wcslength == (size_t)-1)
@@ -186,7 +199,8 @@ xdupmbstowcs2 (destp, src)
 	{
 	  wchar_t *wstmp;
 
-	  wsbuf_size = wcnum+wcslength+1;	/* 1 for the L'\0' or the potential L'\\' */
+	  while (wsbuf_size < wcnum+wcslength+1) /* 1 for the L'\0' or the potential L'\\' */
+	    wsbuf_size += WSBUF_INC;
 
 	  wstmp = (wchar_t *) realloc (wsbuf, wsbuf_size * sizeof (wchar_t));
 	  if (wstmp == NULL)
@@ -199,10 +213,30 @@ xdupmbstowcs2 (destp, src)
 	}
 
       /* Perform the conversion. This is assumed to return 'wcslength'.
-       * It may set 'p' to NULL. */
-      mbsnrtowcs(wsbuf+wcnum, &p, nms, wsbuf_size-wcnum, &state);
+	 It may set 'p' to NULL. */
+      n = mbsnrtowcs(wsbuf+wcnum, &p, nms, wsbuf_size-wcnum, &state);
 
-      wcnum += wcslength;
+      if (n == 0 && p == 0)
+	{
+	  wsbuf[wcnum] = L'\0';
+	  break;
+	}
+
+      /* Compensate for taking single byte on wcs conversion failure above. */
+      if (wcslength == 1 && (n == 0 || n == (size_t)-1))
+	{
+	  state = tmp_state;
+	  p = tmp_p;
+	  wsbuf[wcnum] = *p;
+	  if (*p == 0)
+	    break;
+	  else
+	    {
+	      wcnum++; p++;
+	    }
+	}
+      else
+        wcnum += wcslength;
 
       if (mbsinit (&state) && (p != NULL) && (*p == '\\'))
 	{
@@ -230,8 +264,6 @@ xdupmbstowcs2 (destp, src)
    If conversion is failed, the return value is (size_t)-1 and the values
    of DESTP and INDICESP are NULL. */
 
-#define WSBUF_INC 32
-
 size_t
 xdupmbstowcs (destp, indicesp, src)
     wchar_t **destp;	/* Store the pointer to the wide character string */
@@ -251,6 +283,8 @@ xdupmbstowcs (destp, indicesp, src)
     {
       if (destp)
 	*destp = NULL;
+      if (indicesp)
+	*indicesp = NULL;
       return (size_t)-1;
     }
 
@@ -266,6 +300,8 @@ xdupmbstowcs (destp, indicesp, src)
   if (wsbuf == NULL)
     {
       *destp = NULL;
+      if (indicesp)
+        *indicesp = NULL;
       return (size_t)-1;
     }
 
@@ -277,6 +313,7 @@ xdupmbstowcs (destp, indicesp, src)
 	{
 	  free (wsbuf);
 	  *destp = NULL;
+	  *indicesp = NULL;
 	  return (size_t)-1;
 	}
     }
@@ -311,6 +348,8 @@ xdupmbstowcs (destp, indicesp, src)
 	  free (wsbuf);
 	  FREE (indices);
 	  *destp = NULL;
+	  if (indicesp)
+	    *indicesp = NULL;
 	  return (size_t)-1;
 	}
 
@@ -330,18 +369,22 @@ xdupmbstowcs (destp, indicesp, src)
 	      free (wsbuf);
 	      FREE (indices);
 	      *destp = NULL;
+	      if (indicesp)
+		*indicesp = NULL;
 	      return (size_t)-1;
 	    }
 	  wsbuf = wstmp;
 
 	  if (indicesp)
 	    {
-	      idxtmp = (char **) realloc (indices, wsbuf_size * sizeof (char **));
+	      idxtmp = (char **) realloc (indices, wsbuf_size * sizeof (char *));
 	      if (idxtmp == NULL)
 		{
 		  free (wsbuf);
 		  free (indices);
 		  *destp = NULL;
+		  if (indicesp)
+		    *indicesp = NULL;
 		  return (size_t)-1;
 		}
 	      indices = idxtmp;

@@ -6,7 +6,7 @@
 #include <config.h>
 
 #if defined (HISTORY)
-#ifndef _MINIX
+#if defined (HAVE_SYS_PARAM_H)
 #  include <sys/param.h>
 #endif
 #include "../bashtypes.h"
@@ -127,7 +127,7 @@ fc_builtin (list)
   register int i;
   register char *sep;
   int numbering, reverse, listing, execute;
-  int histbeg, histend, last_hist, retval, opt, rh;
+  int histbeg, histend, last_hist, retval, opt, rh, real_last;
   FILE *stream;
   REPL *rlist, *rl;
   char *ename, *command, *newcom, *fcedit;
@@ -257,6 +257,24 @@ fc_builtin (list)
   rh = remember_on_history || ((subshell_environment & SUBSHELL_COMSUB) && enable_history_list);
   last_hist = i - rh - hist_last_line_added;
 
+  /* Make sure that real_last is calculated the same way here and in
+     fc_gethnum.  The return value from fc_gethnum is treated specially if
+     it is == real_last and we are listing commands. */
+  real_last = i;
+  /* back up from the end to the last non-null history entry */
+  while (hlist[real_last] == 0 && real_last > 0)
+    real_last--;
+
+  /* XXX */
+  if (i == last_hist && hlist[last_hist] == 0)
+    while (last_hist >= 0 && hlist[last_hist] == 0)
+      last_hist--;
+  if (last_hist < 0)
+    {
+      sh_erange ((char *)NULL, _("history specification"));
+      return (EXECUTION_FAILURE);
+    }
+
   if (list)
     {
       histbeg = fc_gethnum (list->word->word, hlist);
@@ -264,6 +282,8 @@ fc_builtin (list)
 
       if (list)
 	histend = fc_gethnum (list->word->word, hlist);
+      else if (histbeg == real_last)
+	histend = listing ? real_last : histbeg;
       else
 	histend = listing ? last_hist : histbeg;
     }
@@ -419,7 +439,7 @@ fc_gethnum (command, hlist)
      HIST_ENTRY **hlist;
 {
   int sign, n, clen, rh;
-  register int i, j;
+  register int i, j, last_hist, real_last;
   register char *s;
 
   sign = 1;
@@ -439,11 +459,24 @@ fc_gethnum (command, hlist)
      has been enabled (interactive or not) should use it in the last_hist
      calculation as if it were on. */
   rh = remember_on_history || ((subshell_environment & SUBSHELL_COMSUB) && enable_history_list);
-  i -= rh + hist_last_line_added;
+  last_hist = i - rh - hist_last_line_added;
+
+  if (i == last_hist && hlist[last_hist] == 0)
+    while (last_hist >= 0 && hlist[last_hist] == 0)
+      last_hist--;
+  if (last_hist < 0)
+    return (-1);
+
+  real_last = i;
+  i = last_hist;
 
   /* No specification defaults to most recent command. */
   if (command == NULL)
     return (i);
+
+  /* back up from the end to the last non-null history entry */
+  while (hlist[real_last] == 0 && real_last > 0)
+    real_last--;
 
   /* Otherwise, there is a specification.  It can be a number relative to
      the current position, or an absolute history number. */
@@ -469,7 +502,7 @@ fc_gethnum (command, hlist)
 	  return (n < 0 ? 0 : n);
 	}
       else if (n == 0)
-	return (i);
+	return ((sign == -1) ? real_last : i);
       else
 	{
 	  n -= history_base;

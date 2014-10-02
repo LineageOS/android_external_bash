@@ -3,7 +3,7 @@
 /* This file is manufactured by ./mkbuiltins, and should not be
    edited by hand.  See the source to mkbuiltins for details. */
 
-/* Copyright (C) 1987-2009 Free Software Foundation, Inc.
+/* Copyright (C) 1987-2012 Free Software Foundation, Inc.
 
    This file is part of GNU Bash, the Bourne Again SHell.
 
@@ -48,7 +48,7 @@ struct builtin static_shell_builtins[] = {
 #endif /* ALIAS */
 #if defined (READLINE)
   { "bind", bind_builtin, BUILTIN_ENABLED | STATIC_BUILTIN, bind_doc,
-     N_("bind [-lpvsPVS] [-m keymap] [-f filename] [-q name] [-u name] [-r keyseq] [-x keyseq:shell-command] [keyseq:readline-function or readline-command]"), (char *)NULL },
+     N_("bind [-lpsvPSVX] [-m keymap] [-f filename] [-q name] [-u name] [-r keyseq] [-x keyseq:shell-command] [keyseq:readline-function or readline-command]"), (char *)NULL },
 #endif /* READLINE */
   { "break", break_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | SPECIAL_BUILTIN, break_doc,
      N_("break [n]"), (char *)NULL },
@@ -61,7 +61,7 @@ struct builtin static_shell_builtins[] = {
      N_("caller [expr]"), (char *)NULL },
 #endif /* DEBUGGER */
   { "cd", cd_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | POSIX_BUILTIN, cd_doc,
-     N_("cd [-L|-P] [dir]"), (char *)NULL },
+     N_("cd [-L|[-P [-e]] [-@]] [dir]"), (char *)NULL },
   { "pwd", pwd_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | POSIX_BUILTIN, pwd_doc,
      N_("pwd [-LP]"), (char *)NULL },
   { ":", colon_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | SPECIAL_BUILTIN, colon_doc,
@@ -72,22 +72,10 @@ struct builtin static_shell_builtins[] = {
      N_("false"), (char *)NULL },
   { "command", command_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | POSIX_BUILTIN, command_doc,
      N_("command [-pVv] command [arg ...]"), (char *)NULL },
-#if defined (PROGRAMMABLE_COMPLETION)
-  { "complete", complete_builtin, BUILTIN_ENABLED | STATIC_BUILTIN, complete_doc,
-     N_("complete [-abcdefgjksuv] [-pr] [-DE] [-o option] [-A action] [-G globpat] [-W wordlist]  [-F function] [-C command] [-X filterpat] [-P prefix] [-S suffix] [name ...]"), (char *)NULL },
-#endif /* PROGRAMMABLE_COMPLETION */
-#if defined (PROGRAMMABLE_COMPLETION)
-  { "compgen", compgen_builtin, BUILTIN_ENABLED | STATIC_BUILTIN, compgen_doc,
-     N_("compgen [-abcdefgjksuv] [-o option]  [-A action] [-G globpat] [-W wordlist]  [-F function] [-C command] [-X filterpat] [-P prefix] [-S suffix] [word]"), (char *)NULL },
-#endif /* PROGRAMMABLE_COMPLETION */
-#if defined (PROGRAMMABLE_COMPLETION)
-  { "compopt", compopt_builtin, BUILTIN_ENABLED | STATIC_BUILTIN, compopt_doc,
-     N_("compopt [-o|+o option] [-DE] [name ...]"), (char *)NULL },
-#endif /* PROGRAMMABLE_COMPLETION */
   { "declare", declare_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | ASSIGNMENT_BUILTIN, declare_doc,
-     N_("declare [-aAfFilrtux] [-p] [name[=value] ...]"), (char *)NULL },
+     N_("declare [-aAfFgilnrtux] [-p] [name[=value] ...]"), (char *)NULL },
   { "typeset", declare_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | ASSIGNMENT_BUILTIN, typeset_doc,
-     N_("typeset [-aAfFilrtux] [-p] name[=value] ..."), (char *)NULL },
+     N_("typeset [-aAfFgilrtux] [-p] name[=value] ..."), (char *)NULL },
   { "local", local_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | ASSIGNMENT_BUILTIN, local_doc,
      N_("local [option] name[=value] ..."), (char *)NULL },
 #if defined (V9_ECHO)
@@ -102,6 +90,8 @@ struct builtin static_shell_builtins[] = {
      N_("enable [-a] [-dnps] [-f filename] [name ...]"), (char *)NULL },
   { "eval", eval_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | SPECIAL_BUILTIN, eval_doc,
      N_("eval [arg ...]"), (char *)NULL },
+  { "getopts", getopts_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | POSIX_BUILTIN, getopts_doc,
+     N_("getopts optstring name [arg]"), (char *)NULL },
   { "exec", exec_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | SPECIAL_BUILTIN, exec_doc,
      N_("exec [-cl] [-a name] [command [arguments ...]] [redirection ...]"), (char *)NULL },
   { "exit", exit_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | SPECIAL_BUILTIN, exit_doc,
@@ -120,8 +110,6 @@ struct builtin static_shell_builtins[] = {
   { "bg", bg_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | POSIX_BUILTIN, bg_doc,
      N_("bg [job_spec ...]"), (char *)NULL },
 #endif /* JOB_CONTROL */
-  { "getopts", getopts_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | POSIX_BUILTIN, getopts_doc,
-     N_("getopts optstring name [arg]"), (char *)NULL },
   { "hash", hash_builtin, BUILTIN_ENABLED | STATIC_BUILTIN, hash_doc,
      N_("hash [-lr] [-p pathname] [-dt] [name ...]"), (char *)NULL },
 #if defined (HELP_BUILTIN)
@@ -132,10 +120,6 @@ struct builtin static_shell_builtins[] = {
   { "history", history_builtin, BUILTIN_ENABLED | STATIC_BUILTIN, history_doc,
      N_("history [-c] [-d offset] [n] or history -anrw [filename] or history -ps arg [arg...]"), (char *)NULL },
 #endif /* HISTORY */
-#if defined (apollo)
-  { "inlib", inlib_builtin, BUILTIN_ENABLED | STATIC_BUILTIN, inlib_doc,
-     N_("inlib pathname [pathname...]"), (char *)NULL },
-#endif /* apollo */
 #if defined (JOB_CONTROL)
   { "jobs", jobs_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | POSIX_BUILTIN, jobs_doc,
      N_("jobs [-lnprs] [jobspec ...] or jobs -x command [args]"), (char *)NULL },
@@ -148,26 +132,52 @@ struct builtin static_shell_builtins[] = {
      N_("kill [-s sigspec | -n signum | -sigspec] pid | jobspec ... or kill -l [sigspec]"), (char *)NULL },
   { "let", let_builtin, BUILTIN_ENABLED | STATIC_BUILTIN, let_doc,
      N_("let arg [arg ...]"), (char *)NULL },
-  { "mapfile", mapfile_builtin, BUILTIN_ENABLED | STATIC_BUILTIN, mapfile_doc,
-     N_("mapfile [-n count] [-O origin] [-s count] [-t] [-u fd] [-C callback] [-c quantum] [array]"), (char *)NULL },
-  { "readarray", mapfile_builtin, BUILTIN_ENABLED | STATIC_BUILTIN, readarray_doc,
-     N_("readarray [-n count] [-O origin] [-s count] [-t] [-u fd] [-C callback] [-c quantum] [array]"), (char *)NULL },
-  { "printf", printf_builtin, BUILTIN_ENABLED | STATIC_BUILTIN, printf_doc,
-     N_("printf [-v var] format [arguments]"), (char *)NULL },
-#if defined (PUSHD_AND_POPD)
-  { "pushd", pushd_builtin, BUILTIN_ENABLED | STATIC_BUILTIN, pushd_doc,
-     N_("pushd [-n] [+N | -N | dir]"), (char *)NULL },
-#endif /* PUSHD_AND_POPD */
-#if defined (PUSHD_AND_POPD)
-  { "popd", popd_builtin, BUILTIN_ENABLED | STATIC_BUILTIN, popd_doc,
-     N_("popd [-n] [+N | -N]"), (char *)NULL },
-#endif /* PUSHD_AND_POPD */
-#if defined (PUSHD_AND_POPD)
-  { "dirs", dirs_builtin, BUILTIN_ENABLED | STATIC_BUILTIN, dirs_doc,
-     N_("dirs [-clpv] [+N] [-N]"), (char *)NULL },
-#endif /* PUSHD_AND_POPD */
   { "read", read_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | POSIX_BUILTIN, read_doc,
      N_("read [-ers] [-a array] [-d delim] [-i text] [-n nchars] [-N nchars] [-p prompt] [-t timeout] [-u fd] [name ...]"), (char *)NULL },
+  { "return", return_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | SPECIAL_BUILTIN, return_doc,
+     N_("return [n]"), (char *)NULL },
+  { "set", set_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | SPECIAL_BUILTIN, set_doc,
+     N_("set [-abefhkmnptuvxBCHP] [-o option-name] [--] [arg ...]"), (char *)NULL },
+  { "unset", unset_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | SPECIAL_BUILTIN, unset_doc,
+     N_("unset [-f] [-v] [-n] [name ...]"), (char *)NULL },
+  { "export", export_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | SPECIAL_BUILTIN | ASSIGNMENT_BUILTIN, export_doc,
+     N_("export [-fn] [name[=value] ...] or export -p"), (char *)NULL },
+  { "readonly", readonly_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | SPECIAL_BUILTIN | ASSIGNMENT_BUILTIN, readonly_doc,
+     N_("readonly [-aAf] [name[=value] ...] or readonly -p"), (char *)NULL },
+  { "shift", shift_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | SPECIAL_BUILTIN, shift_doc,
+     N_("shift [n]"), (char *)NULL },
+  { "source", source_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | SPECIAL_BUILTIN, source_doc,
+     N_("source filename [arguments]"), (char *)NULL },
+  { ".", source_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | SPECIAL_BUILTIN, dot_doc,
+     N_(". filename [arguments]"), (char *)NULL },
+#if defined (JOB_CONTROL)
+  { "suspend", suspend_builtin, BUILTIN_ENABLED | STATIC_BUILTIN, suspend_doc,
+     N_("suspend [-f]"), (char *)NULL },
+#endif /* JOB_CONTROL */
+  { "test", test_builtin, BUILTIN_ENABLED | STATIC_BUILTIN, test_doc,
+     N_("test [expr]"), (char *)NULL },
+  { "[", test_builtin, BUILTIN_ENABLED | STATIC_BUILTIN, test_bracket_doc,
+     N_("[ arg... ]"), (char *)NULL },
+  { "times", times_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | SPECIAL_BUILTIN, times_doc,
+     N_("times"), (char *)NULL },
+  { "trap", trap_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | SPECIAL_BUILTIN, trap_doc,
+     N_("trap [-lp] [[arg] signal_spec ...]"), (char *)NULL },
+  { "type", type_builtin, BUILTIN_ENABLED | STATIC_BUILTIN, type_doc,
+     N_("type [-afptP] name [name ...]"), (char *)NULL },
+#if !defined (_MINIX)
+  { "ulimit", ulimit_builtin, BUILTIN_ENABLED | STATIC_BUILTIN, ulimit_doc,
+     N_("ulimit [-SHabcdefilmnpqrstuvxT] [limit]"), (char *)NULL },
+#endif /* !_MINIX */
+  { "umask", umask_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | POSIX_BUILTIN, umask_doc,
+     N_("umask [-p] [-S] [mode]"), (char *)NULL },
+#if defined (JOB_CONTROL)
+  { "wait", wait_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | POSIX_BUILTIN, wait_doc,
+     N_("wait [-n] [id ...]"), (char *)NULL },
+#endif /* JOB_CONTROL */
+#if !defined (JOB_CONTROL)
+  { "wait", wait_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | POSIX_BUILTIN, wait_doc,
+     N_("wait [pid ...]"), (char *)NULL },
+#endif /* !JOB_CONTROL */
   { "for", (sh_builtin_func_t *)0x0, BUILTIN_ENABLED | STATIC_BUILTIN, for_doc,
      N_("for NAME [in WORDS ... ] ; do COMMANDS; done"), (char *)NULL },
   { "for ((", (sh_builtin_func_t *)0x0, BUILTIN_ENABLED | STATIC_BUILTIN, arith_for_doc,
@@ -198,53 +208,39 @@ struct builtin static_shell_builtins[] = {
      N_("[[ expression ]]"), (char *)NULL },
   { "variables", (sh_builtin_func_t *)0x0, BUILTIN_ENABLED | STATIC_BUILTIN, variable_help_doc,
      N_("variables - Names and meanings of some shell variables"), (char *)NULL },
-  { "return", return_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | SPECIAL_BUILTIN, return_doc,
-     N_("return [n]"), (char *)NULL },
-  { "export", export_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | SPECIAL_BUILTIN | ASSIGNMENT_BUILTIN, export_doc,
-     N_("export [-fn] [name[=value] ...] or export -p"), (char *)NULL },
-  { "readonly", readonly_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | SPECIAL_BUILTIN | ASSIGNMENT_BUILTIN, readonly_doc,
-     N_("readonly [-af] [name[=value] ...] or readonly -p"), (char *)NULL },
-  { "set", set_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | SPECIAL_BUILTIN, set_doc,
-     N_("set [--abefhkmnptuvxBCHP] [-o option-name] [arg ...]"), (char *)NULL },
-  { "unset", unset_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | SPECIAL_BUILTIN, unset_doc,
-     N_("unset [-f] [-v] [name ...]"), (char *)NULL },
-  { "shift", shift_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | SPECIAL_BUILTIN, shift_doc,
-     N_("shift [n]"), (char *)NULL },
+#if defined (PUSHD_AND_POPD)
+  { "pushd", pushd_builtin, BUILTIN_ENABLED | STATIC_BUILTIN, pushd_doc,
+     N_("pushd [-n] [+N | -N | dir]"), (char *)NULL },
+#endif /* PUSHD_AND_POPD */
+#if defined (PUSHD_AND_POPD)
+  { "popd", popd_builtin, BUILTIN_ENABLED | STATIC_BUILTIN, popd_doc,
+     N_("popd [-n] [+N | -N]"), (char *)NULL },
+#endif /* PUSHD_AND_POPD */
+#if defined (PUSHD_AND_POPD)
+  { "dirs", dirs_builtin, BUILTIN_ENABLED | STATIC_BUILTIN, dirs_doc,
+     N_("dirs [-clpv] [+N] [-N]"), (char *)NULL },
+#endif /* PUSHD_AND_POPD */
   { "shopt", shopt_builtin, BUILTIN_ENABLED | STATIC_BUILTIN, shopt_doc,
      N_("shopt [-pqsu] [-o] [optname ...]"), (char *)NULL },
-  { "source", source_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | SPECIAL_BUILTIN, source_doc,
-     N_("source filename [arguments]"), (char *)NULL },
-  { ".", source_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | SPECIAL_BUILTIN, dot_doc,
-     N_(". filename [arguments]"), (char *)NULL },
-#if defined (JOB_CONTROL)
-  { "suspend", suspend_builtin, BUILTIN_ENABLED | STATIC_BUILTIN, suspend_doc,
-     N_("suspend [-f]"), (char *)NULL },
-#endif /* JOB_CONTROL */
-  { "test", test_builtin, BUILTIN_ENABLED | STATIC_BUILTIN, test_doc,
-     N_("test [expr]"), (char *)NULL },
-  { "[", test_builtin, BUILTIN_ENABLED | STATIC_BUILTIN, test_bracket_doc,
-     N_("[ arg... ]"), (char *)NULL },
-  { "times", times_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | SPECIAL_BUILTIN, times_doc,
-     N_("times"), (char *)NULL },
-  { "trap", trap_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | SPECIAL_BUILTIN, trap_doc,
-     N_("trap [-lp] [[arg] signal_spec ...]"), (char *)NULL },
-  { "type", type_builtin, BUILTIN_ENABLED | STATIC_BUILTIN, type_doc,
-     N_("type [-afptP] name [name ...]"), (char *)NULL },
-#if !defined (_MINIX)
-  { "ulimit", ulimit_builtin, BUILTIN_ENABLED | STATIC_BUILTIN, ulimit_doc,
-     N_("ulimit [-SHacdefilmnpqrstuvx] [limit]"), (char *)NULL },
-#endif /* !_MINIX */
-  { "umask", umask_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | POSIX_BUILTIN, umask_doc,
-     N_("umask [-p] [-S] [mode]"), (char *)NULL },
-#if defined (JOB_CONTROL)
-  { "wait", wait_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | POSIX_BUILTIN, wait_doc,
-     N_("wait [id]"), (char *)NULL },
-#endif /* JOB_CONTROL */
-#if !defined (JOB_CONTROL)
-  { "wait", wait_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | POSIX_BUILTIN, wait_doc,
-     N_("wait [pid]"), (char *)NULL },
-#endif /* !JOB_CONTROL */
-  { (char *)0x0, (sh_builtin_func_t *)0x0, 0, (char **)0x0, (char *)0x0 }
+  { "printf", printf_builtin, BUILTIN_ENABLED | STATIC_BUILTIN, printf_doc,
+     N_("printf [-v var] format [arguments]"), (char *)NULL },
+#if defined (PROGRAMMABLE_COMPLETION)
+  { "complete", complete_builtin, BUILTIN_ENABLED | STATIC_BUILTIN, complete_doc,
+     N_("complete [-abcdefgjksuv] [-pr] [-DE] [-o option] [-A action] [-G globpat] [-W wordlist]  [-F function] [-C command] [-X filterpat] [-P prefix] [-S suffix] [name ...]"), (char *)NULL },
+#endif /* PROGRAMMABLE_COMPLETION */
+#if defined (PROGRAMMABLE_COMPLETION)
+  { "compgen", compgen_builtin, BUILTIN_ENABLED | STATIC_BUILTIN, compgen_doc,
+     N_("compgen [-abcdefgjksuv] [-o option]  [-A action] [-G globpat] [-W wordlist]  [-F function] [-C command] [-X filterpat] [-P prefix] [-S suffix] [word]"), (char *)NULL },
+#endif /* PROGRAMMABLE_COMPLETION */
+#if defined (PROGRAMMABLE_COMPLETION)
+  { "compopt", compopt_builtin, BUILTIN_ENABLED | STATIC_BUILTIN, compopt_doc,
+     N_("compopt [-o|+o option] [-DE] [name ...]"), (char *)NULL },
+#endif /* PROGRAMMABLE_COMPLETION */
+  { "mapfile", mapfile_builtin, BUILTIN_ENABLED | STATIC_BUILTIN, mapfile_doc,
+     N_("mapfile [-n count] [-O origin] [-s count] [-t] [-u fd] [-C callback] [-c quantum] [array]"), (char *)NULL },
+  { "readarray", mapfile_builtin, BUILTIN_ENABLED | STATIC_BUILTIN, readarray_doc,
+     N_("readarray [-n count] [-O origin] [-s count] [-t] [-u fd] [-C callback] [-c quantum] [array]"), (char *)NULL },
+  { (char *)0x0, (sh_builtin_func_t *)0x0, 0, (char **)0x0, (char *)0x0, (char *)0x0 }
 };
 
 struct builtin *shell_builtins = static_shell_builtins;
@@ -318,6 +314,8 @@ N_("Set Readline key bindings and variables.\n\
       -f  filename       Read key bindings from FILENAME.\n\
       -x  keyseq:shell-command	Cause SHELL-COMMAND to be executed when\n\
     				KEYSEQ is entered.\n\
+      -X		     List key sequences bound with -x and associated commands\n\
+                         in a form that can be reused as input.\n\
     \n\
     Exit Status:\n\
     bind returns 0 unless an unrecognized option is given or an error occurs."),
@@ -399,14 +397,23 @@ N_("Change the shell working directory.\n\
     its value is used for DIR.\n\
     \n\
     Options:\n\
-        -L	force symbolic links to be followed\n\
+        -L	force symbolic links to be followed: resolve symbolic links in\n\
+    	DIR after processing instances of `..'\n\
         -P	use the physical directory structure without following symbolic\n\
-    	links\n\
+    	links: resolve symbolic links in DIR before processing instances\n\
+    	of `..'\n\
+        -e	if the -P option is supplied, and the current working directory\n\
+    	cannot be determined successfully, exit with a non-zero status\n\
+        -@  on systems that support it, present a file with extended attributes\n\
+            as a directory containing the file attributes\n\
     \n\
     The default is to follow symbolic links, as if `-L' were specified.\n\
+    `..' is processed by removing the immediately previous pathname component\n\
+    back to a slash or the beginning of DIR.\n\
     \n\
     Exit Status:\n\
-    Returns 0 if the directory is changed; non-zero otherwise."),
+    Returns 0 if the directory is changed, and if $PWD is set successfully when\n\
+    -P is used; non-zero otherwise."),
 #endif /* HELP_BUILTIN */
   (char *)NULL
 };
@@ -475,80 +482,6 @@ N_("Execute a simple command or display information about commands.\n\
 #endif /* HELP_BUILTIN */
   (char *)NULL
 };
-#if defined (PROGRAMMABLE_COMPLETION)
-char * const complete_doc[] = {
-#if defined (HELP_BUILTIN)
-N_("Specify how arguments are to be completed by Readline.\n\
-    \n\
-    For each NAME, specify how arguments are to be completed.  If no options\n\
-    are supplied, existing completion specifications are printed in a way that\n\
-    allows them to be reused as input.\n\
-    \n\
-    Options:\n\
-      -p	print existing completion specifications in a reusable format\n\
-      -r	remove a completion specification for each NAME, or, if no\n\
-    	NAMEs are supplied, all completion specifications\n\
-      -D	apply the completions and actions as the default for commands\n\
-    	without any specific completion defined\n\
-      -E	apply the completions and actions to \"empty\" commands --\n\
-    	completion attempted on a blank line\n\
-    \n\
-    When completion is attempted, the actions are applied in the order the\n\
-    uppercase-letter options are listed above.  The -D option takes\n\
-    precedence over -E.\n\
-    \n\
-    Exit Status:\n\
-    Returns success unless an invalid option is supplied or an error occurs."),
-#endif /* HELP_BUILTIN */
-  (char *)NULL
-};
-#endif /* PROGRAMMABLE_COMPLETION */
-#if defined (PROGRAMMABLE_COMPLETION)
-char * const compgen_doc[] = {
-#if defined (HELP_BUILTIN)
-N_("Display possible completions depending on the options.\n\
-    \n\
-    Intended to be used from within a shell function generating possible\n\
-    completions.  If the optional WORD argument is supplied, matches against\n\
-    WORD are generated.\n\
-    \n\
-    Exit Status:\n\
-    Returns success unless an invalid option is supplied or an error occurs."),
-#endif /* HELP_BUILTIN */
-  (char *)NULL
-};
-#endif /* PROGRAMMABLE_COMPLETION */
-#if defined (PROGRAMMABLE_COMPLETION)
-char * const compopt_doc[] = {
-#if defined (HELP_BUILTIN)
-N_("Modify or display completion options.\n\
-    \n\
-    Modify the completion options for each NAME, or, if no NAMEs are supplied,\n\
-    the completion currently begin executed.  If no OPTIONs are givenm, print\n\
-    the completion options for each NAME or the current completion specification.\n\
-    \n\
-    Options:\n\
-    	-o option	Set completion option OPTION for each NAME\n\
-    	-D		Change options for the \"default\" command completion\n\
-    	-E		Change options for the \"empty\" command completion\n\
-    \n\
-    Using `+o' instead of `-o' turns off the specified option.\n\
-    \n\
-    Arguments:\n\
-    \n\
-    Each NAME refers to a command for which a completion specification must\n\
-    have previously been defined using the `complete' builtin.  If no NAMEs\n\
-    are supplied, compopt must be called by a function currently generating\n\
-    completions, and the options for that currently-executing completion\n\
-    generator are modified.\n\
-    \n\
-    Exit Status:\n\
-    Returns success unless an invalid option is supplied or NAME does not\n\
-    have a completion specification defined."),
-#endif /* HELP_BUILTIN */
-  (char *)NULL
-};
-#endif /* PROGRAMMABLE_COMPLETION */
 char * const declare_doc[] = {
 #if defined (HELP_BUILTIN)
 N_("Set variable values and attributes.\n\
@@ -560,6 +493,8 @@ N_("Set variable values and attributes.\n\
       -f	restrict action or display to function names and definitions\n\
       -F	restrict display to function names only (plus line number and\n\
     	source file when debugging)\n\
+      -g	create global variables when used in a shell function; otherwise\n\
+    	ignored\n\
       -p	display the attributes and value of each NAME\n\
     \n\
     Options which set attributes:\n\
@@ -567,6 +502,7 @@ N_("Set variable values and attributes.\n\
       -A	to make NAMEs associative arrays (if supported)\n\
       -i	to make NAMEs have the `integer' attribute\n\
       -l	to convert NAMEs to lower case on assignment\n\
+      -n	make NAME a reference to the variable named by its value\n\
       -r	to make NAMEs readonly\n\
       -t	to make NAMEs have the `trace' attribute\n\
       -u	to convert NAMEs to upper case on assignment\n\
@@ -578,10 +514,11 @@ N_("Set variable values and attributes.\n\
     the `let' command) performed when the variable is assigned a value.\n\
     \n\
     When used in a function, `declare' makes NAMEs local, as with the `local'\n\
-    command.\n\
+    command.  The `-g' option suppresses this behavior.\n\
     \n\
     Exit Status:\n\
-    Returns success unless an invalid option is supplied or an error occurs."),
+    Returns success unless an invalid option is supplied or a variable\n\
+    assignment error occurs."),
 #endif /* HELP_BUILTIN */
   (char *)NULL
 };
@@ -604,8 +541,8 @@ N_("Define local variables.\n\
     only to the function where they are defined and its children.\n\
     \n\
     Exit Status:\n\
-    Returns success unless an invalid option is supplied, an error occurs,\n\
-    or the shell is not executing a function."),
+    Returns success unless an invalid option is supplied, a variable\n\
+    assignment error occurs, or the shell is not executing a function."),
 #endif /* HELP_BUILTIN */
   (char *)NULL
 };
@@ -614,7 +551,8 @@ char * const echo_doc[] = {
 #if defined (HELP_BUILTIN)
 N_("Write arguments to the standard output.\n\
     \n\
-    Display the ARGs on the standard output followed by a newline.\n\
+    Display the ARGs, separated by a single space character and followed by a\n\
+    newline, on the standard output.\n\
     \n\
     Options:\n\
       -n	do not append a newline\n\
@@ -626,6 +564,7 @@ N_("Write arguments to the standard output.\n\
       \\b	backspace\n\
       \\c	suppress further output\n\
       \\e	escape character\n\
+      \\E	escape character\n\
       \\f	form feed\n\
       \\n	new line\n\
       \\r	carriage return\n\
@@ -696,6 +635,48 @@ N_("Execute arguments as a shell command.\n\
     \n\
     Exit Status:\n\
     Returns exit status of command or success if command is null."),
+#endif /* HELP_BUILTIN */
+  (char *)NULL
+};
+char * const getopts_doc[] = {
+#if defined (HELP_BUILTIN)
+N_("Parse option arguments.\n\
+    \n\
+    Getopts is used by shell procedures to parse positional parameters\n\
+    as options.\n\
+    \n\
+    OPTSTRING contains the option letters to be recognized; if a letter\n\
+    is followed by a colon, the option is expected to have an argument,\n\
+    which should be separated from it by white space.\n\
+    \n\
+    Each time it is invoked, getopts will place the next option in the\n\
+    shell variable $name, initializing name if it does not exist, and\n\
+    the index of the next argument to be processed into the shell\n\
+    variable OPTIND.  OPTIND is initialized to 1 each time the shell or\n\
+    a shell script is invoked.  When an option requires an argument,\n\
+    getopts places that argument into the shell variable OPTARG.\n\
+    \n\
+    getopts reports errors in one of two ways.  If the first character\n\
+    of OPTSTRING is a colon, getopts uses silent error reporting.  In\n\
+    this mode, no error messages are printed.  If an invalid option is\n\
+    seen, getopts places the option character found into OPTARG.  If a\n\
+    required argument is not found, getopts places a ':' into NAME and\n\
+    sets OPTARG to the option character found.  If getopts is not in\n\
+    silent mode, and an invalid option is seen, getopts places '?' into\n\
+    NAME and unsets OPTARG.  If a required argument is not found, a '?'\n\
+    is placed in NAME, OPTARG is unset, and a diagnostic message is\n\
+    printed.\n\
+    \n\
+    If the shell variable OPTERR has the value 0, getopts disables the\n\
+    printing of error messages, even if the first character of\n\
+    OPTSTRING is not a colon.  OPTERR has the value 1 by default.\n\
+    \n\
+    Getopts normally parses the positional parameters ($0 - $9), but if\n\
+    more arguments are given, they are parsed instead.\n\
+    \n\
+    Exit Status:\n\
+    Returns success if an option is found; fails if the end of options is\n\
+    encountered or an error occurs."),
 #endif /* HELP_BUILTIN */
   (char *)NULL
 };
@@ -798,48 +779,6 @@ N_("Move jobs to the background.\n\
   (char *)NULL
 };
 #endif /* JOB_CONTROL */
-char * const getopts_doc[] = {
-#if defined (HELP_BUILTIN)
-N_("Parse option arguments.\n\
-    \n\
-    Getopts is used by shell procedures to parse positional parameters\n\
-    as options.\n\
-    \n\
-    OPTSTRING contains the option letters to be recognized; if a letter\n\
-    is followed by a colon, the option is expected to have an argument,\n\
-    which should be separated from it by white space.\n\
-    \n\
-    Each time it is invoked, getopts will place the next option in the\n\
-    shell variable $name, initializing name if it does not exist, and\n\
-    the index of the next argument to be processed into the shell\n\
-    variable OPTIND.  OPTIND is initialized to 1 each time the shell or\n\
-    a shell script is invoked.  When an option requires an argument,\n\
-    getopts places that argument into the shell variable OPTARG.\n\
-    \n\
-    getopts reports errors in one of two ways.  If the first character\n\
-    of OPTSTRING is a colon, getopts uses silent error reporting.  In\n\
-    this mode, no error messages are printed.  If an invalid option is\n\
-    seen, getopts places the option character found into OPTARG.  If a\n\
-    required argument is not found, getopts places a ':' into NAME and\n\
-    sets OPTARG to the option character found.  If getopts is not in\n\
-    silent mode, and an invalid option is seen, getopts places '?' into\n\
-    NAME and unsets OPTARG.  If a required argument is not found, a '?'\n\
-    is placed in NAME, OPTARG is unset, and a diagnostic message is\n\
-    printed.\n\
-    \n\
-    If the shell variable OPTERR has the value 0, getopts disables the\n\
-    printing of error messages, even if the first character of\n\
-    OPTSTRING is not a colon.  OPTERR has the value 1 by default.\n\
-    \n\
-    Getopts normally parses the positional parameters ($0 - $9), but if\n\
-    more arguments are given, they are parsed instead.\n\
-    \n\
-    Exit Status:\n\
-    Returns success if an option is found; fails if the end of options is\n\
-    encountered or an error occurs."),
-#endif /* HELP_BUILTIN */
-  (char *)NULL
-};
 char * const hash_doc[] = {
 #if defined (HELP_BUILTIN)
 N_("Remember or display program locations.\n\
@@ -850,7 +789,7 @@ N_("Remember or display program locations.\n\
     Options:\n\
       -d		forget the remembered location of each NAME\n\
       -l		display in a format that may be reused as input\n\
-      -p pathname	use PATHNAME is the full pathname of NAME\n\
+      -p pathname	use PATHNAME as the full pathname of NAME\n\
       -r		forget all remembered locations\n\
       -t		print the remembered location of each NAME, preceding\n\
     		each location with the corresponding NAME if multiple\n\
@@ -924,24 +863,6 @@ N_("Display or manipulate the history list.\n\
   (char *)NULL
 };
 #endif /* HISTORY */
-#if defined (apollo)
-char * const inlib_doc[] = {
-#if defined (HELP_BUILTIN)
-N_("Install user-supplied library.\n\
-    \n\
-    Install a user-supplied library specified by pathname in the current\n\
-    shell process. The library is used to resolve external references\n\
-    in programs and libraries loaded after its installation.  Note\n\
-    that the library is not loaded into the address space unless it is\n\
-    needed to resolve an external reference.  The list of inlibed\n\
-    libraries is passed to all children of the current shell.\n\
-    \n\
-    Exit Status:\n\
-    Returns success unless PATHNAME is not found or an error occurs."),
-#endif /* HELP_BUILTIN */
-  (char *)NULL
-};
-#endif /* apollo */
 #if defined (JOB_CONTROL)
 char * const jobs_doc[] = {
 #if defined (HELP_BUILTIN)
@@ -952,7 +873,7 @@ N_("Display status of jobs.\n\
     \n\
     Options:\n\
       -l	lists process IDs in addition to the normal information\n\
-      -n	list only processes that have changed status since the last\n\
+      -n	lists only processes that have changed status since the last\n\
     	notification\n\
       -p	lists process IDs only\n\
       -r	restrict output to running jobs\n\
@@ -1053,171 +974,10 @@ N_("Evaluate arithmetic expressions.\n\
     rules above.\n\
     \n\
     Exit Status:\n\
-    If the last ARG evaluates to 0, let returns 1; let returns 0 otherwise.."),
+    If the last ARG evaluates to 0, let returns 1; let returns 0 otherwise."),
 #endif /* HELP_BUILTIN */
   (char *)NULL
 };
-char * const mapfile_doc[] = {
-#if defined (HELP_BUILTIN)
-N_("Read lines from the standard input into an indexed array variable.\n\
-    \n\
-    Read lines from the standard input into the indexed array variable ARRAY, or\n\
-    from file descriptor FD if the -u option is supplied.  The variable MAPFILE\n\
-    is the default ARRAY.\n\
-    \n\
-    Options:\n\
-      -n count	Copy at most COUNT lines.  If COUNT is 0, all lines are copied.\n\
-      -O origin	Begin assigning to ARRAY at index ORIGIN.  The default index is 0.\n\
-      -s count 	Discard the first COUNT lines read.\n\
-      -t		Remove a trailing newline from each line read.\n\
-      -u fd		Read lines from file descriptor FD instead of the standard input.\n\
-      -C callback	Evaluate CALLBACK each time QUANTUM lines are read.\n\
-      -c quantum	Specify the number of lines read between each call to CALLBACK.\n\
-    \n\
-    Arguments:\n\
-      ARRAY		Array variable name to use for file data.\n\
-    \n\
-    If -C is supplied without -c, the default quantum is 5000.  When\n\
-    CALLBACK is evaluated, it is supplied the index of the next array\n\
-    element to be assigned as an additional argument.\n\
-    \n\
-    If not supplied with an explicit origin, mapfile will clear ARRAY before\n\
-    assigning to it.\n\
-    \n\
-    Exit Status:\n\
-    Returns success unless an invalid option is given or ARRAY is readonly or\n\
-    not an indexed array."),
-#endif /* HELP_BUILTIN */
-  (char *)NULL
-};
-char * const readarray_doc[] = {
-#if defined (HELP_BUILTIN)
-N_("Read lines from a file into an array variable.\n\
-    \n\
-    A synonym for `mapfile'."),
-#endif /* HELP_BUILTIN */
-  (char *)NULL
-};
-char * const printf_doc[] = {
-#if defined (HELP_BUILTIN)
-N_("Formats and prints ARGUMENTS under control of the FORMAT.\n\
-    \n\
-    Options:\n\
-      -v var	assign the output to shell variable VAR rather than\n\
-    		display it on the standard output\n\
-    \n\
-    FORMAT is a character string which contains three types of objects: plain\n\
-    characters, which are simply copied to standard output; character escape\n\
-    sequences, which are converted and copied to the standard output; and\n\
-    format specifications, each of which causes printing of the next successive\n\
-    argument.\n\
-    \n\
-    In addition to the standard format specifications described in printf(1)\n\
-    and printf(3), printf interprets:\n\
-    \n\
-      %b	expand backslash escape sequences in the corresponding argument\n\
-      %q	quote the argument in a way that can be reused as shell input\n\
-    \n\
-    Exit Status:\n\
-    Returns success unless an invalid option is given or a write or assignment\n\
-    error occurs."),
-#endif /* HELP_BUILTIN */
-  (char *)NULL
-};
-#if defined (PUSHD_AND_POPD)
-char * const pushd_doc[] = {
-#if defined (HELP_BUILTIN)
-N_("Add directories to stack.\n\
-    \n\
-    Adds a directory to the top of the directory stack, or rotates\n\
-    the stack, making the new top of the stack the current working\n\
-    directory.  With no arguments, exchanges the top two directories.\n\
-    \n\
-    Options:\n\
-      -n	Suppresses the normal change of directory when adding\n\
-    	directories to the stack, so only the stack is manipulated.\n\
-    \n\
-    Arguments:\n\
-      +N	Rotates the stack so that the Nth directory (counting\n\
-    	from the left of the list shown by `dirs', starting with\n\
-    	zero) is at the top.\n\
-    \n\
-      -N	Rotates the stack so that the Nth directory (counting\n\
-    	from the right of the list shown by `dirs', starting with\n\
-    	zero) is at the top.\n\
-    \n\
-      dir	Adds DIR to the directory stack at the top, making it the\n\
-    	new current working directory.\n\
-    \n\
-    The `dirs' builtin displays the directory stack.\n\
-    \n\
-    Exit Status:\n\
-    Returns success unless an invalid argument is supplied or the directory\n\
-    change fails."),
-#endif /* HELP_BUILTIN */
-  (char *)NULL
-};
-#endif /* PUSHD_AND_POPD */
-#if defined (PUSHD_AND_POPD)
-char * const popd_doc[] = {
-#if defined (HELP_BUILTIN)
-N_("Remove directories from stack.\n\
-    \n\
-    Removes entries from the directory stack.  With no arguments, removes\n\
-    the top directory from the stack, and changes to the new top directory.\n\
-    \n\
-    Options:\n\
-      -n	Suppresses the normal change of directory when removing\n\
-    	directories from the stack, so only the stack is manipulated.\n\
-    \n\
-    Arguments:\n\
-      +N	Removes the Nth entry counting from the left of the list\n\
-    	shown by `dirs', starting with zero.  For example: `popd +0'\n\
-    	removes the first directory, `popd +1' the second.\n\
-    \n\
-      -N	Removes the Nth entry counting from the right of the list\n\
-    	shown by `dirs', starting with zero.  For example: `popd -0'\n\
-    	removes the last directory, `popd -1' the next to last.\n\
-    \n\
-    The `dirs' builtin displays the directory stack.\n\
-    \n\
-    Exit Status:\n\
-    Returns success unless an invalid argument is supplied or the directory\n\
-    change fails."),
-#endif /* HELP_BUILTIN */
-  (char *)NULL
-};
-#endif /* PUSHD_AND_POPD */
-#if defined (PUSHD_AND_POPD)
-char * const dirs_doc[] = {
-#if defined (HELP_BUILTIN)
-N_("Display directory stack.\n\
-    \n\
-    Display the list of currently remembered directories.  Directories\n\
-    find their way onto the list with the `pushd' command; you can get\n\
-    back up through the list with the `popd' command.\n\
-    \n\
-    Options:\n\
-      -c	clear the directory stack by deleting all of the elements\n\
-      -l	do not print tilde-prefixed versions of directories relative\n\
-    	to your home directory\n\
-      -p	print the directory stack with one entry per line\n\
-      -v	print the directory stack with one entry per line prefixed\n\
-    	with its position in the stack\n\
-    \n\
-    Arguments:\n\
-      +N	Displays the Nth entry counting from the left of the list shown by\n\
-    	dirs when invoked without options, starting with zero.\n\
-    \n\
-      -N	Displays the Nth entry counting from the right of the list shown by\n\
-    	dirs when invoked without options, starting with zero.\n\
-    \n\
-    Exit Status:\n\
-    Returns success unless an invalid option is supplied or an error occurs."),
-#endif /* HELP_BUILTIN */
-  (char *)NULL
-};
-#endif /* PUSHD_AND_POPD */
 char * const read_doc[] = {
 #if defined (HELP_BUILTIN)
 N_("Read a line from the standard input and split it into fields.\n\
@@ -1248,19 +1008,514 @@ N_("Read a line from the standard input and split it into fields.\n\
       -r		do not allow backslashes to escape any characters\n\
       -s		do not echo input coming from a terminal\n\
       -t timeout	time out and return failure if a complete line of input is\n\
-    		not read withint TIMEOUT seconds.  The value of the TMOUT\n\
+    		not read within TIMEOUT seconds.  The value of the TMOUT\n\
     		variable is the default timeout.  TIMEOUT may be a\n\
-    		fractional number.  If TIMEOUT is 0, read returns success only\n\
-    		if input is available on the specified file descriptor.  The\n\
+    		fractional number.  If TIMEOUT is 0, read returns immediately,\n\
+    		without trying to read any data, returning success only if\n\
+    		input is available on the specified file descriptor.  The\n\
     		exit status is greater than 128 if the timeout is exceeded\n\
       -u fd		read from file descriptor FD instead of the standard input\n\
     \n\
     Exit Status:\n\
-    The return code is zero, unless end-of-file is encountered, read times out,\n\
+    The return code is zero, unless end-of-file is encountered, read times out\n\
+    (in which case it's greater than 128), a variable assignment error occurs,\n\
     or an invalid file descriptor is supplied as the argument to -u."),
 #endif /* HELP_BUILTIN */
   (char *)NULL
 };
+char * const return_doc[] = {
+#if defined (HELP_BUILTIN)
+N_("Return from a shell function.\n\
+    \n\
+    Causes a function or sourced script to exit with the return value\n\
+    specified by N.  If N is omitted, the return status is that of the\n\
+    last command executed within the function or script.\n\
+    \n\
+    Exit Status:\n\
+    Returns N, or failure if the shell is not executing a function or script."),
+#endif /* HELP_BUILTIN */
+  (char *)NULL
+};
+char * const set_doc[] = {
+#if defined (HELP_BUILTIN)
+N_("Set or unset values of shell options and positional parameters.\n\
+    \n\
+    Change the value of shell attributes and positional parameters, or\n\
+    display the names and values of shell variables.\n\
+    \n\
+    Options:\n\
+      -a  Mark variables which are modified or created for export.\n\
+      -b  Notify of job termination immediately.\n\
+      -e  Exit immediately if a command exits with a non-zero status.\n\
+      -f  Disable file name generation (globbing).\n\
+      -h  Remember the location of commands as they are looked up.\n\
+      -k  All assignment arguments are placed in the environment for a\n\
+          command, not just those that precede the command name.\n\
+      -m  Job control is enabled.\n\
+      -n  Read commands but do not execute them.\n\
+      -o option-name\n\
+          Set the variable corresponding to option-name:\n\
+              allexport    same as -a\n\
+              braceexpand  same as -B\n\
+              emacs        use an emacs-style line editing interface\n\
+              errexit      same as -e\n\
+              errtrace     same as -E\n\
+              functrace    same as -T\n\
+              hashall      same as -h\n\
+              histexpand   same as -H\n\
+              history      enable command history\n\
+              ignoreeof    the shell will not exit upon reading EOF\n\
+              interactive-comments\n\
+                           allow comments to appear in interactive commands\n\
+              keyword      same as -k\n\
+              monitor      same as -m\n\
+              noclobber    same as -C\n\
+              noexec       same as -n\n\
+              noglob       same as -f\n\
+              nolog        currently accepted but ignored\n\
+              notify       same as -b\n\
+              nounset      same as -u\n\
+              onecmd       same as -t\n\
+              physical     same as -P\n\
+              pipefail     the return value of a pipeline is the status of\n\
+                           the last command to exit with a non-zero status,\n\
+                           or zero if no command exited with a non-zero status\n\
+              posix        change the behavior of bash where the default\n\
+                           operation differs from the Posix standard to\n\
+                           match the standard\n\
+              privileged   same as -p\n\
+              verbose      same as -v\n\
+              vi           use a vi-style line editing interface\n\
+              xtrace       same as -x\n\
+      -p  Turned on whenever the real and effective user ids do not match.\n\
+          Disables processing of the $ENV file and importing of shell\n\
+          functions.  Turning this option off causes the effective uid and\n\
+          gid to be set to the real uid and gid.\n\
+      -t  Exit after reading and executing one command.\n\
+      -u  Treat unset variables as an error when substituting.\n\
+      -v  Print shell input lines as they are read.\n\
+      -x  Print commands and their arguments as they are executed.\n\
+      -B  the shell will perform brace expansion\n\
+      -C  If set, disallow existing regular files to be overwritten\n\
+          by redirection of output.\n\
+      -E  If set, the ERR trap is inherited by shell functions.\n\
+      -H  Enable ! style history substitution.  This flag is on\n\
+          by default when the shell is interactive.\n\
+      -P  If set, do not resolve symbolic links when executing commands\n\
+          such as cd which change the current directory.\n\
+      -T  If set, the DEBUG trap is inherited by shell functions.\n\
+      --  Assign any remaining arguments to the positional parameters.\n\
+          If there are no remaining arguments, the positional parameters\n\
+          are unset.\n\
+      -   Assign any remaining arguments to the positional parameters.\n\
+          The -x and -v options are turned off.\n\
+    \n\
+    Using + rather than - causes these flags to be turned off.  The\n\
+    flags can also be used upon invocation of the shell.  The current\n\
+    set of flags may be found in $-.  The remaining n ARGs are positional\n\
+    parameters and are assigned, in order, to $1, $2, .. $n.  If no\n\
+    ARGs are given, all shell variables are printed.\n\
+    \n\
+    Exit Status:\n\
+    Returns success unless an invalid option is given."),
+#endif /* HELP_BUILTIN */
+  (char *)NULL
+};
+char * const unset_doc[] = {
+#if defined (HELP_BUILTIN)
+N_("Unset values and attributes of shell variables and functions.\n\
+    \n\
+    For each NAME, remove the corresponding variable or function.\n\
+    \n\
+    Options:\n\
+      -f	treat each NAME as a shell function\n\
+      -v	treat each NAME as a shell variable\n\
+      -n	treat each NAME as a name reference and unset the variable itself\n\
+    	rather than the variable it references\n\
+    \n\
+    Without options, unset first tries to unset a variable, and if that fails,\n\
+    tries to unset a function.\n\
+    \n\
+    Some variables cannot be unset; also see `readonly'.\n\
+    \n\
+    Exit Status:\n\
+    Returns success unless an invalid option is given or a NAME is read-only."),
+#endif /* HELP_BUILTIN */
+  (char *)NULL
+};
+char * const export_doc[] = {
+#if defined (HELP_BUILTIN)
+N_("Set export attribute for shell variables.\n\
+    \n\
+    Marks each NAME for automatic export to the environment of subsequently\n\
+    executed commands.  If VALUE is supplied, assign VALUE before exporting.\n\
+    \n\
+    Options:\n\
+      -f	refer to shell functions\n\
+      -n	remove the export property from each NAME\n\
+      -p	display a list of all exported variables and functions\n\
+    \n\
+    An argument of `--' disables further option processing.\n\
+    \n\
+    Exit Status:\n\
+    Returns success unless an invalid option is given or NAME is invalid."),
+#endif /* HELP_BUILTIN */
+  (char *)NULL
+};
+char * const readonly_doc[] = {
+#if defined (HELP_BUILTIN)
+N_("Mark shell variables as unchangeable.\n\
+    \n\
+    Mark each NAME as read-only; the values of these NAMEs may not be\n\
+    changed by subsequent assignment.  If VALUE is supplied, assign VALUE\n\
+    before marking as read-only.\n\
+    \n\
+    Options:\n\
+      -a	refer to indexed array variables\n\
+      -A	refer to associative array variables\n\
+      -f	refer to shell functions\n\
+      -p	display a list of all readonly variables or functions, depending on\n\
+            whether or not the -f option is given\n\
+    \n\
+    An argument of `--' disables further option processing.\n\
+    \n\
+    Exit Status:\n\
+    Returns success unless an invalid option is given or NAME is invalid."),
+#endif /* HELP_BUILTIN */
+  (char *)NULL
+};
+char * const shift_doc[] = {
+#if defined (HELP_BUILTIN)
+N_("Shift positional parameters.\n\
+    \n\
+    Rename the positional parameters $N+1,$N+2 ... to $1,$2 ...  If N is\n\
+    not given, it is assumed to be 1.\n\
+    \n\
+    Exit Status:\n\
+    Returns success unless N is negative or greater than $#."),
+#endif /* HELP_BUILTIN */
+  (char *)NULL
+};
+char * const source_doc[] = {
+#if defined (HELP_BUILTIN)
+N_("Execute commands from a file in the current shell.\n\
+    \n\
+    Read and execute commands from FILENAME in the current shell.  The\n\
+    entries in $PATH are used to find the directory containing FILENAME.\n\
+    If any ARGUMENTS are supplied, they become the positional parameters\n\
+    when FILENAME is executed.\n\
+    \n\
+    Exit Status:\n\
+    Returns the status of the last command executed in FILENAME; fails if\n\
+    FILENAME cannot be read."),
+#endif /* HELP_BUILTIN */
+  (char *)NULL
+};
+char * const dot_doc[] = {
+#if defined (HELP_BUILTIN)
+N_("Execute commands from a file in the current shell.\n\
+    \n\
+    Read and execute commands from FILENAME in the current shell.  The\n\
+    entries in $PATH are used to find the directory containing FILENAME.\n\
+    If any ARGUMENTS are supplied, they become the positional parameters\n\
+    when FILENAME is executed.\n\
+    \n\
+    Exit Status:\n\
+    Returns the status of the last command executed in FILENAME; fails if\n\
+    FILENAME cannot be read."),
+#endif /* HELP_BUILTIN */
+  (char *)NULL
+};
+#if defined (JOB_CONTROL)
+char * const suspend_doc[] = {
+#if defined (HELP_BUILTIN)
+N_("Suspend shell execution.\n\
+    \n\
+    Suspend the execution of this shell until it receives a SIGCONT signal.\n\
+    Unless forced, login shells cannot be suspended.\n\
+    \n\
+    Options:\n\
+      -f	force the suspend, even if the shell is a login shell\n\
+    \n\
+    Exit Status:\n\
+    Returns success unless job control is not enabled or an error occurs."),
+#endif /* HELP_BUILTIN */
+  (char *)NULL
+};
+#endif /* JOB_CONTROL */
+char * const test_doc[] = {
+#if defined (HELP_BUILTIN)
+N_("Evaluate conditional expression.\n\
+    \n\
+    Exits with a status of 0 (true) or 1 (false) depending on\n\
+    the evaluation of EXPR.  Expressions may be unary or binary.  Unary\n\
+    expressions are often used to examine the status of a file.  There\n\
+    are string operators and numeric comparison operators as well.\n\
+    \n\
+    The behavior of test depends on the number of arguments.  Read the\n\
+    bash manual page for the complete specification.\n\
+    \n\
+    File operators:\n\
+    \n\
+      -a FILE        True if file exists.\n\
+      -b FILE        True if file is block special.\n\
+      -c FILE        True if file is character special.\n\
+      -d FILE        True if file is a directory.\n\
+      -e FILE        True if file exists.\n\
+      -f FILE        True if file exists and is a regular file.\n\
+      -g FILE        True if file is set-group-id.\n\
+      -h FILE        True if file is a symbolic link.\n\
+      -L FILE        True if file is a symbolic link.\n\
+      -k FILE        True if file has its `sticky' bit set.\n\
+      -p FILE        True if file is a named pipe.\n\
+      -r FILE        True if file is readable by you.\n\
+      -s FILE        True if file exists and is not empty.\n\
+      -S FILE        True if file is a socket.\n\
+      -t FD          True if FD is opened on a terminal.\n\
+      -u FILE        True if the file is set-user-id.\n\
+      -w FILE        True if the file is writable by you.\n\
+      -x FILE        True if the file is executable by you.\n\
+      -O FILE        True if the file is effectively owned by you.\n\
+      -G FILE        True if the file is effectively owned by your group.\n\
+      -N FILE        True if the file has been modified since it was last read.\n\
+    \n\
+      FILE1 -nt FILE2  True if file1 is newer than file2 (according to\n\
+                       modification date).\n\
+    \n\
+      FILE1 -ot FILE2  True if file1 is older than file2.\n\
+    \n\
+      FILE1 -ef FILE2  True if file1 is a hard link to file2.\n\
+    \n\
+    String operators:\n\
+    \n\
+      -z STRING      True if string is empty.\n\
+    \n\
+      -n STRING\n\
+         STRING      True if string is not empty.\n\
+    \n\
+      STRING1 = STRING2\n\
+                     True if the strings are equal.\n\
+      STRING1 != STRING2\n\
+                     True if the strings are not equal.\n\
+      STRING1 < STRING2\n\
+                     True if STRING1 sorts before STRING2 lexicographically.\n\
+      STRING1 > STRING2\n\
+                     True if STRING1 sorts after STRING2 lexicographically.\n\
+    \n\
+    Other operators:\n\
+    \n\
+      -o OPTION      True if the shell option OPTION is enabled.\n\
+      -v VAR	 True if the shell variable VAR is set\n\
+      -R VAR	 True if the shell variable VAR is set and is a name reference.\n\
+      ! EXPR         True if expr is false.\n\
+      EXPR1 -a EXPR2 True if both expr1 AND expr2 are true.\n\
+      EXPR1 -o EXPR2 True if either expr1 OR expr2 is true.\n\
+    \n\
+      arg1 OP arg2   Arithmetic tests.  OP is one of -eq, -ne,\n\
+                     -lt, -le, -gt, or -ge.\n\
+    \n\
+    Arithmetic binary operators return true if ARG1 is equal, not-equal,\n\
+    less-than, less-than-or-equal, greater-than, or greater-than-or-equal\n\
+    than ARG2.\n\
+    \n\
+    Exit Status:\n\
+    Returns success if EXPR evaluates to true; fails if EXPR evaluates to\n\
+    false or an invalid argument is given."),
+#endif /* HELP_BUILTIN */
+  (char *)NULL
+};
+char * const test_bracket_doc[] = {
+#if defined (HELP_BUILTIN)
+N_("Evaluate conditional expression.\n\
+    \n\
+    This is a synonym for the \"test\" builtin, but the last argument must\n\
+    be a literal `]', to match the opening `['."),
+#endif /* HELP_BUILTIN */
+  (char *)NULL
+};
+char * const times_doc[] = {
+#if defined (HELP_BUILTIN)
+N_("Display process times.\n\
+    \n\
+    Prints the accumulated user and system times for the shell and all of its\n\
+    child processes.\n\
+    \n\
+    Exit Status:\n\
+    Always succeeds."),
+#endif /* HELP_BUILTIN */
+  (char *)NULL
+};
+char * const trap_doc[] = {
+#if defined (HELP_BUILTIN)
+N_("Trap signals and other events.\n\
+    \n\
+    Defines and activates handlers to be run when the shell receives signals\n\
+    or other conditions.\n\
+    \n\
+    ARG is a command to be read and executed when the shell receives the\n\
+    signal(s) SIGNAL_SPEC.  If ARG is absent (and a single SIGNAL_SPEC\n\
+    is supplied) or `-', each specified signal is reset to its original\n\
+    value.  If ARG is the null string each SIGNAL_SPEC is ignored by the\n\
+    shell and by the commands it invokes.\n\
+    \n\
+    If a SIGNAL_SPEC is EXIT (0) ARG is executed on exit from the shell.  If\n\
+    a SIGNAL_SPEC is DEBUG, ARG is executed before every simple command.  If\n\
+    a SIGNAL_SPEC is RETURN, ARG is executed each time a shell function or a\n\
+    script run by the . or source builtins finishes executing.  A SIGNAL_SPEC\n\
+    of ERR means to execute ARG each time a command's failure would cause the\n\
+    shell to exit when the -e option is enabled.\n\
+    \n\
+    If no arguments are supplied, trap prints the list of commands associated\n\
+    with each signal.\n\
+    \n\
+    Options:\n\
+      -l	print a list of signal names and their corresponding numbers\n\
+      -p	display the trap commands associated with each SIGNAL_SPEC\n\
+    \n\
+    Each SIGNAL_SPEC is either a signal name in <signal.h> or a signal number.\n\
+    Signal names are case insensitive and the SIG prefix is optional.  A\n\
+    signal may be sent to the shell with \"kill -signal $$\".\n\
+    \n\
+    Exit Status:\n\
+    Returns success unless a SIGSPEC is invalid or an invalid option is given."),
+#endif /* HELP_BUILTIN */
+  (char *)NULL
+};
+char * const type_doc[] = {
+#if defined (HELP_BUILTIN)
+N_("Display information about command type.\n\
+    \n\
+    For each NAME, indicate how it would be interpreted if used as a\n\
+    command name.\n\
+    \n\
+    Options:\n\
+      -a	display all locations containing an executable named NAME;\n\
+    	includes aliases, builtins, and functions, if and only if\n\
+    	the `-p' option is not also used\n\
+      -f	suppress shell function lookup\n\
+      -P	force a PATH search for each NAME, even if it is an alias,\n\
+    	builtin, or function, and returns the name of the disk file\n\
+    	that would be executed\n\
+      -p	returns either the name of the disk file that would be executed,\n\
+    	or nothing if `type -t NAME' would not return `file'.\n\
+      -t	output a single word which is one of `alias', `keyword',\n\
+    	`function', `builtin', `file' or `', if NAME is an alias, shell\n\
+    	reserved word, shell function, shell builtin, disk file, or not\n\
+    	found, respectively\n\
+    \n\
+    Arguments:\n\
+      NAME	Command name to be interpreted.\n\
+    \n\
+    Exit Status:\n\
+    Returns success if all of the NAMEs are found; fails if any are not found."),
+#endif /* HELP_BUILTIN */
+  (char *)NULL
+};
+#if !defined (_MINIX)
+char * const ulimit_doc[] = {
+#if defined (HELP_BUILTIN)
+N_("Modify shell resource limits.\n\
+    \n\
+    Provides control over the resources available to the shell and processes\n\
+    it creates, on systems that allow such control.\n\
+    \n\
+    Options:\n\
+      -S	use the `soft' resource limit\n\
+      -H	use the `hard' resource limit\n\
+      -a	all current limits are reported\n\
+      -b	the socket buffer size\n\
+      -c	the maximum size of core files created\n\
+      -d	the maximum size of a process's data segment\n\
+      -e	the maximum scheduling priority (`nice')\n\
+      -f	the maximum size of files written by the shell and its children\n\
+      -i	the maximum number of pending signals\n\
+      -l	the maximum size a process may lock into memory\n\
+      -m	the maximum resident set size\n\
+      -n	the maximum number of open file descriptors\n\
+      -p	the pipe buffer size\n\
+      -q	the maximum number of bytes in POSIX message queues\n\
+      -r	the maximum real-time scheduling priority\n\
+      -s	the maximum stack size\n\
+      -t	the maximum amount of cpu time in seconds\n\
+      -u	the maximum number of user processes\n\
+      -v	the size of virtual memory\n\
+      -x	the maximum number of file locks\n\
+      -T    the maximum number of threads\n\
+    \n\
+    Not all options are available on all platforms.\n\
+    \n\
+    If LIMIT is given, it is the new value of the specified resource; the\n\
+    special LIMIT values `soft', `hard', and `unlimited' stand for the\n\
+    current soft limit, the current hard limit, and no limit, respectively.\n\
+    Otherwise, the current value of the specified resource is printed.  If\n\
+    no option is given, then -f is assumed.\n\
+    \n\
+    Values are in 1024-byte increments, except for -t, which is in seconds,\n\
+    -p, which is in increments of 512 bytes, and -u, which is an unscaled\n\
+    number of processes.\n\
+    \n\
+    Exit Status:\n\
+    Returns success unless an invalid option is supplied or an error occurs."),
+#endif /* HELP_BUILTIN */
+  (char *)NULL
+};
+#endif /* !_MINIX */
+char * const umask_doc[] = {
+#if defined (HELP_BUILTIN)
+N_("Display or set file mode mask.\n\
+    \n\
+    Sets the user file-creation mask to MODE.  If MODE is omitted, prints\n\
+    the current value of the mask.\n\
+    \n\
+    If MODE begins with a digit, it is interpreted as an octal number;\n\
+    otherwise it is a symbolic mode string like that accepted by chmod(1).\n\
+    \n\
+    Options:\n\
+      -p	if MODE is omitted, output in a form that may be reused as input\n\
+      -S	makes the output symbolic; otherwise an octal number is output\n\
+    \n\
+    Exit Status:\n\
+    Returns success unless MODE is invalid or an invalid option is given."),
+#endif /* HELP_BUILTIN */
+  (char *)NULL
+};
+#if defined (JOB_CONTROL)
+char * const wait_doc[] = {
+#if defined (HELP_BUILTIN)
+N_("Wait for job completion and return exit status.\n\
+    \n\
+    Waits for each process identified by an ID, which may be a process ID or a\n\
+    job specification, and reports its termination status.  If ID is not\n\
+    given, waits for all currently active child processes, and the return\n\
+    status is zero.  If ID is a a job specification, waits for all processes\n\
+    in that job's pipeline.\n\
+    \n\
+    If the -n option is supplied, waits for the next job to terminate and\n\
+    returns its exit status.\n\
+    \n\
+    Exit Status:\n\
+    Returns the status of the last ID; fails if ID is invalid or an invalid\n\
+    option is given."),
+#endif /* HELP_BUILTIN */
+  (char *)NULL
+};
+#endif /* JOB_CONTROL */
+#if !defined (JOB_CONTROL)
+char * const wait_doc[] = {
+#if defined (HELP_BUILTIN)
+N_("Wait for process completion and return exit status.\n\
+    \n\
+    Waits for each process specified by a PID and reports its termination status.\n\
+    If PID is not given, waits for all currently active child processes,\n\
+    and the return status is zero.  PID must be a process ID.\n\
+    \n\
+    Exit Status:\n\
+    Returns the status of the last PID; fails if PID is invalid or an invalid\n\
+    option is given."),
+#endif /* HELP_BUILTIN */
+  (char *)NULL
+};
+#endif /* !JOB_CONTROL */
 char * const for_doc[] = {
 #if defined (HELP_BUILTIN)
 N_("Execute commands for each member in a list.\n\
@@ -1533,173 +1788,100 @@ N_("Common shell variable names and usage.\n\
 #endif /* HELP_BUILTIN */
   (char *)NULL
 };
-char * const return_doc[] = {
+#if defined (PUSHD_AND_POPD)
+char * const pushd_doc[] = {
 #if defined (HELP_BUILTIN)
-N_("Return from a shell function.\n\
+N_("Add directories to stack.\n\
     \n\
-    Causes a function or sourced script to exit with the return value\n\
-    specified by N.  If N is omitted, the return status is that of the\n\
-    last command executed within the function or script.\n\
-    \n\
-    Exit Status:\n\
-    Returns N, or failure if the shell is not executing a function or script."),
-#endif /* HELP_BUILTIN */
-  (char *)NULL
-};
-char * const export_doc[] = {
-#if defined (HELP_BUILTIN)
-N_("Set export attribute for shell variables.\n\
-    \n\
-    Marks each NAME for automatic export to the environment of subsequently\n\
-    executed commands.  If VALUE is supplied, assign VALUE before exporting.\n\
+    Adds a directory to the top of the directory stack, or rotates\n\
+    the stack, making the new top of the stack the current working\n\
+    directory.  With no arguments, exchanges the top two directories.\n\
     \n\
     Options:\n\
-      -f	refer to shell functions\n\
-      -n	remove the export property from each NAME\n\
-      -p	display a list of all exported variables and functions\n\
+      -n	Suppresses the normal change of directory when adding\n\
+    	directories to the stack, so only the stack is manipulated.\n\
     \n\
-    An argument of `--' disables further option processing.\n\
+    Arguments:\n\
+      +N	Rotates the stack so that the Nth directory (counting\n\
+    	from the left of the list shown by `dirs', starting with\n\
+    	zero) is at the top.\n\
+    \n\
+      -N	Rotates the stack so that the Nth directory (counting\n\
+    	from the right of the list shown by `dirs', starting with\n\
+    	zero) is at the top.\n\
+    \n\
+      dir	Adds DIR to the directory stack at the top, making it the\n\
+    	new current working directory.\n\
+    \n\
+    The `dirs' builtin displays the directory stack.\n\
     \n\
     Exit Status:\n\
-    Returns success unless an invalid option is given or NAME is invalid."),
+    Returns success unless an invalid argument is supplied or the directory\n\
+    change fails."),
 #endif /* HELP_BUILTIN */
   (char *)NULL
 };
-char * const readonly_doc[] = {
+#endif /* PUSHD_AND_POPD */
+#if defined (PUSHD_AND_POPD)
+char * const popd_doc[] = {
 #if defined (HELP_BUILTIN)
-N_("Mark shell variables as unchangeable.\n\
+N_("Remove directories from stack.\n\
     \n\
-    Mark each NAME as read-only; the values of these NAMEs may not be\n\
-    changed by subsequent assignment.  If VALUE is supplied, assign VALUE\n\
-    before marking as read-only.\n\
+    Removes entries from the directory stack.  With no arguments, removes\n\
+    the top directory from the stack, and changes to the new top directory.\n\
     \n\
     Options:\n\
-      -a	refer to indexed array variables\n\
-      -A	refer to associative array variables\n\
-      -f	refer to shell functions\n\
-      -p	display a list of all readonly variables and functions\n\
+      -n	Suppresses the normal change of directory when removing\n\
+    	directories from the stack, so only the stack is manipulated.\n\
     \n\
-    An argument of `--' disables further option processing.\n\
+    Arguments:\n\
+      +N	Removes the Nth entry counting from the left of the list\n\
+    	shown by `dirs', starting with zero.  For example: `popd +0'\n\
+    	removes the first directory, `popd +1' the second.\n\
+    \n\
+      -N	Removes the Nth entry counting from the right of the list\n\
+    	shown by `dirs', starting with zero.  For example: `popd -0'\n\
+    	removes the last directory, `popd -1' the next to last.\n\
+    \n\
+    The `dirs' builtin displays the directory stack.\n\
     \n\
     Exit Status:\n\
-    Returns success unless an invalid option is given or NAME is invalid."),
+    Returns success unless an invalid argument is supplied or the directory\n\
+    change fails."),
 #endif /* HELP_BUILTIN */
   (char *)NULL
 };
-char * const set_doc[] = {
+#endif /* PUSHD_AND_POPD */
+#if defined (PUSHD_AND_POPD)
+char * const dirs_doc[] = {
 #if defined (HELP_BUILTIN)
-N_("Set or unset values of shell options and positional parameters.\n\
+N_("Display directory stack.\n\
     \n\
-    Change the value of shell attributes and positional parameters, or\n\
-    display the names and values of shell variables.\n\
+    Display the list of currently remembered directories.  Directories\n\
+    find their way onto the list with the `pushd' command; you can get\n\
+    back up through the list with the `popd' command.\n\
     \n\
     Options:\n\
-      -a  Mark variables which are modified or created for export.\n\
-      -b  Notify of job termination immediately.\n\
-      -e  Exit immediately if a command exits with a non-zero status.\n\
-      -f  Disable file name generation (globbing).\n\
-      -h  Remember the location of commands as they are looked up.\n\
-      -k  All assignment arguments are placed in the environment for a\n\
-          command, not just those that precede the command name.\n\
-      -m  Job control is enabled.\n\
-      -n  Read commands but do not execute them.\n\
-      -o option-name\n\
-          Set the variable corresponding to option-name:\n\
-              allexport    same as -a\n\
-              braceexpand  same as -B\n\
-              emacs        use an emacs-style line editing interface\n\
-              errexit      same as -e\n\
-              errtrace     same as -E\n\
-              functrace    same as -T\n\
-              hashall      same as -h\n\
-              histexpand   same as -H\n\
-              history      enable command history\n\
-              ignoreeof    the shell will not exit upon reading EOF\n\
-              interactive-comments\n\
-                           allow comments to appear in interactive commands\n\
-              keyword      same as -k\n\
-              monitor      same as -m\n\
-              noclobber    same as -C\n\
-              noexec       same as -n\n\
-              noglob       same as -f\n\
-              nolog        currently accepted but ignored\n\
-              notify       same as -b\n\
-              nounset      same as -u\n\
-              onecmd       same as -t\n\
-              physical     same as -P\n\
-              pipefail     the return value of a pipeline is the status of\n\
-                           the last command to exit with a non-zero status,\n\
-                           or zero if no command exited with a non-zero status\n\
-              posix        change the behavior of bash where the default\n\
-                           operation differs from the Posix standard to\n\
-                           match the standard\n\
-              privileged   same as -p\n\
-              verbose      same as -v\n\
-              vi           use a vi-style line editing interface\n\
-              xtrace       same as -x\n\
-      -p  Turned on whenever the real and effective user ids do not match.\n\
-          Disables processing of the $ENV file and importing of shell\n\
-          functions.  Turning this option off causes the effective uid and\n\
-          gid to be set to the real uid and gid.\n\
-      -t  Exit after reading and executing one command.\n\
-      -u  Treat unset variables as an error when substituting.\n\
-      -v  Print shell input lines as they are read.\n\
-      -x  Print commands and their arguments as they are executed.\n\
-      -B  the shell will perform brace expansion\n\
-      -C  If set, disallow existing regular files to be overwritten\n\
-          by redirection of output.\n\
-      -E  If set, the ERR trap is inherited by shell functions.\n\
-      -H  Enable ! style history substitution.  This flag is on\n\
-          by default when the shell is interactive.\n\
-      -P  If set, do not follow symbolic links when executing commands\n\
-          such as cd which change the current directory.\n\
-      -T  If set, the DEBUG trap is inherited by shell functions.\n\
-      -   Assign any remaining arguments to the positional parameters.\n\
-          The -x and -v options are turned off.\n\
+      -c	clear the directory stack by deleting all of the elements\n\
+      -l	do not print tilde-prefixed versions of directories relative\n\
+    	to your home directory\n\
+      -p	print the directory stack with one entry per line\n\
+      -v	print the directory stack with one entry per line prefixed\n\
+    	with its position in the stack\n\
     \n\
-    Using + rather than - causes these flags to be turned off.  The\n\
-    flags can also be used upon invocation of the shell.  The current\n\
-    set of flags may be found in $-.  The remaining n ARGs are positional\n\
-    parameters and are assigned, in order, to $1, $2, .. $n.  If no\n\
-    ARGs are given, all shell variables are printed.\n\
+    Arguments:\n\
+      +N	Displays the Nth entry counting from the left of the list shown by\n\
+    	dirs when invoked without options, starting with zero.\n\
+    \n\
+      -N	Displays the Nth entry counting from the right of the list shown by\n\
+    	dirs when invoked without options, starting with zero.\n\
     \n\
     Exit Status:\n\
-    Returns success unless an invalid option is given."),
+    Returns success unless an invalid option is supplied or an error occurs."),
 #endif /* HELP_BUILTIN */
   (char *)NULL
 };
-char * const unset_doc[] = {
-#if defined (HELP_BUILTIN)
-N_("Unset values and attributes of shell variables and functions.\n\
-    \n\
-    For each NAME, remove the corresponding variable or function.\n\
-    \n\
-    Options:\n\
-      -f	treat each NAME as a shell function\n\
-      -v	treat each NAME as a shell variable\n\
-    \n\
-    Without options, unset first tries to unset a variable, and if that fails,\n\
-    tries to unset a function.\n\
-    \n\
-    Some variables cannot be unset; also see `readonly'.\n\
-    \n\
-    Exit Status:\n\
-    Returns success unless an invalid option is given or a NAME is read-only."),
-#endif /* HELP_BUILTIN */
-  (char *)NULL
-};
-char * const shift_doc[] = {
-#if defined (HELP_BUILTIN)
-N_("Shift positional parameters.\n\
-    \n\
-    Rename the positional parameters $N+1,$N+2 ... to $1,$2 ...  If N is\n\
-    not given, it is assumed to be 1.\n\
-    \n\
-    Exit Status:\n\
-    Returns success unless N is negative or greater than $#."),
-#endif /* HELP_BUILTIN */
-  (char *)NULL
-};
+#endif /* PUSHD_AND_POPD */
 char * const shopt_doc[] = {
 #if defined (HELP_BUILTIN)
 N_("Set and unset shell options.\n\
@@ -1721,308 +1903,152 @@ N_("Set and unset shell options.\n\
 #endif /* HELP_BUILTIN */
   (char *)NULL
 };
-char * const source_doc[] = {
+char * const printf_doc[] = {
 #if defined (HELP_BUILTIN)
-N_("Execute commands from a file in the current shell.\n\
-    \n\
-    Read and execute commands from FILENAME in the current shell.  The\n\
-    entries in $PATH are used to find the directory containing FILENAME.\n\
-    If any ARGUMENTS are supplied, they become the positional parameters\n\
-    when FILENAME is executed.\n\
-    \n\
-    Exit Status:\n\
-    Returns the status of the last command executed in FILENAME; fails if\n\
-    FILENAME cannot be read."),
-#endif /* HELP_BUILTIN */
-  (char *)NULL
-};
-char * const dot_doc[] = {
-#if defined (HELP_BUILTIN)
-N_("Execute commands from a file in the current shell.\n\
-    \n\
-    Read and execute commands from FILENAME in the current shell.  The\n\
-    entries in $PATH are used to find the directory containing FILENAME.\n\
-    If any ARGUMENTS are supplied, they become the positional parameters\n\
-    when FILENAME is executed.\n\
-    \n\
-    Exit Status:\n\
-    Returns the status of the last command executed in FILENAME; fails if\n\
-    FILENAME cannot be read."),
-#endif /* HELP_BUILTIN */
-  (char *)NULL
-};
-#if defined (JOB_CONTROL)
-char * const suspend_doc[] = {
-#if defined (HELP_BUILTIN)
-N_("Suspend shell execution.\n\
-    \n\
-    Suspend the execution of this shell until it receives a SIGCONT signal.\n\
-    Unless forced, login shells cannot be suspended.\n\
+N_("Formats and prints ARGUMENTS under control of the FORMAT.\n\
     \n\
     Options:\n\
-      -f	force the suspend, even if the shell is a login shell\n\
+      -v var	assign the output to shell variable VAR rather than\n\
+    		display it on the standard output\n\
+    \n\
+    FORMAT is a character string which contains three types of objects: plain\n\
+    characters, which are simply copied to standard output; character escape\n\
+    sequences, which are converted and copied to the standard output; and\n\
+    format specifications, each of which causes printing of the next successive\n\
+    argument.\n\
+    \n\
+    In addition to the standard format specifications described in printf(1),\n\
+    printf interprets:\n\
+    \n\
+      %b	expand backslash escape sequences in the corresponding argument\n\
+      %q	quote the argument in a way that can be reused as shell input\n\
+      %(fmt)T output the date-time string resulting from using FMT as a format\n\
+            string for strftime(3)\n\
+    \n\
+    The format is re-used as necessary to consume all of the arguments.  If\n\
+    there are fewer arguments than the format requires,  extra format\n\
+    specifications behave as if a zero value or null string, as appropriate,\n\
+    had been supplied.\n\
     \n\
     Exit Status:\n\
-    Returns success unless job control is not enabled or an error occurs."),
+    Returns success unless an invalid option is given or a write or assignment\n\
+    error occurs."),
 #endif /* HELP_BUILTIN */
   (char *)NULL
 };
-#endif /* JOB_CONTROL */
-char * const test_doc[] = {
+#if defined (PROGRAMMABLE_COMPLETION)
+char * const complete_doc[] = {
 #if defined (HELP_BUILTIN)
-N_("Evaluate conditional expression.\n\
+N_("Specify how arguments are to be completed by Readline.\n\
     \n\
-    Exits with a status of 0 (true) or 1 (false) depending on\n\
-    the evaluation of EXPR.  Expressions may be unary or binary.  Unary\n\
-    expressions are often used to examine the status of a file.  There\n\
-    are string operators as well, and numeric comparison operators.\n\
-    \n\
-    File operators:\n\
-    \n\
-      -a FILE        True if file exists.\n\
-      -b FILE        True if file is block special.\n\
-      -c FILE        True if file is character special.\n\
-      -d FILE        True if file is a directory.\n\
-      -e FILE        True if file exists.\n\
-      -f FILE        True if file exists and is a regular file.\n\
-      -g FILE        True if file is set-group-id.\n\
-      -h FILE        True if file is a symbolic link.\n\
-      -L FILE        True if file is a symbolic link.\n\
-      -k FILE        True if file has its `sticky' bit set.\n\
-      -p FILE        True if file is a named pipe.\n\
-      -r FILE        True if file is readable by you.\n\
-      -s FILE        True if file exists and is not empty.\n\
-      -S FILE        True if file is a socket.\n\
-      -t FD          True if FD is opened on a terminal.\n\
-      -u FILE        True if the file is set-user-id.\n\
-      -w FILE        True if the file is writable by you.\n\
-      -x FILE        True if the file is executable by you.\n\
-      -O FILE        True if the file is effectively owned by you.\n\
-      -G FILE        True if the file is effectively owned by your group.\n\
-      -N FILE        True if the file has been modified since it was last read.\n\
-    \n\
-      FILE1 -nt FILE2  True if file1 is newer than file2 (according to\n\
-                       modification date).\n\
-    \n\
-      FILE1 -ot FILE2  True if file1 is older than file2.\n\
-    \n\
-      FILE1 -ef FILE2  True if file1 is a hard link to file2.\n\
-    \n\
-    String operators:\n\
-    \n\
-      -z STRING      True if string is empty.\n\
-    \n\
-      -n STRING\n\
-         STRING      True if string is not empty.\n\
-    \n\
-      STRING1 = STRING2\n\
-                     True if the strings are equal.\n\
-      STRING1 != STRING2\n\
-                     True if the strings are not equal.\n\
-      STRING1 < STRING2\n\
-                     True if STRING1 sorts before STRING2 lexicographically.\n\
-      STRING1 > STRING2\n\
-                     True if STRING1 sorts after STRING2 lexicographically.\n\
-    \n\
-    Other operators:\n\
-    \n\
-      -o OPTION      True if the shell option OPTION is enabled.\n\
-      ! EXPR         True if expr is false.\n\
-      EXPR1 -a EXPR2 True if both expr1 AND expr2 are true.\n\
-      EXPR1 -o EXPR2 True if either expr1 OR expr2 is true.\n\
-    \n\
-      arg1 OP arg2   Arithmetic tests.  OP is one of -eq, -ne,\n\
-                     -lt, -le, -gt, or -ge.\n\
-    \n\
-    Arithmetic binary operators return true if ARG1 is equal, not-equal,\n\
-    less-than, less-than-or-equal, greater-than, or greater-than-or-equal\n\
-    than ARG2.\n\
-    \n\
-    Exit Status:\n\
-    Returns success if EXPR evaluates to true; fails if EXPR evaluates to\n\
-    false or an invalid argument is given."),
-#endif /* HELP_BUILTIN */
-  (char *)NULL
-};
-char * const test_bracket_doc[] = {
-#if defined (HELP_BUILTIN)
-N_("Evaluate conditional expression.\n\
-    \n\
-    This is a synonym for the \"test\" builtin, but the last argument must\n\
-    be a literal `]', to match the opening `['."),
-#endif /* HELP_BUILTIN */
-  (char *)NULL
-};
-char * const times_doc[] = {
-#if defined (HELP_BUILTIN)
-N_("Display process times.\n\
-    \n\
-    Prints the accumulated user and system times for the shell and all of its\n\
-    child processes.\n\
-    \n\
-    Exit Status:\n\
-    Always succeeds."),
-#endif /* HELP_BUILTIN */
-  (char *)NULL
-};
-char * const trap_doc[] = {
-#if defined (HELP_BUILTIN)
-N_("Trap signals and other events.\n\
-    \n\
-    Defines and activates handlers to be run when the shell receives signals\n\
-    or other conditions.\n\
-    \n\
-    ARG is a command to be read and executed when the shell receives the\n\
-    signal(s) SIGNAL_SPEC.  If ARG is absent (and a single SIGNAL_SPEC\n\
-    is supplied) or `-', each specified signal is reset to its original\n\
-    value.  If ARG is the null string each SIGNAL_SPEC is ignored by the\n\
-    shell and by the commands it invokes.\n\
-    \n\
-    If a SIGNAL_SPEC is EXIT (0) ARG is executed on exit from the shell.  If\n\
-    a SIGNAL_SPEC is DEBUG, ARG is executed before every simple command.\n\
-    \n\
-    If no arguments are supplied, trap prints the list of commands associated\n\
-    with each signal.\n\
+    For each NAME, specify how arguments are to be completed.  If no options\n\
+    are supplied, existing completion specifications are printed in a way that\n\
+    allows them to be reused as input.\n\
     \n\
     Options:\n\
-      -l	print a list of signal names and their corresponding numbers\n\
-      -p	display the trap commands associated with each SIGNAL_SPEC\n\
+      -p	print existing completion specifications in a reusable format\n\
+      -r	remove a completion specification for each NAME, or, if no\n\
+    	NAMEs are supplied, all completion specifications\n\
+      -D	apply the completions and actions as the default for commands\n\
+    	without any specific completion defined\n\
+      -E	apply the completions and actions to \"empty\" commands --\n\
+    	completion attempted on a blank line\n\
     \n\
-    Each SIGNAL_SPEC is either a signal name in <signal.h> or a signal number.\n\
-    Signal names are case insensitive and the SIG prefix is optional.  A\n\
-    signal may be sent to the shell with \"kill -signal $$\".\n\
-    \n\
-    Exit Status:\n\
-    Returns success unless a SIGSPEC is invalid or an invalid option is given."),
-#endif /* HELP_BUILTIN */
-  (char *)NULL
-};
-char * const type_doc[] = {
-#if defined (HELP_BUILTIN)
-N_("Display information about command type.\n\
-    \n\
-    For each NAME, indicate how it would be interpreted if used as a\n\
-    command name.\n\
-    \n\
-    Options:\n\
-      -a	display all locations containing an executable named NAME;\n\
-    	includes aliases, builtins, and functions, if and only if\n\
-    	the `-p' option is not also used\n\
-      -f	suppress shell function lookup\n\
-      -P	force a PATH search for each NAME, even if it is an alias,\n\
-    	builtin, or function, and returns the name of the disk file\n\
-    	that would be executed\n\
-      -p	returns either the name of the disk file that would be executed,\n\
-    	or nothing if `type -t NAME' would not return `file'.\n\
-      -t	output a single word which is one of `alias', `keyword',\n\
-    	`function', `builtin', `file' or `', if NAME is an alias, shell\n\
-    	reserved word, shell function, shell builtin, disk file, or not\n\
-    	found, respectively\n\
-    \n\
-    Arguments:\n\
-      NAME	Command name to be interpreted.\n\
-    \n\
-    Exit Status:\n\
-    Returns success if all of the NAMEs are found; fails if any are not found."),
-#endif /* HELP_BUILTIN */
-  (char *)NULL
-};
-#if !defined (_MINIX)
-char * const ulimit_doc[] = {
-#if defined (HELP_BUILTIN)
-N_("Modify shell resource limits.\n\
-    \n\
-    Provides control over the resources available to the shell and processes\n\
-    it creates, on systems that allow such control.\n\
-    \n\
-    Options:\n\
-      -S	use the `soft' resource limit\n\
-      -H	use the `hard' resource limit\n\
-      -a	all current limits are reported\n\
-      -b	the socket buffer size\n\
-      -c	the maximum size of core files created\n\
-      -d	the maximum size of a process's data segment\n\
-      -e	the maximum scheduling priority (`nice')\n\
-      -f	the maximum size of files written by the shell and its children\n\
-      -i	the maximum number of pending signals\n\
-      -l	the maximum size a process may lock into memory\n\
-      -m	the maximum resident set size\n\
-      -n	the maximum number of open file descriptors\n\
-      -p	the pipe buffer size\n\
-      -q	the maximum number of bytes in POSIX message queues\n\
-      -r	the maximum real-time scheduling priority\n\
-      -s	the maximum stack size\n\
-      -t	the maximum amount of cpu time in seconds\n\
-      -u	the maximum number of user processes\n\
-      -v	the size of virtual memory\n\
-      -x	the maximum number of file locks\n\
-    \n\
-    If LIMIT is given, it is the new value of the specified resource; the\n\
-    special LIMIT values `soft', `hard', and `unlimited' stand for the\n\
-    current soft limit, the current hard limit, and no limit, respectively.\n\
-    Otherwise, the current value of the specified resource is printed.  If\n\
-    no option is given, then -f is assumed.\n\
-    \n\
-    Values are in 1024-byte increments, except for -t, which is in seconds,\n\
-    -p, which is in increments of 512 bytes, and -u, which is an unscaled\n\
-    number of processes.\n\
+    When completion is attempted, the actions are applied in the order the\n\
+    uppercase-letter options are listed above.  The -D option takes\n\
+    precedence over -E.\n\
     \n\
     Exit Status:\n\
     Returns success unless an invalid option is supplied or an error occurs."),
 #endif /* HELP_BUILTIN */
   (char *)NULL
 };
-#endif /* !_MINIX */
-char * const umask_doc[] = {
+#endif /* PROGRAMMABLE_COMPLETION */
+#if defined (PROGRAMMABLE_COMPLETION)
+char * const compgen_doc[] = {
 #if defined (HELP_BUILTIN)
-N_("Display or set file mode mask.\n\
+N_("Display possible completions depending on the options.\n\
     \n\
-    Sets the user file-creation mask to MODE.  If MODE is omitted, prints\n\
-    the current value of the mask.\n\
+    Intended to be used from within a shell function generating possible\n\
+    completions.  If the optional WORD argument is supplied, matches against\n\
+    WORD are generated.\n\
     \n\
-    If MODE begins with a digit, it is interpreted as an octal number;\n\
-    otherwise it is a symbolic mode string like that accepted by chmod(1).\n\
+    Exit Status:\n\
+    Returns success unless an invalid option is supplied or an error occurs."),
+#endif /* HELP_BUILTIN */
+  (char *)NULL
+};
+#endif /* PROGRAMMABLE_COMPLETION */
+#if defined (PROGRAMMABLE_COMPLETION)
+char * const compopt_doc[] = {
+#if defined (HELP_BUILTIN)
+N_("Modify or display completion options.\n\
+    \n\
+    Modify the completion options for each NAME, or, if no NAMEs are supplied,\n\
+    the completion currently being executed.  If no OPTIONs are given, print\n\
+    the completion options for each NAME or the current completion specification.\n\
     \n\
     Options:\n\
-      -p	if MODE is omitted, output in a form that may be reused as input\n\
-      -S	makes the output symbolic; otherwise an octal number is output\n\
+    	-o option	Set completion option OPTION for each NAME\n\
+    	-D		Change options for the \"default\" command completion\n\
+    	-E		Change options for the \"empty\" command completion\n\
+    \n\
+    Using `+o' instead of `-o' turns off the specified option.\n\
+    \n\
+    Arguments:\n\
+    \n\
+    Each NAME refers to a command for which a completion specification must\n\
+    have previously been defined using the `complete' builtin.  If no NAMEs\n\
+    are supplied, compopt must be called by a function currently generating\n\
+    completions, and the options for that currently-executing completion\n\
+    generator are modified.\n\
     \n\
     Exit Status:\n\
-    Returns success unless MODE is invalid or an invalid option is given."),
+    Returns success unless an invalid option is supplied or NAME does not\n\
+    have a completion specification defined."),
 #endif /* HELP_BUILTIN */
   (char *)NULL
 };
-#if defined (JOB_CONTROL)
-char * const wait_doc[] = {
+#endif /* PROGRAMMABLE_COMPLETION */
+char * const mapfile_doc[] = {
 #if defined (HELP_BUILTIN)
-N_("Wait for job completion and return exit status.\n\
+N_("Read lines from the standard input into an indexed array variable.\n\
     \n\
-    Waits for the process identified by ID, which may be a process ID or a\n\
-    job specification, and reports its termination status.  If ID is not\n\
-    given, waits for all currently active child processes, and the return\n\
-    status is zero.  If ID is a a job specification, waits for all processes\n\
-    in the job's pipeline.\n\
+    Read lines from the standard input into the indexed array variable ARRAY, or\n\
+    from file descriptor FD if the -u option is supplied.  The variable MAPFILE\n\
+    is the default ARRAY.\n\
+    \n\
+    Options:\n\
+      -n count	Copy at most COUNT lines.  If COUNT is 0, all lines are copied.\n\
+      -O origin	Begin assigning to ARRAY at index ORIGIN.  The default index is 0.\n\
+      -s count 	Discard the first COUNT lines read.\n\
+      -t		Remove a trailing newline from each line read.\n\
+      -u fd		Read lines from file descriptor FD instead of the standard input.\n\
+      -C callback	Evaluate CALLBACK each time QUANTUM lines are read.\n\
+      -c quantum	Specify the number of lines read between each call to CALLBACK.\n\
+    \n\
+    Arguments:\n\
+      ARRAY		Array variable name to use for file data.\n\
+    \n\
+    If -C is supplied without -c, the default quantum is 5000.  When\n\
+    CALLBACK is evaluated, it is supplied the index of the next array\n\
+    element to be assigned and the line to be assigned to that element\n\
+    as additional arguments.\n\
+    \n\
+    If not supplied with an explicit origin, mapfile will clear ARRAY before\n\
+    assigning to it.\n\
     \n\
     Exit Status:\n\
-    Returns the status of ID; fails if ID is invalid or an invalid option is\n\
-    given."),
+    Returns success unless an invalid option is given or ARRAY is readonly or\n\
+    not an indexed array."),
 #endif /* HELP_BUILTIN */
   (char *)NULL
 };
-#endif /* JOB_CONTROL */
-#if !defined (JOB_CONTROL)
-char * const wait_doc[] = {
+char * const readarray_doc[] = {
 #if defined (HELP_BUILTIN)
-N_("Wait for process completion and return exit status.\n\
+N_("Read lines from a file into an array variable.\n\
     \n\
-    Waits for the specified process and reports its termination status.  If\n\
-    PID is not given, all currently active child processes are waited for,\n\
-    and the return code is zero.  PID must be a process ID.\n\
-    \n\
-    Exit Status:\n\
-    Returns the status of ID; fails if ID is invalid or an invalid option is\n\
-    given."),
+    A synonym for `mapfile'."),
 #endif /* HELP_BUILTIN */
   (char *)NULL
 };
-#endif /* !JOB_CONTROL */

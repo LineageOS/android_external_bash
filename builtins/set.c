@@ -38,7 +38,7 @@ extern int dont_save_function_defs;
 extern int no_line_editing;
 #endif /* READLINE */
 
-#line 153 "./set.def"
+#line 160 "./set.def"
 
 typedef int setopt_set_func_t __P((int, char *));
 typedef int setopt_get_func_t __P((char *));
@@ -91,7 +91,9 @@ const struct {
   { "ignoreeof", '\0', &ignoreeof, set_ignoreeof, (setopt_get_func_t *)NULL },
   { "interactive-comments", '\0', &interactive_comments, (setopt_set_func_t *)NULL, (setopt_get_func_t *)NULL },
   { "keyword",    'k', (int *)NULL, (setopt_set_func_t *)NULL, (setopt_get_func_t *)NULL  },
+#if defined (JOB_CONTROL)
   { "monitor",	  'm', (int *)NULL, (setopt_set_func_t *)NULL, (setopt_get_func_t *)NULL  },
+#endif
   { "noclobber",  'C', (int *)NULL, (setopt_set_func_t *)NULL, (setopt_get_func_t *)NULL  },
   { "noexec",	  'n', (int *)NULL, (setopt_set_func_t *)NULL, (setopt_get_func_t *)NULL  },
   { "noglob",	  'f', (int *)NULL, (setopt_set_func_t *)NULL, (setopt_get_func_t *)NULL  },
@@ -602,7 +604,7 @@ set_builtin (list)
   return (rv);
 }
 
-#line 735 "./set.def"
+#line 746 "./set.def"
 
 #define NEXT_VARIABLE()	any_failed++; list = list->next; continue;
 
@@ -610,13 +612,13 @@ int
 unset_builtin (list)
   WORD_LIST *list;
 {
-  int unset_function, unset_variable, unset_array, opt, any_failed;
+  int unset_function, unset_variable, unset_array, opt, nameref, any_failed;
   char *name;
 
-  unset_function = unset_variable = unset_array = any_failed = 0;
+  unset_function = unset_variable = unset_array = nameref = any_failed = 0;
 
   reset_internal_getopt ();
-  while ((opt = internal_getopt (list, "fv")) != -1)
+  while ((opt = internal_getopt (list, "fnv")) != -1)
     {
       switch (opt)
 	{
@@ -625,6 +627,9 @@ unset_builtin (list)
 	  break;
 	case 'v':
 	  unset_variable = 1;
+	  break;
+	case 'n':
+	  nameref = 1;
 	  break;
 	default:
 	  builtin_usage ();
@@ -639,6 +644,8 @@ unset_builtin (list)
       builtin_error (_("cannot simultaneously unset a function and a variable"));
       return (EXECUTION_FAILURE);
     }
+  else if (unset_function && nameref)
+    nameref = 0;
 
   while (list)
     {
@@ -659,6 +666,8 @@ unset_builtin (list)
 	  unset_array++;
 	}
 #endif
+      /* Get error checking out of the way first.  The low-level functions
+	 just perform the unset, relying on the caller to verify. */
 
       /* Bash allows functions with names which are not valid identifiers
 	 to be created when not in posix mode, so check only when in posix
@@ -669,19 +678,32 @@ unset_builtin (list)
 	  NEXT_VARIABLE ();
 	}
 
-      var = unset_function ? find_function (name) : find_variable (name);
+      /* Only search for functions here if -f supplied. */
+      var = unset_function ? find_function (name)
+			   : (nameref ? find_variable_last_nameref (name) : find_variable (name));
 
-      if (var && !unset_function && non_unsettable_p (var))
+      /* Some variables (but not functions yet) cannot be unset, period. */
+      if (var && unset_function == 0 && non_unsettable_p (var))
 	{
 	  builtin_error (_("%s: cannot unset"), name);
 	  NEXT_VARIABLE ();
+	}
+
+      /* Posix.2 says try variables first, then functions.  If we would
+	 find a function after unsuccessfully searching for a variable,
+	 note that we're acting on a function now as if -f were
+	 supplied.  The readonly check below takes care of it. */
+      if (var == 0 && unset_variable == 0 && unset_function == 0)
+	{
+	  if (var = find_function (name))
+	    unset_function = 1;
 	}
 
       /* Posix.2 says that unsetting readonly variables is an error. */
       if (var && readonly_p (var))
 	{
 	  builtin_error (_("%s: cannot unset: readonly %s"),
-			 name, unset_function ? "function" : "variable");
+			 var->name, unset_function ? "function" : "variable");
 	  NEXT_VARIABLE ();
 	}
 
@@ -691,7 +713,7 @@ unset_builtin (list)
 	{
 	  if (array_p (var) == 0 && assoc_p (var) == 0)
 	    {
-	      builtin_error (_("%s: not an array variable"), name);
+	      builtin_error (_("%s: not an array variable"), var->name);
 	      NEXT_VARIABLE ();
 	    }
 	  else
@@ -703,13 +725,13 @@ unset_builtin (list)
 	}
       else
 #endif /* ARRAY_VARS */
-      tem = unset_function ? unbind_func (name) : unbind_variable (name);
+      tem = unset_function ? unbind_func (name) : (nameref ? unbind_nameref (name) : unbind_variable (name));
 
-      /* This is what Posix.2 draft 11+ says.  ``If neither -f nor -v
+      /* This is what Posix.2 says:  ``If neither -f nor -v
 	 is specified, the name refers to a variable; if a variable by
 	 that name does not exist, a function by that name, if any,
 	 shall be unset.'' */
-      if (tem == -1 && !unset_function && !unset_variable)
+      if (tem == -1 && unset_function == 0 && unset_variable == 0)
 	tem = unbind_func (name);
 
       /* SUSv3, POSIX.1-2001 say:  ``Unsetting a variable or function that

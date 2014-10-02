@@ -3,7 +3,7 @@
 
 #include <config.h>
 
-#line 61 "./bind.def"
+#line 63 "./bind.def"
 
 #if defined (READLINE)
 
@@ -50,6 +50,7 @@ extern int no_line_editing;
 #define SSFLAG  0x0400
 #define UFLAG	0x0800
 #define XFLAG	0x1000
+#define XXFLAG	0x2000
 
 int
 bind_builtin (list)
@@ -84,7 +85,7 @@ bind_builtin (list)
   rl_outstream = stdout;
 
   reset_internal_getopt ();  
-  while ((opt = internal_getopt (list, "lvpVPsSf:q:u:m:r:x:")) != EOF)
+  while ((opt = internal_getopt (list, "lvpVPsSXf:q:u:m:r:x:")) != EOF)
     {
       switch (opt)
 	{
@@ -133,6 +134,9 @@ bind_builtin (list)
 	  flags |= XFLAG;
 	  cmd_seq = list_optarg;
 	  break;
+	case 'X':
+	  flags |= XXFLAG;
+	  break;
 	default:
 	  builtin_usage ();
 	  BIND_RETURN (EX_USAGE);
@@ -147,7 +151,7 @@ bind_builtin (list)
   if ((flags & MFLAG) && map_name)
     {
       kmap = rl_get_keymap_by_name (map_name);
-      if (!kmap)
+      if (kmap == 0)
 	{
 	  builtin_error (_("`%s': invalid keymap name"), map_name);
 	  BIND_RETURN (EXECUTION_FAILURE);
@@ -210,6 +214,9 @@ bind_builtin (list)
 
   if (flags & XFLAG)
     return_code = bind_keyseq_to_unix_command (cmd_seq);
+
+  if (flags & XXFLAG)
+    return_code = print_unix_command_map ();
 
   /* Process the rest of the arguments as binding specifications. */
   while (list)
