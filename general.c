@@ -89,12 +89,12 @@ static struct {
   int *posix_mode_var;
 } posix_vars[] = 
 {
-  &interactive_comments,
-  &source_uses_path,
-  &expand_aliases,
-  &inherit_errexit,
-  &print_shift_error,
-  0
+  {&interactive_comments},
+  {&source_uses_path},
+  {&expand_aliases},
+  {&inherit_errexit},
+  {&print_shift_error},
+  {0}
 };
 
 static char *saved_posix_vars = 0;

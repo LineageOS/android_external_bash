@@ -15,7 +15,6 @@
 .build
 .made
 
-config.h
 config.status
 config.cache
 config.log
@@ -28,10 +27,7 @@ bashversion
 
 Makefile
 builtins/Makefile
-builtins/builtext.h
-builtins/builtins.c
 builtins/mkbuiltins
-builtins/pipesize.h
 builtins/psize.aux
 
 doc/Makefile
@@ -62,10 +58,6 @@ support/man2html
 support/bashbug.sh
 
 lsignames.h
-pathnames.h
-signames.h
-version.h
-syntax.c
 stamp-h
 
 mksignames
