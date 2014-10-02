@@ -25,10 +25,6 @@
 #include "common.h"
 #include "bashgetopt.h"
 
-#ifdef __LCC__
-#define mode_t int
-#endif
-
 /* **************************************************************** */
 /*                                                                  */
 /*                     UMASK Builtin and Helpers                    */

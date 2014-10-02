@@ -82,6 +82,8 @@ sh_stat (path, finfo)
      const char *path;
      struct stat *finfo;
 {
+  static char *pbuf = 0;
+
   if (*path == '\0')
     {
       errno = ENOENT;
@@ -106,7 +108,7 @@ sh_stat (path, finfo)
      trailing slash.  Make sure /dev/fd/xx really uses DEV_FD_PREFIX/xx.
      On most systems, with the notable exception of linux, this is
      effectively a no-op. */
-      char pbuf[32];
+      pbuf = xrealloc (pbuf, sizeof (DEV_FD_PREFIX) + strlen (path + 8));
       strcpy (pbuf, DEV_FD_PREFIX);
       strcat (pbuf, path + 8);
       return (stat (pbuf, finfo));
@@ -203,14 +205,16 @@ sh_eaccess (path, mode)
   if (path_is_devfd (path))
     return (sh_stataccess (path, mode));
 
-#if defined (HAVE_FACCESSAT) && defined (AT_EACCESS)
-  return (faccessat (AT_FDCWD, path, mode, AT_EACCESS));
-#elif defined (HAVE_EACCESS)		/* FreeBSD */
+#if (defined (HAVE_FACCESSAT) && defined (AT_EACCESS)) || defined (HAVE_EACCESS)
+#  if defined (HAVE_FACCESSAT) && defined (AT_EACCESS)
+  ret = faccessat (AT_FDCWD, path, mode, AT_EACCESS);
+#  else		/* HAVE_EACCESS */	/* FreeBSD */
   ret = eaccess (path, mode);	/* XXX -- not always correct for X_OK */
-#  if defined (__FreeBSD__)
+#  endif	/* HAVE_EACCESS */
+#  if defined (__FreeBSD__) || defined (SOLARIS)
   if (ret == 0 && current_user.euid == 0 && mode == X_OK)
     return (sh_stataccess (path, mode));
-#  endif
+#  endif	/* __FreeBSD__ || SOLARIS */
   return ret;
 #elif defined (EFF_ONLY_OK)		/* SVR4(?), SVR4.2 */
   return access (path, mode|EFF_ONLY_OK);
@@ -231,7 +235,6 @@ sh_eaccess (path, mode)
 	return (sh_stataccess (path, mode));
 #endif
       return ret;
-      
     }
 
   return (sh_stataccess (path, mode));

@@ -26,6 +26,7 @@
 #  include <unistd.h>
 #endif
 
+#include <signal.h>
 #include <errno.h>
 
 #if !defined (errno)
@@ -35,6 +36,9 @@
 #ifndef SEEK_CUR
 #  define SEEK_CUR 1
 #endif
+
+extern void check_signals_and_traps (void);
+extern int signal_is_trapped (int);
 
 /* Read LEN bytes from FD into BUF.  Retry the read on EINTR.  Any other
    error causes the loop to break. */
@@ -46,8 +50,22 @@ zread (fd, buf, len)
 {
   ssize_t r;
 
+#if 0
+#if defined (HAVE_SIGINTERRUPT)
+  if (signal_is_trapped (SIGCHLD))
+    siginterrupt (SIGCHLD, 1);
+#endif
+#endif
+
   while ((r = read (fd, buf, len)) < 0 && errno == EINTR)
-    ;
+    check_signals_and_traps ();	/* XXX - should it be check_signals()? */
+
+#if 0 
+#if defined (HAVE_SIGINTERRUPT)
+  siginterrupt (SIGCHLD, 0);
+#endif
+#endif
+
   return r;
 }
 
@@ -148,6 +166,34 @@ zreadcintr (fd, cp)
   return 1;
 }
 
+/* Like zreadc, but read a specified number of characters at a time.  Used
+   for `read -N'. */
+ssize_t
+zreadn (fd, cp, len)
+     int fd;
+     char *cp;
+     size_t len;
+{
+  ssize_t nr;
+
+  if (lind == lused || lused == 0)
+    {
+      if (len > sizeof (lbuf))
+	len = sizeof (lbuf);
+      nr = zread (fd, lbuf, len);
+      lind = 0;
+      if (nr <= 0)
+	{
+	  lused = 0;
+	  return nr;
+	}
+      lused = nr;
+    }
+  if (cp)
+    *cp = lbuf[lind++];
+  return 1;
+}
+
 void
 zreset ()
 {
@@ -160,14 +206,13 @@ void
 zsyncfd (fd)
      int fd;
 {
-  off_t off;
-  int r;
+  off_t off, r;
 
   off = lused - lind;
   r = 0;
   if (off > 0)
     r = lseek (fd, -off, SEEK_CUR);
 
-  if (r >= 0)
+  if (r != -1)
     lused = lind = 0;
 }

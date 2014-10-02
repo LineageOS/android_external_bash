@@ -42,6 +42,8 @@ LOCAL_SRC_FILES:= \
 	parens.c \
 	search.c \
 	rltty.c \
+	colors.c \
+	parse-colors.c \
 	complete.c \
 	bind.c \
 	isearch.c \

@@ -118,7 +118,9 @@ hash_builtin (list)
     {
       /* Add, remove or rehash the specified commands. */
       w = list->word->word;
-      if (pathname)
+      if (absolute_program (w))
+	continue;
+      else if (pathname)
 	{
 	  if (is_directory (pathname))
 	    {
@@ -132,8 +134,6 @@ hash_builtin (list)
 	  else
 	    phash_insert (w, pathname, 0, 0);
 	}
-      else if (absolute_program (w))
-	continue;
       else if (delete)
 	{
 	  if (phash_remove (w))
@@ -161,6 +161,7 @@ add_hashed_command (w, quiet)
   rv = 0;
   if (find_function (w) == 0 && find_shell_builtin (w) == 0)
     {
+      phash_remove (w);
       full_path = find_user_command (w);
       if (full_path && executable_file (full_path))
 	phash_insert (w, full_path, dot_found_in_search, 0);
@@ -234,6 +235,7 @@ list_hashed_filename_targets (list, fmt)
 	    printf ("%s\t", l->word->word);
 	  printf ("%s\n", target);
 	}
+      free (target);
     }
 
   return (all_found ? EXECUTION_SUCCESS : EXECUTION_FAILURE);
