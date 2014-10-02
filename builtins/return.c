@@ -29,9 +29,11 @@ int
 return_builtin (list)
      WORD_LIST *list;
 {
+#if 0
   if (no_options (list))
     return (EX_USAGE);
   list = loptend;	/* skip over possible `--' */
+#endif
 
   return_catch_value = get_exitstat (list);
 

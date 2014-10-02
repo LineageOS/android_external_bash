@@ -1,7 +1,7 @@
 /* config.h.  Generated from config.h.in by configure.  */
 /* config.h -- Configuration file for bash. */
 
-/* Copyright (C) 1987-2009 Free Software Foundation, Inc.
+/* Copyright (C) 1987-2009,2011-2012 Free Software Foundation, Inc.
 
    This file is part of GNU Bash, the Bourne Again SHell.
 
@@ -161,9 +161,6 @@
    memory contents on malloc() and free(). */
 #define MEMSCRAMBLE 1
 
-/* Define AFS if you are using Transarc's AFS. */
-/* #undef AFS */
-
 /* Define for case-modifying variable attributes; variables modified on
    assignment */
 #define CASEMOD_ATTRS 1
@@ -171,7 +168,16 @@
 /* Define for case-modifying word expansions */
 #define CASEMOD_EXPANSIONS 1
 
-/* #undef ENABLE_NLS */
+/* Define to make the `direxpand' shopt option enabled by default. */
+/* #undef DIRCOMPLETE_EXPAND_DEFAULT */
+
+/* Define to make the `globasciiranges' shopt option enabled by default. */
+#define GLOBASCII_DEFAULT 0
+
+/* Define AFS if you are using Transarc's AFS. */
+/* #undef AFS */
+
+/* #define ENABLE_NLS 1 */
 
 /* End of configuration settings controllable by autoconf. */
 /* Other settable options appear in config-top.h. */
@@ -245,7 +251,7 @@
 /* Memory management functions. */
 
 /* Define if using the bash version of malloc in lib/malloc/malloc.c */
-/* #undef USING_BASH_MALLOC */
+// #define USING_BASH_MALLOC 1
 
 /* #undef DISABLE_MALLOC_WRAPPERS */
 
@@ -345,7 +351,7 @@
 /* Define if you have wint_t in <wctype.h>. */
 #define HAVE_WINT_T 1
 
-#define RLIMTYPE __rlim_t
+#define RLIMTYPE rlim_t
 
 /* Define to the type of elements in the array set by `getgroups'.
    Usually this is either `int' or `gid_t'.  */
@@ -398,11 +404,11 @@
 
 #define GWINSZ_IN_SYS_IOCTL 1
 
-/* #undef STRUCT_WINSIZE_IN_SYS_IOCTL */
+// #define STRUCT_WINSIZE_IN_SYS_IOCTL 1
 
 /* #undef TM_IN_SYS_TIME */
 
-#define STRUCT_WINSIZE_IN_TERMIOS 1
+#undef STRUCT_WINSIZE_IN_TERMIOS
 
 /* #undef SPEED_T_IN_SYS_TYPES */
 
@@ -421,6 +427,16 @@
 
 #define WEXITSTATUS_OFFSET 8
 
+#define HAVE_STRUCT_TIMESPEC 1
+#define TIME_H_DEFINES_STRUCT_TIMESPEC 1
+/* #undef SYS_TIME_H_DEFINES_STRUCT_TIMESPEC */
+/* #undef PTHREAD_H_DEFINES_STRUCT_TIMESPEC */
+
+#define TYPEOF_STRUCT_STAT_ST_ATIM_IS_STRUCT_TIMESPEC 1
+/* #undef HAVE_STRUCT_STAT_ST_ATIMESPEC_TV_NSEC */
+/* #undef HAVE_STRUCT_STAT_ST_ATIMENSEC */
+/* #undef HAVE_STRUCT_STAT_ST_ATIM_ST__TIM_TV_NSEC */
+
 /* Characteristics of definitions in the system header files. */
 
 #define HAVE_GETPW_DECLS 1
@@ -428,6 +444,9 @@
 /* #undef HAVE_RESOURCE */
 
 /* #undef HAVE_LIBC_FNM_EXTMATCH */
+
+/* Define if you have <linux/audit.h> and it defines AUDIT_USER_TTY */
+#define HAVE_DECL_AUDIT_USER_TTY 1
 
 #define HAVE_DECL_CONFSTR 1
 
@@ -439,7 +458,7 @@
 
 #define HAVE_DECL_STRSIGNAL 1
 
-/* #undef HAVE_DECL_STRTOLD */
+// #define HAVE_DECL_STRTOLD 1
 
 /* #undef PRI_MACROS_BROKEN */
 
@@ -479,7 +498,7 @@
 
 #define CAN_REDEFINE_GETENV 1
 
-/* #undef HAVE_STD_PUTENV */
+// #define HAVE_STD_PUTENV 1
 
 #define HAVE_STD_UNSETENV 1
 
@@ -488,7 +507,7 @@
 #define CTYPE_NON_ASCII 1
 
 /* Define if you have <langinfo.h> and nl_langinfo(CODESET). */
-#define HAVE_LANGINFO_CODESET 1
+// #define HAVE_LANGINFO_CODESET 1
 
 /* Characteristics of properties exported by the kernel. */
 
@@ -541,13 +560,13 @@
 #define HAVE_CONFSTR 1
 
 /* Define if you have the dlclose function.  */
-/* #undef HAVE_DLCLOSE */
+// #define HAVE_DLCLOSE 1
 
 /* Define if you have the dlopen function.  */
-/* #undef HAVE_DLOPEN */
+// #define HAVE_DLOPEN 1
 
 /* Define if you have the dlsym function.  */
-/* #undef HAVE_DLSYM */
+// #define HAVE_DLSYM 1
 
 /* Define if you don't have vprintf but do have _doprnt.  */
 /* #undef HAVE_DOPRNT */
@@ -559,17 +578,17 @@
 #define HAVE_DUP2 1
 
 /* Define if you have the eaccess function.  */
-/* #undef HAVE_EACCESS */
+// #define HAVE_EACCESS 1
 
 /* Define if you have the faccessat function.  */
-/* #undef HAVE_FACCESSAT */
+// #define HAVE_FACCESSAT 1
 
 /* Define if you have the fcntl function.  */
 #define HAVE_FCNTL 1
 
 /* Define if you have the fpurge/__fpurge function.  */
 #define HAVE_FPURGE 1
-/* #undef HAVE___FPURGE */
+// #define HAVE___FPURGE 1
 #define HAVE_DECL_FPURGE 0
 
 /* Define if you have the getaddrinfo function. */
@@ -597,7 +616,7 @@
 #define HAVE_GETPEERNAME 1
 
 /* Define if you have the getpwent function. */
-/* #undef HAVE_GETPWENT */
+// #define HAVE_GETPWENT 1
 
 /* Define if you have the getpwnam function. */
 #define HAVE_GETPWNAM 1
@@ -624,7 +643,10 @@
 /* #undef HAVE_GETWD */
 
 /* Define if you have the iconv function.  */
-/* #undef HAVE_ICONV */
+// #define HAVE_ICONV 1
+
+/* Define if you have the imaxdiv function.  */
+#define HAVE_IMAXDIV 1
 
 /* Define if you have the inet_aton function.  */
 #define HAVE_INET_ATON 1
@@ -637,12 +659,6 @@
 
 /* Define if you have the isgraph function.  */
 #define HAVE_ISGRAPH 1
-
-/* Define if you have the isinf function in libc */
-#define HAVE_ISINF_IN_LIBC 1
-
-/* Define if you have the isnan function in libc */
-#define HAVE_ISNAN_IN_LIBC 1
 
 /* Define if you have the isprint function.  */
 #define HAVE_ISPRINT 1
@@ -666,7 +682,7 @@
 #define HAVE_KILL 1
 
 /* Define if you have the killpg function.  */
-/* #undef HAVE_KILLPG */
+// #define HAVE_KILLPG 1
 
 /* Define if you have the lstat function. */
 #define HAVE_LSTAT 1
@@ -690,7 +706,7 @@
 /* #undef HAVE_MBSCMP */
 
 /* Define if you have the mbsnrtowcs function. */
-/* #undef HAVE_MBSNRTOWCS */
+// #define HAVE_MBSNRTOWCS 1
 
 /* Define if you have the mbsrtowcs function. */
 #define HAVE_MBSRTOWCS 1
@@ -775,7 +791,7 @@
 #define HAVE_STRCHR 1
 
 /* Define if you have the strchrnul function.  */
-/* #undef HAVE_STRCHRNUL */
+// #define HAVE_STRCHRNUL 1
 
 /* Define if you have the strcoll function.  */
 #define HAVE_STRCOLL 1
@@ -888,6 +904,9 @@
 /* Define if you have the wcwidth function.  */
 #define HAVE_WCWIDTH 1
 
+/* and if it works */
+/* #undef WCWIDTH_BROKEN */
+
 /* Presence of certain system include files. */
 
 /* Define if you have the <arpa/inet.h> header file. */
@@ -947,6 +966,9 @@
 /* Define if you have the <memory.h> header file.  */
 #define HAVE_MEMORY_H 1
 
+/* Define if you have the <stdbool.h> header file. */
+#define HAVE_STDBOOL_H 1
+
 /* Define if you have the <stddef.h> header file. */
 #define HAVE_STDDEF_H 1
 
@@ -1004,18 +1026,18 @@
 #define HAVE_SYS_WAIT_H 1
 
 /* Define if you have the <termcap.h> header file.  */
-/* #undef HAVE_TERMCAP_H */
+// #define HAVE_TERMCAP_H 1
 
 /* Define if you have the <termio.h> header file.  */
 #ifndef HAVE_TERMIO_H
 #define HAVE_TERMIO_H 1
 #endif
 
-/* Define if you have the <ulimit.h> header file.  */
-#define HAVE_ULIMIT_H 1
-
 /* Define if you have the <termios.h> header file.  */
 #define HAVE_TERMIOS_H 1
+
+/* Define if you have the <ulimit.h> header file.  */
+#define HAVE_ULIMIT_H 1
 
 /* Define if you have the <unistd.h> header file.  */
 #define HAVE_UNISTD_H 1
@@ -1031,12 +1053,14 @@
 
 /* Presence of certain system libraries. */
 
-/* #undef HAVE_LIBDL */
+// #define HAVE_LIBDL 1
 
 /* #undef HAVE_LIBSUN */
 
 /* #undef HAVE_LIBSOCKET */
 
+/* Are we running the GNU C library, version 2.1 or later? */
+/* #undef GLIBC21 */
 
 /* Define if on MINIX.  */
 /* #undef _MINIX */

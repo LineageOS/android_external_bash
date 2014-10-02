@@ -17,6 +17,8 @@
 #include "../bashansi.h"
 #include "../bashintl.h"
 
+#include <signal.h>
+
 #include "../shell.h"
 #include "../trap.h"
 #include "../jobs.h"
@@ -52,7 +54,7 @@ kill_builtin (list)
   if (list == 0)
     {
       builtin_usage ();
-      return (EXECUTION_FAILURE);
+      return (EX_USAGE);
     }
 
   any_succeeded = listing = saw_signal = 0;
@@ -81,9 +83,7 @@ kill_builtin (list)
 	      else
 		sig = decode_signal (sigspec, dflags);
 	      list = list->next;
-#if 0
-	      saw_signal++;	/* XXX - for bash-4.2 */
-#endif
+	      saw_signal++;
 	    }
 	  else
 	    {
@@ -99,7 +99,7 @@ kill_builtin (list)
       else if (ISOPTION (word, '?'))
 	{
 	  builtin_usage ();
-	  return (EXECUTION_SUCCESS);
+	  return (EX_USAGE);
 	}
       /* If this is a signal specification then process it.  We only process
 	 the first one seen; other arguments may signify process groups (e.g,
@@ -128,7 +128,7 @@ kill_builtin (list)
   if (list == 0)
     {
       builtin_usage ();
-      return (EXECUTION_FAILURE);
+      return (EX_USAGE);
     }
 
   while (list)

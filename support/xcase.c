@@ -39,6 +39,7 @@
 #define LOWER	1
 #define UPPER	2
 
+int
 main(ac, av)
 int	ac;
 char	**av;

@@ -1,7 +1,7 @@
 /* wait.c, created from wait.def. */
-#line 38 "./wait.def"
+#line 41 "./wait.def"
 
-#line 53 "./wait.def"
+#line 56 "./wait.def"
 
 #include <config.h>
 
@@ -34,6 +34,7 @@ procenv_t wait_intr_buf;
   do \
     { \
       interrupt_immediately = old_interrupt_immediately;\
+      wait_signal_received = 0; \
       return (s);\
     } \
   while (0)
@@ -42,17 +43,33 @@ int
 wait_builtin (list)
      WORD_LIST *list;
 {
-  int status, code;
+  int status, code, opt, nflag;
   volatile int old_interrupt_immediately;
 
   USE_VAR(list);
 
-  if (no_options (list))
-    return (EX_USAGE);
+  nflag = 0;
+  reset_internal_getopt ();
+  while ((opt = internal_getopt (list, "n")) != -1)
+    {
+      switch (opt)
+	{
+#if defined (JOB_CONTROL)
+	case 'n':
+	  nflag = 1;
+	  break;
+#endif
+	default:
+	  builtin_usage ();
+	  return (EX_USAGE);
+	}
+    }
   list = loptend;
 
   old_interrupt_immediately = interrupt_immediately;
+#if 0
   interrupt_immediately++;
+#endif
 
   /* POSIX.2 says:  When the shell is waiting (by means of the wait utility)
      for asynchronous commands to complete, the reception of a signal for
@@ -72,6 +89,16 @@ wait_builtin (list)
   /* We support jobs or pids.
      wait <pid-or-job> [pid-or-job ...] */
 
+#if defined (JOB_CONTROL)
+  if (nflag)
+    {
+      status = wait_for_any_job ();
+      if (status < 0)
+	status = 127;
+      WAIT_RETURN (status);
+    }
+#endif
+      
   /* But wait without any arguments means to wait for all of the shell's
      currently active background processes. */
   if (list == 0)

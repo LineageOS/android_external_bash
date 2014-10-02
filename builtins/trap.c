@@ -1,7 +1,7 @@
 /* trap.c, created from trap.def. */
 #line 22 "./trap.def"
 
-#line 54 "./trap.def"
+#line 58 "./trap.def"
 
 #include <config.h>
 
@@ -44,7 +44,7 @@ static int display_traps __P((WORD_LIST *));
 #define REVERT 1		/* Revert to this signals original value. */
 #define IGNORE 2		/* Ignore this signal. */
 
-extern int posixly_correct;
+extern int posixly_correct, subshell_environment;
 
 int
 trap_builtin (list)
@@ -54,6 +54,7 @@ trap_builtin (list)
 
   list_signal_names = display = 0;
   result = EXECUTION_SUCCESS;
+
   reset_internal_getopt ();
   while ((opt = internal_getopt (list, "lp")) != -1)
     {
@@ -77,7 +78,11 @@ trap_builtin (list)
   if (list_signal_names)
     return (sh_chkwrite (display_signal_list ((WORD_LIST *)NULL, 1)));
   else if (display || list == 0)
-    return (sh_chkwrite (display_traps (list)));
+    {
+      initialize_terminating_signals ();
+      get_all_original_signals ();
+      return (sh_chkwrite (display_traps (list)));
+    }
   else
     {
       char *first_arg;
@@ -114,6 +119,16 @@ trap_builtin (list)
 	    operation = REVERT;
 	}
 
+      /* If we're in a command substitution, we haven't freed the trap strings
+	 (though we reset the signal handlers).  If we're setting a trap to
+	 handle a signal here, free the rest of the trap strings since they
+	 don't apply any more. */
+      if (subshell_environment & SUBSHELL_RESETTRAP)
+	{
+	  free_trap_strings ();
+	  subshell_environment &= ~SUBSHELL_RESETTRAP;
+	}
+
       while (list)
 	{
 	  sig = decode_signal (list->word->word, opt);
@@ -139,6 +154,8 @@ trap_builtin (list)
 		    switch (sig)
 		      {
 		      case SIGINT:
+			/* XXX - should we do this if original disposition
+			   was SIG_IGN? */
 			if (interactive)
 			  set_signal_handler (SIGINT, sigint_sighandler);
 			else
@@ -180,10 +197,13 @@ showtrap (i)
   char *t, *p, *sn;
 
   p = trap_list[i];
-  if (p == (char *)DEFAULT_SIG)
+  if (p == (char *)DEFAULT_SIG && signal_is_hard_ignored (i) == 0)
     return;
+  else if (signal_is_hard_ignored (i))
+    t = (char *)NULL;
+  else
+    t = (p == (char *)IGNORE_SIG) ? (char *)NULL : sh_single_quote (p);
 
-  t = (p == (char *)IGNORE_SIG) ? (char *)NULL : sh_single_quote (p);
   sn = signal_name (i);
   /* Make sure that signals whose names are unknown (for whatever reason)
      are printed as signal numbers. */
