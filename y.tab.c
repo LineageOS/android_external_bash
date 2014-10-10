@@ -318,6 +318,9 @@ static char *read_a_line __P((int));
 
 static int reserved_word_acceptable __P((int));
 static int yylex __P((void));
+
+static void push_heredoc __P((REDIRECT *));
+static char *mk_alexpansion __P((char *));
 static int alias_expand_token __P((char *));
 static int time_command_acceptable __P((void));
 static int special_case_tokens __P((char *));
@@ -415,7 +418,10 @@ int parser_state;
 
 /* Variables to manage the task of reading here documents, because we need to
    defer the reading until after a complete command has been collected. */
-static REDIRECT *redir_stack[10];
+#define HEREDOC_MAX 16
+
+static REDIRECT *redir_stack[HEREDOC_MAX];
+
 int need_here_doc;
 
 /* Where shell input comes from.  History expansion is performed on each
@@ -457,7 +463,7 @@ static int global_extglob;
    or `for WORD' begins.  This is a nested command maximum, since the array
    index is decremented after a case, select, or for command is parsed. */
 #define MAX_CASE_NEST	128
-static int word_lineno[MAX_CASE_NEST];
+static int word_lineno[MAX_CASE_NEST+1];
 static int word_top = -1;
 
 /* If non-zero, it is the token that we want read_token to return
@@ -2297,7 +2303,7 @@ yyreduce:
 			  source.dest = 0;
 			  redir.filename = (yyvsp[(2) - (2)].word);
 			  (yyval.redirect) = make_redirection (source, r_reading_until, redir, 0);
-			  redir_stack[need_here_doc++] = (yyval.redirect);
+              push_heredoc (yyval.redirect);
 			}
     break;
 
@@ -2307,7 +2313,7 @@ yyreduce:
 			  source.dest = (yyvsp[(1) - (3)].number);
 			  redir.filename = (yyvsp[(3) - (3)].word);
 			  (yyval.redirect) = make_redirection (source, r_reading_until, redir, 0);
-			  redir_stack[need_here_doc++] = (yyval.redirect);
+              push_heredoc (yyval.redirect);
 			}
     break;
 
@@ -2317,7 +2323,7 @@ yyreduce:
 			  source.filename = (yyvsp[(1) - (3)].word);
 			  redir.filename = (yyvsp[(3) - (3)].word);
 			  (yyval.redirect) = make_redirection (source, r_reading_until, redir, REDIR_VARASSIGN);
-			  redir_stack[need_here_doc++] = (yyval.redirect);
+              push_heredoc (yyval.redirect);
 			}
     break;
 
@@ -2327,7 +2333,7 @@ yyreduce:
 			  source.dest = 0;
 			  redir.filename = (yyvsp[(2) - (2)].word);
 			  (yyval.redirect) = make_redirection (source, r_deblank_reading_until, redir, 0);
-			  redir_stack[need_here_doc++] = (yyval.redirect);
+              push_heredoc (yyval.redirect);
 			}
     break;
 
@@ -2337,7 +2343,7 @@ yyreduce:
 			  source.dest = (yyvsp[(1) - (3)].number);
 			  redir.filename = (yyvsp[(3) - (3)].word);
 			  (yyval.redirect) = make_redirection (source, r_deblank_reading_until, redir, 0);
-			  redir_stack[need_here_doc++] = (yyval.redirect);
+              push_heredoc (yyval.redirect);
 			}
     break;
 
@@ -2347,7 +2353,7 @@ yyreduce:
 			  source.filename = (yyvsp[(1) - (3)].word);
 			  redir.filename = (yyvsp[(3) - (3)].word);
 			  (yyval.redirect) = make_redirection (source, r_deblank_reading_until, redir, REDIR_VARASSIGN);
-			  redir_stack[need_here_doc++] = (yyval.redirect);
+              push_heredoc (yyval.redirect);
 			}
     break;
 
@@ -4842,6 +4848,21 @@ yylex ()
 /* When non-zero, we have read the required tokens
    which allow ESAC to be the next one read. */
 static int esacs_needed_count;
+
+static void
+push_heredoc (r)
+     REDIRECT *r;
+{
+  if (need_here_doc >= HEREDOC_MAX)
+    {
+      last_command_exit_value = EX_BADUSAGE;
+      need_here_doc = 0;
+      report_syntax_error (_("maximum here-document count exceeded"));
+      reset_parser ();
+      exit_shell (last_command_exit_value);
+    }
+  redir_stack[need_here_doc++] = r;
+}
 
 void
 gather_here_documents ()
