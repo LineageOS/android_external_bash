@@ -36,13 +36,6 @@ else
 	PS1='\[\033[01;32m\]\u@\h\[\033[01;34m\] \w \$\[\033[00m\] '
 fi
 
-# Set up a ton of aliases to cover toolbox with the nice busybox
-# equivalents of its commands
-for i in cat chmod chown df insmod ln lsmod mkdir mount mv rm rmdir rmmod umount; do
-	eval alias ${i}=\"busybox ${i}\"
-done
-unset i
-alias ls='busybox ls --color=auto'
 alias sysro='mount -o remount,ro /system'
 alias sysrw='mount -o remount,rw /system'
 
