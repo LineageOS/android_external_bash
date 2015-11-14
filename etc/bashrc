@@ -36,14 +36,6 @@ else
 	PS1='\[\033[01;32m\]\u@\h\[\033[01;34m\] \w \$\[\033[00m\] '
 fi
 
-# Set up a ton of aliases to cover toolbox with the nice busybox
-# equivalents of its commands
-for i in cat chmod chown df insmod ln lsmod mkdir mount mv rm rmdir rmmod umount; do
-	eval alias ${i}=\"busybox ${i}\"
-done
-unset i
-alias ls='busybox ls --color=auto'
-
 # Try to keep environment pollution down, EPA loves us.
 unset use_color safe_term match_lhs
 
