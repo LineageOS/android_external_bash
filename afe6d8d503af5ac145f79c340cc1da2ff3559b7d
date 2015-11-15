@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1f2f7f8d_cd7692d9",
+        "filename": "etc/bashrc",
+        "patchSetId": 3
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 10067
+      },
+      "writtenOn": "2015-11-15T07:00:23Z",
+      "side": 1,
+      "message": "Aren\u0027t we using \"toybox getprop\" now? Atleast I\u0027m not able to use getprop without it.",
+      "revId": "afe6d8d503af5ac145f79c340cc1da2ff3559b7d",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71",
+      "unresolved": false
+    }
+  ]
+}
