@@ -46,4 +46,5 @@ alias ps='/system/xbin/ps'
 # Try to keep environment pollution down, EPA loves us.
 unset use_color safe_term match_lhs
 
+export TERM=xterm
 resize
