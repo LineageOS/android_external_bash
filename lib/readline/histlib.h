@@ -52,7 +52,7 @@
 
 #ifndef member
 #  ifndef strchr
-extern char *strchr ();
+extern char *__attribute__((overloadable)) strchr ();
 #  endif
 #define member(c, s) ((c) ? ((char *)strchr ((s), (c)) != (char *)NULL) : 0)
 #endif
