@@ -1,3 +1,4 @@
+LOCAL_CLANG_EXCEPTION_PROJECTS += external/bash
 LOCAL_PATH:= $(call my-dir)
 
 # ========================================================
@@ -41,6 +42,7 @@ LOCAL_MODULE := bash
 LOCAL_MODULE_PATH := $(TARGET_OUT_OPTIONAL_EXECUTABLES)
 
 LOCAL_MODULE_TAGS := eng
+LOCAL_CLANG := false
 
 include $(BUILD_EXECUTABLE)
 
