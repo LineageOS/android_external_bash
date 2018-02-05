@@ -1,4 +1,3 @@
-LOCAL_CLANG_EXCEPTION_PROJECTS += external/bash/lib/readline
 LOCAL_PATH:= $(call my-dir)
 
 # ========================================================
@@ -27,7 +26,6 @@ LOCAL_CFLAGS += \
 LOCAL_MODULE := libhistory
 
 LOCAL_MODULE_TAGS := eng
-LOCAL_CLANG := false
 
 include $(BUILD_STATIC_LIBRARY)
 
@@ -83,7 +81,6 @@ LOCAL_CFLAGS += \
 LOCAL_MODULE := libreadline
 
 LOCAL_MODULE_TAGS := eng
-LOCAL_CLANG := false
 
 include $(BUILD_STATIC_LIBRARY)
 
