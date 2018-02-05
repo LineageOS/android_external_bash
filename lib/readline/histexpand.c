@@ -310,7 +310,7 @@ get_history_event (string, caller_index, delimiting_quote)
    to the closing single quote.  FLAGS currently used to allow backslash
    to escape a single quote (e.g., for bash $'...'). */
 static void
-hist_string_extract_single_quoted (string, sindex, flags)
+hist_string_extract_single_quoted (string, sindex, flags) __attribute__((optnone))
      char *string;
      int *sindex, flags;
 {
