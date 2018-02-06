@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "33fb887e_4c58f686",
+        "filename": "lib/readline/histexpand.c",
+        "patchSetId": 1
+      },
+      "lineNbr": 319,
+      "author": {
+        "id": 2936
+      },
+      "writtenOn": "2018-02-06T03:58:33Z",
+      "side": 1,
+      "message": "It\u0027s either this character comparison",
+      "range": {
+        "startLine": 319,
+        "startChar": 47,
+        "endLine": 319,
+        "endChar": 49
+      },
+      "revId": "5cab584e8b93bd71022776043c686d92463a6483",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "a4ac680c_97e0bb1e",
+        "filename": "lib/readline/histexpand.c",
+        "patchSetId": 1
+      },
+      "lineNbr": 321,
+      "author": {
+        "id": 2936
+      },
+      "writtenOn": "2018-02-06T03:58:33Z",
+      "side": 1,
+      "message": "or this character comparison.\n\nSwitching both of these to compare to any other character (non-\u0027 or non-\\) results in no crash.",
+      "range": {
+        "startLine": 321,
+        "startChar": 39,
+        "endLine": 321,
+        "endChar": 41
+      },
+      "revId": "5cab584e8b93bd71022776043c686d92463a6483",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71",
+      "unresolved": false
+    }
+  ]
+}
