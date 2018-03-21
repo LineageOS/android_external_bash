@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "c467010d_bd3d47d3",
+        "filename": "etc/bashrc",
+        "patchSetId": 1
+      },
+      "lineNbr": 43,
+      "author": {
+        "id": 12847
+      },
+      "writtenOn": "2018-03-21T06:52:39Z",
+      "side": 1,
+      "message": "/system/bin/ps is nonexistent.",
+      "range": {
+        "startLine": 43,
+        "startChar": 0,
+        "endLine": 43,
+        "endChar": 5
+      },
+      "revId": "5396f6ca7ca64e16196fb4fd6ee4036436616a8f",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71",
+      "unresolved": false
+    }
+  ]
+}
