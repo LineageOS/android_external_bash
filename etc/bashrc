@@ -6,7 +6,7 @@
 # anything or bad things will happen !
 
 export HOME=/sdcard
-export HOSTNAME=$(getprop ro.cm.device)
+export HOSTNAME=$(getprop ro.lineage.device)
 export TERM=xterm
 export TMPDIR=/data/local/tmp
 export USER=$(id -un)
