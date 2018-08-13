@@ -23,6 +23,8 @@ LOCAL_C_INCLUDES += \
 LOCAL_CFLAGS += \
 	-DHAVE_CONFIG_H
 
+LOCAL_CFLAGS += -Wno-error
+
 LOCAL_MODULE := libhistory
 
 LOCAL_MODULE_TAGS := eng
@@ -77,6 +79,8 @@ LOCAL_C_INCLUDES += \
 
 LOCAL_CFLAGS += \
 	-DHAVE_CONFIG_H
+
+LOCAL_CFLAGS += -Wno-error -Wno-unused-parameter
 
 LOCAL_MODULE := libreadline
 

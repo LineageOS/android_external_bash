@@ -36,6 +36,8 @@ LOCAL_STATIC_LIBRARIES += \
 	libtilde \
 	libhistory \
 	libreadline
+LOCAL_CFLAGS += \
+	-Wno-error
 
 LOCAL_MODULE := bash
 LOCAL_MODULE_PATH := $(TARGET_OUT_OPTIONAL_EXECUTABLES)
