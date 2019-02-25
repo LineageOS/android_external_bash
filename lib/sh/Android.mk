@@ -26,7 +26,13 @@ LOCAL_C_INCLUDES += \
 LOCAL_CFLAGS += \
 	-DHAVE_CONFIG_H
 
-LOCAL_CFLAGS += -Wno-error
+LOCAL_CFLAGS += \
+	-Wno-missing-braces \
+	-Wno-parentheses \
+	-Wno-sign-compare \
+	-Wno-unused-function \
+	-Wno-unused-parameter \
+	-Wno-unused-variable
 
 LOCAL_MODULE := libsh
 

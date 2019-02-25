@@ -37,7 +37,21 @@ LOCAL_STATIC_LIBRARIES += \
 	libhistory \
 	libreadline
 LOCAL_CFLAGS += \
-	-Wno-error
+	-Wno-char-subscripts \
+	-Wno-format \
+	-Wno-incompatible-pointer-types \
+	-Wno-incompatible-pointer-types-discards-qualifiers \
+	-Wno-missing-field-initializers \
+	-Wno-non-literal-null-conversion \
+	-Wno-parentheses \
+	-Wno-sign-compare \
+	-Wno-sometimes-uninitialized \
+	-Wno-switch \
+	-Wno-unused-function \
+	-Wno-unused-label \
+	-Wno-unused-parameter \
+	-Wno-unused-variable \
+	-Wno-user-defined-warnings
 
 LOCAL_MODULE := bash
 LOCAL_MODULE_PATH := $(TARGET_OUT_OPTIONAL_EXECUTABLES)

@@ -23,7 +23,12 @@ LOCAL_C_INCLUDES += \
 LOCAL_CFLAGS += \
 	-DHAVE_CONFIG_H
 
-LOCAL_CFLAGS += -Wno-error
+LOCAL_CFLAGS += \
+	-Wno-incompatible-pointer-types-discards-qualifiers \
+	-Wno-parentheses \
+	-Wno-sign-compare \
+	-Wno-unused-variable \
+	-Wno-user-defined-warnings
 
 LOCAL_MODULE := libhistory
 
@@ -80,7 +85,15 @@ LOCAL_C_INCLUDES += \
 LOCAL_CFLAGS += \
 	-DHAVE_CONFIG_H
 
-LOCAL_CFLAGS += -Wno-error -Wno-unused-parameter
+LOCAL_CFLAGS += \
+	-Wno-incompatible-pointer-types-discards-qualifiers \
+	-Wno-missing-braces \
+	-Wno-parentheses \
+	-Wno-sign-compare \
+	-Wno-unused-function \
+	-Wno-unused-parameter \
+	-Wno-unused-variable \
+	-Wno-user-defined-warnings
 
 LOCAL_MODULE := libreadline
 

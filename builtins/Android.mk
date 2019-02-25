@@ -65,7 +65,14 @@ LOCAL_CFLAGS += \
 	-DCONF_OSTYPE=\"android-eabi\" \
 	-DCONF_MACHTYPE=\"arm-android-eabi\" \
 	-DCONF_VENDOR=\"unknown\"
-LOCAL_CFLAGS += -Wno-error
+LOCAL_CFLAGS += \
+	-Wno-incompatible-pointer-types-discards-qualifiers \
+	-Wno-parentheses \
+	-Wno-sign-compare \
+	-Wno-unused-function \
+	-Wno-unused-parameter \
+	-Wno-unused-variable
+
 LOCAL_MODULE_TAGS := eng
 LOCAL_MODULE := libbuiltins
 include $(BUILD_STATIC_LIBRARY)
