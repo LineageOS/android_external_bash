@@ -20,7 +20,11 @@ LOCAL_C_INCLUDES += \
 LOCAL_CFLAGS += \
 	-DHAVE_CONFIG_H
 
-LOCAL_CFLAGS += -Wno-error
+LOCAL_CFLAGS += \
+	-Wno-parentheses \
+	-Wno-sign-compare \
+	-Wno-unused-parameter \
+	-Wno-unused-variable
 
 LOCAL_MODULE_TAGS := eng
 
