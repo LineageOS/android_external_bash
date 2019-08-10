@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # /etc/bash/bashrc
 #
 # This file is sourced by all *interactive* bash shells on startup,
@@ -5,11 +6,13 @@
 # that can't tolerate any output.  So make sure this doesn't display
 # anything or bad things will happen !
 
-export HOME=/sdcard
-export HOSTNAME=$(getprop ro.lineage.device)
-export TERM=xterm
-export TMPDIR=/data/local/tmp
-export USER=$(id -un)
+export HOME='/sdcard'
+HOSTNAME=$(getprop ro.lineage.device)
+export HOSTNAME
+export TERM='xterm'
+export TMPDIR='/data/local/tmp'
+USER="$(id -un)"
+export USER
 
 # Test for an interactive shell.  There is no need to set anything
 # past this point for scp and rcp, and it's important to refrain from
@@ -28,10 +31,10 @@ shopt -s checkwinsize
 # Enable history appending instead of overwriting.  #139609
 shopt -s histappend
 
-use_color=false
+export use_color='false'
 
 # enable colorful terminal
-if [[ ${EUID} == 0 ]] ; then
+if [[ "$EUID" == '0' ]] ; then
 	PS1='\[\033[01;31m\]${HOSTNAME:=$(hostname)}\[\033[01;34m\] \W \$\[\033[00m\] '
 else
 	PS1='\[\033[01;32m\]${USER:=$(id \-un)}@${HOSTNAME:=$(hostname)}\[\033[01;34m\] \w \$\[\033[00m\] '
