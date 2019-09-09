@@ -66,12 +66,12 @@ include $(BUILD_EXECUTABLE)
 # ========================================================
 etc_files := $(wildcard $(LOCAL_PATH)/etc/*)
 
-BASH_ETC := $(TARGET_OUT)/etc/$(LOCAL_MODULE)/
-BASH_CONFIGS := $(addprefix $(LOCAL_PATH)/etc/,$(notdir $(etc_files)))
-$(BASH_CONFIGS): $(LOCAL_INSTALLED_MODULE)
+BASH_ETC := $(TARGET_OUT)/etc/$(LOCAL_MODULE)
+BASH_CONFIGS := $(addprefix $(BASH_ETC)/,$(notdir $(etc_files)))
+$(BASH_CONFIGS): $(BASH_ETC)/%: $(LOCAL_PATH)/etc/% | $(LOCAL_BUILT_MODULE)
 	@echo "Install: $@ -> $(BASH_ETC)"
-	@mkdir -p $(BASH_ETC)
-	$(hide) cp $@ $(BASH_ETC)
+	@mkdir -p $(dir $@)
+	$(hide) cp $< $@
 
 ALL_DEFAULT_INSTALLED_MODULES += $(BASH_CONFIGS)
 
