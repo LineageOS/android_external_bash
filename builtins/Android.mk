@@ -75,7 +75,7 @@ LOCAL_CFLAGS += \
 	-Wno-unused-parameter \
 	-Wno-unused-variable
 
-LOCAL_MODULE_TAGS := eng
+LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE := libbuiltins
 include $(BUILD_STATIC_LIBRARY)
 
