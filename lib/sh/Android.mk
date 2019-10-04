@@ -36,7 +36,7 @@ LOCAL_CFLAGS += \
 
 LOCAL_MODULE := libsh
 
-LOCAL_MODULE_TAGS := eng
+LOCAL_MODULE_TAGS := optional
 
 include $(BUILD_STATIC_LIBRARY)
 

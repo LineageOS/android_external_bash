@@ -32,7 +32,7 @@ LOCAL_CFLAGS += \
 
 LOCAL_MODULE := libhistory
 
-LOCAL_MODULE_TAGS := eng
+LOCAL_MODULE_TAGS := optional
 
 include $(BUILD_STATIC_LIBRARY)
 
@@ -97,7 +97,7 @@ LOCAL_CFLAGS += \
 
 LOCAL_MODULE := libreadline
 
-LOCAL_MODULE_TAGS := eng
+LOCAL_MODULE_TAGS := optional
 
 include $(BUILD_STATIC_LIBRARY)
 

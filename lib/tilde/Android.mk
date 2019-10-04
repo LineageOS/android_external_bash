@@ -18,7 +18,7 @@ LOCAL_CFLAGS += \
 
 LOCAL_MODULE := libtilde
 
-LOCAL_MODULE_TAGS := eng
+LOCAL_MODULE_TAGS := optional
 
 include $(BUILD_STATIC_LIBRARY)
 
