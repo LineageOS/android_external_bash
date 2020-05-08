@@ -39,6 +39,7 @@ fi
 
 alias sysro='mount -o remount,ro /system'
 alias sysrw='mount -o remount,rw /system'
+alias ll 'ls -l --color=auto'
 alias ls='ls --color=auto'
 
 # Try to keep environment pollution down, EPA loves us.
