@@ -37,6 +37,7 @@ else
 	PS1='\[\033[01;32m\]${USER:=$(id \-un)}@${HOSTNAME:=$(hostname)}\[\033[01;34m\] \w \$\[\033[00m\] '
 fi
 
+alias ll='ls -l --color=auto'
 alias ls='ls --color=auto'
 
 # Try to keep environment pollution down, EPA loves us.
