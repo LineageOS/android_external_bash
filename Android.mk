@@ -92,9 +92,9 @@ LOCAL_CFLAGS += \
 	-Wno-user-defined-warnings
 
 LOCAL_MODULE := bash
-LOCAL_MODULE_PATH := $(TARGET_OUT_OPTIONAL_EXECUTABLES)
-
 LOCAL_MODULE_TAGS := optional
+
+LOCAL_SYSTEM_EXT_MODULE := true
 
 include $(BUILD_EXECUTABLE)
 
@@ -103,7 +103,7 @@ include $(BUILD_EXECUTABLE)
 # ========================================================
 etc_files := $(wildcard $(LOCAL_PATH)/etc/*)
 
-BASH_ETC := $(TARGET_OUT)/etc/$(LOCAL_MODULE)
+BASH_ETC := $(TARGET_OUT_SYSTEM_EXT_ETC)/$(LOCAL_MODULE)
 BASH_CONFIGS := $(addprefix $(BASH_ETC)/,$(notdir $(etc_files)))
 $(BASH_CONFIGS): $(BASH_ETC)/%: $(LOCAL_PATH)/etc/% | $(LOCAL_BUILT_MODULE)
 	@echo "Install: $@ -> $(BASH_ETC)"
