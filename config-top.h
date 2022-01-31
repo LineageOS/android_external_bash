@@ -63,7 +63,7 @@
 /* The default value of the PATH variable. */
 #ifndef DEFAULT_PATH_VALUE
 #define DEFAULT_PATH_VALUE \
-  "/sbin:/system/sbin:/system/bin:/system/xbin:."
+  "/product/bin:/apex/com.android.runtime/bin:/apex/com.android.art/bin:/system_ext/bin:/system/bin:/system/xbin:/odm/bin:/vendor/bin:/vendor/xbin:."
 #endif
 
 /* If you want to unconditionally set a value for PATH in every restricted
@@ -74,7 +74,7 @@
    the Posix.2 confstr () function, or CS_PATH define are not present. */
 #ifndef STANDARD_UTILS_PATH
 #define STANDARD_UTILS_PATH \
-  "/sbin:/system/sbin:/system/bin:/system/xbin:/system/etc"
+  "/product/bin:/apex/com.android.runtime/bin:/apex/com.android.art/bin:/system_ext/bin:/system/bin:/system/xbin:/odm/bin:/vendor/bin:/vendor/xbin:/system_ext/etc:/system/etc"
 #endif
 
 /* Default primary and secondary prompt strings. */
