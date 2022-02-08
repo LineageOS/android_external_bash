@@ -103,6 +103,24 @@
       "parentUuid": "e22d4db3_7e273f0b",
       "revId": "b267c9ddf6b2a1a75429a0ac5cee795208505ed6",
       "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "69dab24e_39c69a9a",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 13648
+      },
+      "writtenOn": "2022-02-08T12:39:48Z",
+      "side": 1,
+      "message": "Still \"meh\". This made sense back when everything was under a single partition (/system). Nowadays you *might* want to mount {vendor,product,system_ext,etc} as rw.",
+      "parentUuid": "7ec4f3f3_c43bbb8f",
+      "revId": "b267c9ddf6b2a1a75429a0ac5cee795208505ed6",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
     }
   ]
 }
