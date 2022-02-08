@@ -16,6 +16,23 @@
       "message": "This doesn\u0027t work on A/B devices.",
       "revId": "b267c9ddf6b2a1a75429a0ac5cee795208505ed6",
       "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "3b7640f7_257202ed",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 13648
+      },
+      "writtenOn": "2022-02-08T12:30:37Z",
+      "side": 1,
+      "message": "I mean SAR.",
+      "revId": "b267c9ddf6b2a1a75429a0ac5cee795208505ed6",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
     }
   ]
 }
