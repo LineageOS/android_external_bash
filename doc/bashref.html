@@ -4,13 +4,13 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <!-- This text is a brief description of the features that are present in
-the Bash shell (version 5.1, 29 October 2020).
+the Bash shell (version 5.2, 19 September 2022).
 
-This is Edition 5.1, last updated 29 October 2020,
+This is Edition 5.2, last updated 19 September 2022,
 of The GNU Bash Reference Manual,
-for Bash, Version 5.1.
+for Bash, Version 5.2.
 
-Copyright (C) 1988-2020 Free Software Foundation, Inc.
+Copyright (C) 1988-2022 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -77,12 +77,12 @@ Next: <a href="#Introduction" accesskey="n" rel="next">Introduction</a>, Previou
 <span id="Bash-Features-1"></span><h1 class="top">Bash Features</h1>
 
 <p>This text is a brief description of the features that are present in
-the Bash shell (version 5.1, 29 October 2020).
+the Bash shell (version 5.2, 19 September 2022).
 The Bash home page is <a href="http://www.gnu.org/software/bash/">http://www.gnu.org/software/bash/</a>.
 </p>
-<p>This is Edition 5.1, last updated 29 October 2020,
+<p>This is Edition 5.2, last updated 19 September 2022,
 of <cite>The GNU Bash Reference Manual</cite>,
-for <code>Bash</code>, Version 5.1.
+for <code>Bash</code>, Version 5.2.
 </p>
 <p>Bash contains features that appear in other popular shells, and some
 features that only appear in Bash.  Some of the shells that Bash has
@@ -648,12 +648,12 @@ has special meaning to the shell and must be quoted if it is to
 represent itself.
 When the command history expansion facilities are being used
 (see <a href="#History-Interaction">History Expansion</a>), the
-<var>history expansion</var> character, usually &lsquo;<samp>!</samp>&rsquo;, must be quoted
+<em>history expansion</em> character, usually &lsquo;<samp>!</samp>&rsquo;, must be quoted
 to prevent history expansion.  See <a href="#Bash-History-Facilities">Bash History Facilities</a>, for
 more details concerning history expansion.
 </p>
 <p>There are three quoting mechanisms: the
-<var>escape character</var>, single quotes, and double quotes.
+<em>escape character</em>, single quotes, and double quotes.
 </p>
 <ul class="section-toc">
 <li><a href="#Escape-Character" accesskey="1">Escape Character</a></li>
@@ -733,10 +733,11 @@ Next: <a href="#Locale-Translation" accesskey="n" rel="next">Locale-Specific Tra
 <span id="ANSI_002dC-Quoting-1"></span><h4 class="subsubsection">3.1.2.4 ANSI-C Quoting</h4>
 <span id="index-quoting_002c-ANSI"></span>
 
-<p>Words of the form <code>$'<var>string</var>'</code> are treated specially.  The
-word expands to <var>string</var>, with backslash-escaped characters replaced
-as specified by the ANSI C standard.  Backslash escape sequences, if
-present, are decoded as follows:
+<p>Character sequences of the form $&rsquo;<var>string</var>&rsquo; are treated as a special
+kind of single quotes.
+The sequence expands to <var>string</var>, with backslash-escaped characters
+in <var>string</var> replaced as specified by the ANSI C standard.
+Backslash escape sequences, if present, are decoded as follows:
 </p>
 <dl compact="compact">
 <dt><span><code>\a</code></span></dt>
@@ -813,29 +814,136 @@ Previous: <a href="#ANSI_002dC-Quoting" accesskey="p" rel="prev">ANSI-C Quoting<
 <span id="index-native-languages"></span>
 <span id="index-translation_002c-native-languages"></span>
 
-<p>A double-quoted string preceded by a dollar sign (&lsquo;<samp>$</samp>&rsquo;)
+<p>Prefixing a double-quoted string with a dollar sign (&lsquo;<samp>$</samp>&rsquo;), such
+as <tt>$&quot;hello, world&quot;</tt>,
 will cause the string to be translated according to the current locale.
-The <var>gettext</var> infrastructure performs the message catalog lookup and 
-translation, using the <code>LC_MESSAGES</code> and <code>TEXTDOMAIN</code> shell
-variables, as explained below. See the gettext documentation for additional
-details.
+The <code>gettext</code> infrastructure performs the lookup and 
+translation, using the <code>LC_MESSAGES</code>, <code>TEXTDOMAINDIR</code>,
+and <code>TEXTDOMAIN</code> shell variables, as explained below.
+See the gettext documentation for additional details not covered here.
 If the current locale is <code>C</code> or <code>POSIX</code>,
-or if there are no translations available,
+if there are no translations available,
+of if the string is not translated,
 the dollar sign is ignored.
-If the string is translated and replaced, the replacement is
-double-quoted.
+Since this is a form of double quoting, the string remains double-quoted
+by default, whether or not it is translated and replaced.
+If the <code>noexpand_translation</code> option is enabled
+using the <code>shopt</code> builtin (see <a href="#The-Shopt-Builtin">The Shopt Builtin</a>),
+translated strings are single-quoted instead of double-quoted.
 </p>
+<p>The rest of this section is a brief overview of how you use gettext to
+create translations for strings in a shell script named <var>scriptname</var>.
+There are more details in the gettext documentation.
+</p>
+<hr>
+<span id="Creating-Internationalized-Scripts"></span><div class="header">
+<p>
+ &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Indexes" title="Index" rel="index">Index</a>]</p>
+</div>
+<h4 class="node-heading">Creating Internationalized Scripts</h4>
+<span id="index-internationalized-scripts"></span>
+<span id="index-string-translations"></span>
+<p>Once you&rsquo;ve marked the strings in your script
+that you want to translate using $&quot;...&quot;,
+you create a gettext &quot;template&quot; file using the command
+</p>
+<div class="example">
+<pre class="example">bash --dump-po-strings <var>scriptname</var> &gt; <var>domain</var>.pot
+</pre></div>
+
+<p>The <var>domain</var> is your <em>message domain</em>.
+It&rsquo;s just an arbitrary string that&rsquo;s used to identify the files gettext
+needs, like a package or script name.
+It needs to be unique among all
+the message domains on systems where you install the translations, so
+gettext knows which translations correspond to your script.
+You&rsquo;ll use the template file to create translations for each target language.
+The template file conventionally has the suffix &lsquo;<samp>.pot</samp>&rsquo;.
+</p>
+<p>You copy this template file to a separate file for each target language
+you want to support (called &quot;PO&quot; files, which use the suffix &lsquo;<samp>.po</samp>&rsquo;).
+PO files use various naming conventions, but
+when you are working to translate a template file into a particular
+language, you first copy the template file to a file whose name is the
+language you want to target, with the &lsquo;<samp>.po</samp>&rsquo; suffix.
+For instance, the Spanish translations of your strings would be
+in a file named &lsquo;<samp>es.po</samp>&rsquo;, and to get started using a message
+domain named &quot;example,&quot; you would run
+</p>
+<div class="example">
+<pre class="example">cp example.pot es.po
+</pre></div>
+
+<p>Ultimately, PO files are often named <var>domain</var>.po and installed in
+directories that contain multiple translation files for a particular language.
+</p>
+<p>Whichever naming convention you choose, you will need to translate the
+strings in the PO files into the appropriate languages.
+This has to be done manually.
+</p>
+<p>When you have the translations and PO files complete, you&rsquo;ll use the
+gettext tools to produce what are called &quot;MO&quot; files, which are compiled
+versions of the PO files the gettext tools use to look up translations
+efficiently.
+MO files are also called &quot;message catalog&quot; files.
+You use the <code>msgfmt</code> program to do this.
+For instance, if you had a file with Spanish translations, you could run
+</p>
+<div class="example">
+<pre class="example">msgfmt -o es.mo es.po
+</pre></div>
+
+<p>to produce the corresponding MO file.
+</p>
+<p>Once you have the MO files, you decide where to install them and use the
+<code>TEXTDOMAINDIR</code> shell variable to tell the gettext tools where they are.
+Make sure to use the same message domain to name the MO files 
+as you did for the PO files when you install them.
+</p>
+<span id="index-LANG"></span>
 <span id="index-LC_005fMESSAGES"></span>
 <span id="index-TEXTDOMAIN"></span>
 <span id="index-TEXTDOMAINDIR"></span>
-<p>Some systems use the message catalog selected by the <code>LC_MESSAGES</code>
-shell variable.  Others create the name of the message catalog from the
-value of the <code>TEXTDOMAIN</code> shell variable, possibly adding a
-suffix of &lsquo;<samp>.mo</samp>&rsquo;.  If you use the <code>TEXTDOMAIN</code> variable, you
-may need to set the <code>TEXTDOMAINDIR</code> variable to the location of
-the message catalog files.  Still others use both variables in this
-fashion:
-<code>TEXTDOMAINDIR</code>/<code>LC_MESSAGES</code>/LC_MESSAGES/<code>TEXTDOMAIN</code>.mo.
+<p>Your users will use the <code>LANG</code> or <code>LC_MESSAGES</code> shell variables to
+select the desired language.
+</p>
+<p>You set the <code>TEXTDOMAIN</code> variable to the script&rsquo;s message domain.
+As above, you use the message domain to name your translation files.
+</p>
+<p>You, or possibly your users, set the <code>TEXTDOMAINDIR</code> variable to the
+name of a directory where the message catalog files are stored.
+If you install the message files into the system&rsquo;s standard message catalog
+directory, you don&rsquo;t need to worry about this variable.
+</p>
+<p>The directory where the message catalog files are stored varies between
+systems.
+Some use the message catalog selected by the <code>LC_MESSAGES</code>
+shell variable.
+Others create the name of the message catalog from the value of the
+<code>TEXTDOMAIN</code> shell variable, possibly adding the &lsquo;<samp>.mo</samp>&rsquo; suffix.
+If you use the <code>TEXTDOMAIN</code> variable, you may need to set the
+<code>TEXTDOMAINDIR</code> variable to the location of the message catalog files,
+as above.
+It&rsquo;s common to use both variables in this fashion:
+<code>$TEXTDOMAINDIR</code>/<code>$LC_MESSAGES</code>/LC_MESSAGES/<code>$TEXTDOMAIN</code>.mo.
+</p>
+<p>If you used that last convention, and you wanted to store the message
+catalog files with Spanish (es) and Esperanto (eo) translations into a
+local directory you use for custom translation files, you could run
+</p>
+<div class="example">
+<pre class="example">TEXTDOMAIN=example
+TEXTDOMAINDIR=/usr/local/share/locale
+
+cp es.mo ${TEXTDOMAINDIR}/es/LC_MESSAGES/${TEXTDOMAIN}.mo
+cp eo.mo ${TEXTDOMAINDIR}/eo/LC_MESSAGES/${TEXTDOMAIN}.mo
+</pre></div>
+
+<p>When all of this is done, and the message catalog files containing the
+compiled translations are installed in the correct location,
+your users will be able to see translated strings
+in any of the supported languages by setting the <code>LANG</code> or
+<code>LC_MESSAGES</code> environment variables before running your script.
 </p>
 <hr>
 </div>
@@ -961,15 +1069,15 @@ one of the control operators &lsquo;<samp>|</samp>&rsquo; or &lsquo;<samp>|&amp;
 <p>The output of each command in the pipeline is connected via a pipe
 to the input of the next command.
 That is, each command reads the previous command&rsquo;s output.  This
-connection is performed before any redirections specified by the
-command.
+connection is performed before any redirections specified by
+<var>command1</var>.
 </p>
 <p>If &lsquo;<samp>|&amp;</samp>&rsquo; is used, <var>command1</var>&rsquo;s standard error, in addition to
 its standard output, is connected to
 <var>command2</var>&rsquo;s standard input through the pipe;
 it is shorthand for <code>2&gt;&amp;1 |</code>.
 This implicit redirection of the standard error to the standard output is
-performed after any redirections specified by the command.
+performed after any redirections specified by <var>command1</var>.
 </p>
 <p>The reserved word <code>time</code> causes timing statistics
 to be printed for the pipeline once it finishes.
@@ -996,11 +1104,14 @@ the time information.
 <p>If the pipeline is not executed asynchronously (see <a href="#Lists">Lists of Commands</a>), the
 shell waits for all commands in the pipeline to complete.
 </p>
-<p>Each command in a pipeline is executed in its own subshell, which is a
+<p>Each command in a multi-command pipeline,
+where pipes are created,
+is executed in its own <em>subshell</em>, which is a
 separate process (see <a href="#Command-Execution-Environment">Command Execution Environment</a>).
 If the <code>lastpipe</code> option is enabled using the <code>shopt</code> builtin
 (see <a href="#The-Shopt-Builtin">The Shopt Builtin</a>),
-the last element of a pipeline may be run by the shell process.
+the last element of a pipeline may be run by the shell process
+when job control is not active.
 </p>
 <p>The exit
 status of a pipeline is the exit status of the last command in the
@@ -1039,8 +1150,8 @@ to delimit commands, equivalent to a semicolon.
 </p>
 <p>If a command is terminated by the control operator &lsquo;<samp>&amp;</samp>&rsquo;,
 the shell executes the command asynchronously in a subshell.
-This is known as executing the command in the <var>background</var>,
-and these are referred to as <var>asynchronous</var> commands.
+This is known as executing the command in the <em>background</em>,
+and these are referred to as <em>asynchronous</em> commands.
 The shell does not wait for the command to finish, and the return
 status is 0 (true).
 When job control is not active (see <a href="#Job-Control">Job Control</a>),
@@ -1256,9 +1367,10 @@ as a <var>clause</var>.
 The <var>word</var> undergoes tilde expansion, parameter expansion, command
 substitution, arithmetic expansion, and quote removal
 (see <a href="#Shell-Parameter-Expansion">Shell Parameter Expansion</a>)
-before matching is
-attempted.  Each <var>pattern</var> undergoes tilde expansion, parameter
-expansion, command substitution, and arithmetic expansion.
+before matching is attempted.
+Each <var>pattern</var> undergoes tilde expansion, parameter expansion,
+command substitution, arithmetic expansion, process substitution, and
+quote removal.
 </p>
 <p>There may be an arbitrary number of <code>case</code> clauses, each terminated
 by a &lsquo;<samp>;;</samp>&rsquo;, &lsquo;<samp>;&amp;</samp>&rsquo;, or &lsquo;<samp>;;&amp;</samp>&rsquo;.
@@ -1306,16 +1418,16 @@ It has almost the same syntax as the <code>for</code> command:
 </pre></div>
 
 <p>The list of words following <code>in</code> is expanded, generating a list
-of items.  The set of expanded words is printed on the standard
+of items, and the set of expanded words is printed on the standard
 error output stream, each preceded by a number.  If the
 &lsquo;<samp>in <var>words</var></samp>&rsquo; is omitted, the positional parameters are printed,
 as if &lsquo;<samp>in &quot;$@&quot;</samp>&rsquo; had been specified.
-The <code>PS3</code> prompt is then displayed and a line is read from the
-standard input.
+<code>select</code> then displays the <code>PS3</code>
+prompt and reads a line from the standard input.
 If the line consists of a number corresponding to one of the displayed
 words, then the value of <var>name</var> is set to that word.
 If the line is empty, the words and prompt are displayed again.
-If <code>EOF</code> is read, the <code>select</code> command completes.
+If <code>EOF</code> is read, the <code>select</code> command completes and returns 1.
 Any other value read causes <var>name</var> to be set to null.
 The line read is saved in the variable <code>REPLY</code>.
 </p>
@@ -1343,13 +1455,14 @@ done
 
 <p>The arithmetic <var>expression</var> is evaluated according to the rules
 described below (see <a href="#Shell-Arithmetic">Shell Arithmetic</a>).
+The <var>expression</var> undergoes the same expansions
+as if it were within double quotes,
+but double quote characters in <var>expression</var> are not treated specially
+are removed.
 If the value of the expression is non-zero, the return status is 0;
-otherwise the return status is 1.  This is exactly equivalent to
-</p><div class="example">
-<pre class="example">let &quot;<var>expression</var>&quot;
-</pre></div>
-<p>See <a href="#Bash-Builtins">Bash Builtin Commands</a>, for a full description of the <code>let</code> builtin.
+otherwise the return status is 1. 
 </p>
+
 </dd>
 <dt id='index-_005b_005b'><span><code>[[&hellip;]]</code><a href='#index-_005b_005b' class='copiable-anchor'> &para;</a></span></dt>
 <dd><span id="index-_005d_005d"></span>
@@ -1361,10 +1474,12 @@ otherwise the return status is 1.  This is exactly equivalent to
 the conditional expression <var>expression</var>.
 Expressions are composed of the primaries described below in
 <a href="#Bash-Conditional-Expressions">Bash Conditional Expressions</a>.
-Word splitting and filename expansion are not performed on the words
-between the <code>[[</code> and <code>]]</code>; tilde expansion, parameter and
+The words between the <code>[[</code> and <code>]]</code> do not undergo word splitting
+and filename expansion.
+The shell performs tilde expansion, parameter and
 variable expansion, arithmetic expansion, command substitution, process
-substitution, and quote removal are performed.
+substitution, and quote removal on those words
+(the expansions that would occur if the words were enclosed in double quotes).
 Conditional operators such as &lsquo;<samp>-f</samp>&rsquo; must be unquoted to be recognized
 as primaries.
 </p>
@@ -1382,78 +1497,110 @@ is enabled, the match is performed without regard to the case
 of alphabetic characters.
 The return value is 0 if the string matches (&lsquo;<samp>==</samp>&rsquo;) or does not
 match (&lsquo;<samp>!=</samp>&rsquo;) the pattern, and 1 otherwise.
-Any part of the pattern may be quoted to force the quoted portion
-to be matched as a string.
+</p>
+<p>If you quote any part of the pattern,
+using any of the shell&rsquo;s quoting mechanisms,
+the quoted portion is matched literally.
+This means every character in the quoted portion matches itself,
+instead of having any special pattern matching meaning.
 </p>
 <p>An additional binary operator, &lsquo;<samp>=~</samp>&rsquo;, is available, with the same
 precedence as &lsquo;<samp>==</samp>&rsquo; and &lsquo;<samp>!=</samp>&rsquo;.
-When it is used, the string to the right of the operator is considered
-a <small>POSIX</small> extended regular expression and matched accordingly
+When you use &lsquo;<samp>=~</samp>&rsquo;, the string to the right of the operator is considered
+a <small>POSIX</small> extended regular expression pattern and matched accordingly
 (using the <small>POSIX</small> <code>regcomp</code> and <code>regexec</code> interfaces
 usually described in <i>regex</i>(3)).
-The return value is 0 if the string matches
-the pattern, and 1 otherwise.
+The return value is 0 if the string matches the pattern, and 1 if it does not.
 If the regular expression is syntactically incorrect, the conditional
-expression&rsquo;s return value is 2.
+expression returns 2.
 If the <code>nocasematch</code> shell option
 (see the description of <code>shopt</code> in <a href="#The-Shopt-Builtin">The Shopt Builtin</a>)
 is enabled, the match is performed without regard to the case
 of alphabetic characters.
-Any part of the pattern may be quoted to force the quoted portion
-to be matched as a string.
-Bracket expressions in regular expressions must be treated carefully,
-since normal quoting characters lose their meanings between brackets.
+</p>
+<p>You can quote any part of the pattern
+to force the quoted portion to be matched literally
+instead of as a regular expression (see above).
 If the pattern is stored in a shell variable, quoting the variable
-expansion forces the entire pattern to be matched as a string.
+expansion forces the entire pattern to be matched literally.
 </p>
 <p>The pattern will match if it matches any part of the string.
-Anchor the pattern using the &lsquo;<samp>^</samp>&rsquo; and &lsquo;<samp>$</samp>&rsquo; regular expression
-operators to force it to match the entire string.
-The array variable <code>BASH_REMATCH</code> records which parts of the string
-matched the pattern.
-The element of <code>BASH_REMATCH</code> with index 0 contains the portion of
-the string matching the entire regular expression.
-Substrings matched by parenthesized subexpressions within the regular
-expression are saved in the remaining <code>BASH_REMATCH</code> indices.
-The element of <code>BASH_REMATCH</code> with index <var>n</var> is the portion of the
-string matching the <var>n</var>th parenthesized subexpression.
+If you want to force the pattern to match the entire string,
+anchor the pattern using the &lsquo;<samp>^</samp>&rsquo; and &lsquo;<samp>$</samp>&rsquo; regular expression
+operators.
 </p>
 <p>For example, the following will match a line
-(stored in the shell variable <var>line</var>)
+(stored in the shell variable <code>line</code>)
 if there is a sequence of characters anywhere in the value consisting of
 any number, including zero, of 
 characters in the <code>space</code> character class,
-zero or one instances of &lsquo;<samp>a</samp>&rsquo;, then a &lsquo;<samp>b</samp>&rsquo;:
-</p><div class="example">
+immediately followed by zero or one instances of &lsquo;<samp>a</samp>&rsquo;,
+then a &lsquo;<samp>b</samp>&rsquo;:
+</p>
+<div class="example">
 <pre class="example">[[ $line =~ [[:space:]]*(a)?b ]]
 </pre></div>
 
-<p>That means values like &lsquo;<samp>aab</samp>&rsquo; and &lsquo;<samp>  aaaaaab</samp>&rsquo; will match, as
-will a line containing a &lsquo;<samp>b</samp>&rsquo; anywhere in its value.
+<p>That means values for <code>line</code> like
+&lsquo;<samp>aab</samp>&rsquo;, &lsquo;<samp>  aaaaaab</samp>&rsquo;, &lsquo;<samp>xaby</samp>&rsquo;, and &lsquo;<samp> ab</samp>&rsquo;
+will all match,
+as will a line containing a &lsquo;<samp>b</samp>&rsquo; anywhere in its value.
 </p>
-<p>Storing the regular expression in a shell variable is often a useful
+<p>If you want to match a character that&rsquo;s special to the regular expression
+grammar (&lsquo;<samp>^$|[]()\.*+?</samp>&rsquo;), it has to be quoted to remove its special
+meaning.
+This means that in the pattern &lsquo;<samp>xxx.txt</samp>&rsquo;, the &lsquo;<samp>.</samp>&rsquo; matches any
+character in the string (its usual regular expression meaning), but in the
+pattern &lsquo;<samp>&quot;xxx.txt&quot;</samp>&rsquo;, it can only match a literal &lsquo;<samp>.</samp>&rsquo;.
+</p>
+<p>Likewise, if you want to include a character in your pattern that has a
+special meaning to the regular expression grammar, you must make sure it&rsquo;s
+not quoted.
+If you want to anchor a pattern at the beginning or end of the string,
+for instance, you cannot quote the &lsquo;<samp>^</samp>&rsquo; or &lsquo;<samp>$</samp>&rsquo;
+characters using any form of shell quoting.
+</p>
+<p>If you want to match &lsquo;<samp>initial string</samp>&rsquo; at the start of a line,
+the following will work:
+</p><div class="example">
+<pre class="example">[[ $line =~ ^&quot;initial string&quot; ]]
+</pre></div>
+<p>but this will not:
+</p><div class="example">
+<pre class="example">[[ $line =~ &quot;^initial string&quot; ]]
+</pre></div>
+<p>because in the second example the &lsquo;<samp>^</samp>&rsquo; is quoted and doesn&rsquo;t have its
+usual special meaning.
+</p>
+<p>It is sometimes difficult to specify a regular expression properly
+without using quotes, or to keep track of the quoting used by regular
+expressions while paying attention to
+shell quoting and the shell&rsquo;s quote removal.
+Storing the regular expression in a shell variable is often a useful
 way to avoid problems with quoting characters that are special to the
 shell.
-It is sometimes difficult to specify a regular expression literally
-without using quotes, or to keep track of the quoting used by regular
-expressions while paying attention to the shell&rsquo;s quote removal.
-Using a shell variable to store the pattern decreases these problems.
-For example, the following is equivalent to the above:
-</p><div class="example">
+For example, the following is equivalent to the pattern used above:
+</p>
+<div class="example">
 <pre class="example">pattern='[[:space:]]*(a)?b'
 [[ $line =~ $pattern ]]
 </pre></div>
 
-<p>If you want to match a character that&rsquo;s special to the regular expression
-grammar, it has to be quoted to remove its special meaning.
-This means that in the pattern &lsquo;<samp>xxx.txt</samp>&rsquo;, the &lsquo;<samp>.</samp>&rsquo; matches any
-character in the string (its usual regular expression meaning), but in the
-pattern &lsquo;<samp>&quot;xxx.txt&quot;</samp>&rsquo; it can only match a literal &lsquo;<samp>.</samp>&rsquo;.
-Shell programmers should take special care with backslashes, since backslashes
-are used both by the shell and regular expressions to remove the special
-meaning from the following character.
-The following two sets of commands are <em>not</em> equivalent:
-</p><div class="example">
+<p>Shell programmers should take special care with backslashes, since
+backslashes are used by both the shell and regular expressions to remove
+the special meaning from the following character.
+This means that after the shell&rsquo;s word expansions complete
+(see <a href="#Shell-Expansions">Shell Expansions</a>),
+any backslashes remaining in parts of the pattern
+that were originally not quoted can remove the
+special meaning of pattern characters.
+If any part of the pattern is quoted, the shell does its best to ensure that
+the regular expression treats those remaining backslashes as literal,
+if they appeared in a quoted portion.
+</p>
+<p>The following two sets of commands are <em>not</em> equivalent:
+</p>
+<div class="example">
 <pre class="example">pattern='\.'
 
 [[ . =~ $pattern ]]
@@ -1465,11 +1612,52 @@ The following two sets of commands are <em>not</em> equivalent:
 
 <p>The first two matches will succeed, but the second two will not, because
 in the second two the backslash will be part of the pattern to be matched.
-In the first two examples, the backslash removes the special meaning from
+In the first two examples, the pattern passed to the regular expression
+parser is &lsquo;<samp>\.</samp>&rsquo;. The backslash removes the special meaning from
 &lsquo;<samp>.</samp>&rsquo;, so the literal &lsquo;<samp>.</samp>&rsquo; matches.
+In the second two examples, the pattern passed to the regular expression
+parser has the backslash quoted (e.g., &lsquo;<samp>\\\.</samp>&rsquo;), which will not match
+the string, since it does not contain a backslash.
 If the string in the first examples were anything other than &lsquo;<samp>.</samp>&rsquo;, say
 &lsquo;<samp>a</samp>&rsquo;, the pattern would not match, because the quoted &lsquo;<samp>.</samp>&rsquo; in the
 pattern loses its special meaning of matching any single character.
+</p>
+<p>Bracket expressions in regular expressions can be sources of errors as well,
+since characters that are normally special in regular expressions
+lose their special meanings between brackets.
+However, you can use bracket expressions to match special pattern characters
+without quoting them, so they are sometimes useful for this purpose.
+</p>
+<p>Though it might seem like a strange way to write it, the following pattern
+will match a &lsquo;<samp>.</samp>&rsquo; in the string:
+</p>
+<div class="example">
+<pre class="example">[[ . =~ [.] ]]
+</pre></div>
+
+<p>The shell performs any word expansions before passing the pattern
+to the regular expression functions,
+so you can assume that the shell&rsquo;s quoting takes precedence.
+As noted above, the regular expression parser will interpret any
+unquoted backslashes remaining in the pattern after shell expansion
+according to its own rules.
+The intention is to avoid making shell programmers quote things twice
+as much as possible, so shell quoting should be sufficient to quote
+special pattern characters where that&rsquo;s necessary.
+</p>
+<p>The array variable <code>BASH_REMATCH</code> records which parts of the string
+matched the pattern.
+The element of <code>BASH_REMATCH</code> with index 0 contains the portion of
+the string matching the entire regular expression.
+Substrings matched by parenthesized subexpressions within the regular
+expression are saved in the remaining <code>BASH_REMATCH</code> indices.
+The element of <code>BASH_REMATCH</code> with index <var>n</var> is the portion of the
+string matching the <var>n</var>th parenthesized subexpression.
+</p>
+<p>Bash sets
+<code>BASH_REMATCH</code>
+in the global scope; declaring it as a local variable will lead to
+unexpected results.
 </p>
 <p>Expressions may be combined using the following operators, listed
 in decreasing order of precedence:
@@ -1520,11 +1708,11 @@ commands in the list may be redirected to a single stream.
 <pre class="example">( <var>list</var> )
 </pre></div>
 
-<p>Placing a list of commands between parentheses causes a subshell
-environment to be created (see <a href="#Command-Execution-Environment">Command Execution Environment</a>), and each
-of the commands in <var>list</var> to be executed in that subshell.  Since the
-<var>list</var> is executed in a subshell, variable assignments do not remain in
-effect after the subshell completes. 
+<p>Placing a list of commands between parentheses forces the shell to create
+a subshell (see <a href="#Command-Execution-Environment">Command Execution Environment</a>), and each
+of the commands in <var>list</var> is executed in that subshell environment.
+Since the <var>list</var> is executed in a subshell, variable assignments do not
+remain in effect after the subshell completes. 
 </p>
 </dd>
 <dt id='index-_007b'><span><code>{}</code><a href='#index-_007b' class='copiable-anchor'> &para;</a></span></dt>
@@ -1541,9 +1729,9 @@ The semicolon (or newline) following <var>list</var> is required.
 
 <p>In addition to the creation of a subshell, there is a subtle difference
 between these two constructs due to historical reasons.  The braces
-are <code>reserved words</code>, so they must be separated from the <var>list</var>
+are reserved words, so they must be separated from the <var>list</var>
 by <code>blank</code>s or other shell metacharacters.
-The parentheses are <code>operators</code>, and are
+The parentheses are operators, and are
 recognized as separate tokens by the shell even if they are not separated
 from the <var>list</var> by whitespace.
 </p>
@@ -1567,26 +1755,53 @@ A coprocess is executed asynchronously in a subshell, as if the command
 had been terminated with the &lsquo;<samp>&amp;</samp>&rsquo; control operator, with a two-way pipe
 established between the executing shell and the coprocess.
 </p>
-<p>The format for a coprocess is:
-</p><div class="example">
+<p>The syntax for a coprocess is:
+</p>
+<div class="example">
 <pre class="example">coproc [<var>NAME</var>] <var>command</var> [<var>redirections</var>]
 </pre></div>
 
 <p>This creates a coprocess named <var>NAME</var>.
-If <var>NAME</var> is not supplied, the default name is <var>COPROC</var>.
-<var>NAME</var> must not be supplied if <var>command</var> is a simple
-command (see <a href="#Simple-Commands">Simple Commands</a>); otherwise, it is interpreted as
-the first word of the simple command.
+<var>command</var> may be either a simple command (see <a href="#Simple-Commands">Simple Commands</a>)
+or a compound command (see <a href="#Compound-Commands">Compound Commands</a>).
+<var>NAME</var> is a shell variable name.
+If <var>NAME</var> is not supplied, the default name is <code>COPROC</code>.
+</p>
+<p>The recommended form to use for a coprocess is
+</p>
+<div class="example">
+<pre class="example">coproc <var>NAME</var> { <var>command</var>; }
+</pre></div>
+
+<p>This form is recommended because simple commands result in the coprocess
+always being named <code>COPROC</code>, and it is simpler to use and more complete
+than the other compound commands.
+</p>
+<p>There are other forms of coprocesses:
+</p>
+<div class="example">
+<pre class="example">coproc <var>NAME</var> <var>compound-command</var>
+coproc <var>compound-command</var>
+coproc <var>simple-command</var>
+</pre></div>
+
+<p>If <var>command</var> is a compound command, <var>NAME</var> is optional. The
+word following <code>coproc</code> determines whether that word is interpreted
+as a variable name: it is interpreted as <var>NAME</var> if it is not a
+reserved word that introduces a compound command.
+If <var>command</var> is a simple command, <var>NAME</var> is not allowed; this
+is to avoid confusion between <var>NAME</var> and the first word of the simple
+command.
 </p>
 <p>When the coprocess is executed, the shell creates an array variable
 (see <a href="#Arrays">Arrays</a>)
-named <code>NAME</code> in the context of the executing shell.
+named <var>NAME</var> in the context of the executing shell.
 The standard output of <var>command</var>
 is connected via a pipe to a file descriptor in the executing shell,
-and that file descriptor is assigned to <code>NAME</code>[0].
+and that file descriptor is assigned to <var>NAME</var>[0].
 The standard input of <var>command</var>
 is connected via a pipe to a file descriptor in the executing shell,
-and that file descriptor is assigned to <code>NAME</code>[1].
+and that file descriptor is assigned to <var>NAME</var>[1].
 This pipe is established before any redirections specified by the
 command (see <a href="#Redirections">Redirections</a>).
 The file descriptors can be utilized as arguments to shell commands
@@ -1595,7 +1810,7 @@ Other than those created to execute command and process substitutions,
 the file descriptors are not available in subshells.
 </p>
 <p>The process ID of the shell spawned to execute the coprocess is
-available as the value of the variable <code>NAME</code>_PID.
+available as the value of the variable <code><var>NAME</var>_PID</code>.
 The <code>wait</code>
 builtin command may be used to wait for the coprocess to terminate.
 </p>
@@ -1623,110 +1838,9 @@ Parallel provides shorthand references to many of the most common operations
 the input source, and so on).  Parallel can replace <code>xargs</code> or feed
 commands from its input sources to several different instances of Bash.
 </p>
-<p>For a complete description, refer to the GNU Parallel documentation.  A few
-examples should provide a brief introduction to its use.
-</p>
-<p>For example, it is easy to replace <code>xargs</code> to gzip all html files in the
-current directory and its subdirectories:
-</p><div class="example">
-<pre class="example">find . -type f -name '*.html' -print | parallel gzip
-</pre></div>
-<p>If you need to protect special characters such as newlines in file names,
-use find&rsquo;s <samp>-print0</samp> option and parallel&rsquo;s <samp>-0</samp> option.
-</p>
-<p>You can use Parallel to move files from the current directory when the
-number of files is too large to process with one <code>mv</code> invocation:
-</p><div class="example">
-<pre class="example">printf '%s\n' * | parallel mv {} destdir
-</pre></div>
-
-<p>As you can see, the {} is replaced with each line read from standard input.
-While using <code>ls</code> will work in most instances, it is not sufficient to
-deal with all filenames. <code>printf</code> is a shell builtin, and therefore is
-not subject to the kernel&rsquo;s limit on the number of arguments to a program,
-so you can use &lsquo;<samp>*</samp>&rsquo; (but see below about the <code>dotglob</code> shell option).
-If you need to accommodate special characters in filenames, you can use
-</p>
-<div class="example">
-<pre class="example">printf '%s\0' * | parallel -0 mv {} destdir
-</pre></div>
-
-<p>as alluded to above.
-</p>
-<p>This will run as many <code>mv</code> commands as there are files in the current
-directory.
-You can emulate a parallel <code>xargs</code> by adding the <samp>-X</samp> option:
-</p><div class="example">
-<pre class="example">printf '%s\0' * | parallel -0 -X mv {} destdir
-</pre></div>
-
-<p>(You may have to modify the pattern if you have the <code>dotglob</code> option
-enabled.)
-</p>
-<p>GNU Parallel can replace certain common idioms that operate on lines read
-from a file (in this case, filenames listed one per line):
-</p><div class="example">
-<pre class="example">	while IFS= read -r x; do
-		do-something1 &quot;$x&quot; &quot;config-$x&quot;
-		do-something2 &lt; &quot;$x&quot;
-	done &lt; file | process-output
-</pre></div>
-
-<p>with a more compact syntax reminiscent of lambdas:
-</p><div class="example">
-<pre class="example">cat list | parallel &quot;do-something1 {} config-{} ; do-something2 &lt; {}&quot; |
-           process-output
-</pre></div>
-
-<p>Parallel provides a built-in mechanism to remove filename extensions, which
-lends itself to batch file transformations or renaming:
-</p><div class="example">
-<pre class="example">ls *.gz | parallel -j+0 &quot;zcat {} | bzip2 &gt;{.}.bz2 &amp;&amp; rm {}&quot;
-</pre></div>
-<p>This will recompress all files in the current directory with names ending
-in .gz using bzip2, running one job per CPU (-j+0) in parallel.
-(We use <code>ls</code> for brevity here; using <code>find</code> as above is more
-robust in the face of filenames containing unexpected characters.)
-Parallel can take arguments from the command line; the above can also be
-written as
-</p>
-<div class="example">
-<pre class="example">parallel &quot;zcat {} | bzip2 &gt;{.}.bz2 &amp;&amp; rm {}&quot; ::: *.gz
-</pre></div>
-
-<p>If a command generates output, you may want to preserve the input order in
-the output.  For instance, the following command
-</p><div class="example">
-<pre class="example">{
-    echo foss.org.my ;
-    echo debian.org ;
-    echo freenetproject.org ;
-} | parallel traceroute
-</pre></div>
-<p>will display as output the traceroute invocation that finishes first.
-Adding the <samp>-k</samp> option 
-</p><div class="example">
-<pre class="example">{
-    echo foss.org.my ;
-    echo debian.org ;
-    echo freenetproject.org ;
-} | parallel -k traceroute
-</pre></div>
-<p>will ensure that the output of <code>traceroute foss.org.my</code> is displayed first.
-</p>
-<p>Finally, Parallel can be used to run a sequence of shell commands in parallel,
-similar to &lsquo;<samp>cat file | bash</samp>&rsquo;.
-It is not uncommon to take a list of filenames, create a series of shell
-commands to operate on them, and feed that list of commands to a shell.
-Parallel can speed this up.  Assuming that <samp>file</samp> contains a list of
-shell commands, one per line,
-</p>
-<div class="example">
-<pre class="example">parallel -j 10 &lt; file
-</pre></div>
-
-<p>will evaluate the commands using the shell (since no explicit command is
-supplied as an argument), in blocks of ten shell jobs at a time.
+<p>For a complete description, refer to the GNU Parallel documentation, which
+is available at
+<a href="https://www.gnu.org/software/parallel/parallel_tutorial.html">https://www.gnu.org/software/parallel/parallel_tutorial.html</a>.
 </p>
 <hr>
 </div>
@@ -1764,16 +1878,16 @@ shell context; no new process is created to interpret them.
 word <code>function</code> is optional.
 If the <code>function</code> reserved
 word is supplied, the parentheses are optional.
-The <var>body</var> of the function is the compound command
+The <em>body</em> of the function is the compound command
 <var>compound-command</var> (see <a href="#Compound-Commands">Compound Commands</a>).
 That command is usually a <var>list</var> enclosed between { and }, but
-may be any compound command listed above,
-with one exception: If the <code>function</code> reserved word is used, but the
-parentheses are not supplied, the braces are required.                   
+may be any compound command listed above.
+If the <code>function</code> reserved word is used, but the
+parentheses are not supplied, the braces are recommended.
 <var>compound-command</var> is executed whenever <var>fname</var> is specified as the
-name of a command.
+name of a simple command.
 When the shell is in <small>POSIX</small> mode (see <a href="#Bash-POSIX-Mode">Bash POSIX Mode</a>),
-<var>fname</var> must be a valid shell <var>name</var> and
+<var>fname</var> must be a valid shell name and
 may not be the same as one of the special builtins
 (see <a href="#Special-Builtins">Special Builtins</a>).
 In default mode, a function name can be any unquoted shell word that does
@@ -1840,9 +1954,21 @@ return status is the exit status of the last command executed
 before the <code>return</code>.
 </p>
 <p>Variables local to the function may be declared with the
-<code>local</code> builtin.  These variables are visible only to
+<code>local</code> builtin (<em>local variables</em>).
+Ordinarily, variables and their values
+are shared between a function and its caller.
+These variables are visible only to
 the function and the commands it invokes.  This is particularly
 important when a shell function calls other functions.
+</p>
+<p>In the following description, the <em>current scope</em> is a currently-
+executing function.
+Previous scopes consist of that function&rsquo;s caller and so on,
+back to the &quot;global&quot; scope, where the shell is not executing
+any shell function.
+Consequently, a local variable at the current local scope is a variable
+declared using the <code>local</code> or <code>declare</code> builtins in the
+function that is currently executing.
 </p>
 <p>Local variables &quot;shadow&quot; variables with the same name declared at
 previous scopes.  For instance, a local variable declared in a function
@@ -1850,7 +1976,7 @@ hides a global variable of the same name: references and assignments
 refer to the local variable, leaving the global variable unmodified.
 When the function returns, the global variable is once again visible.
 </p>
-<p>The shell uses <var>dynamic scoping</var> to control a variable&rsquo;s visibility
+<p>The shell uses <em>dynamic scoping</em> to control a variable&rsquo;s visibility
 within functions.
 With dynamic scoping, visible variables and their values
 are a result of the sequence of function calls that caused execution
@@ -1862,11 +1988,11 @@ This is also the value that a local variable
 declaration &quot;shadows&quot;, and the value that is restored when the function
 returns.
 </p>
-<p>For example, if a variable <var>var</var> is declared as local in function
-<var>func1</var>, and <var>func1</var> calls another function <var>func2</var>,
-references to <var>var</var> made from within <var>func2</var> will resolve to the
-local variable <var>var</var> from <var>func1</var>, shadowing any global variable
-named <var>var</var>.
+<p>For example, if a variable <code>var</code> is declared as local in function
+<code>func1</code>, and <code>func1</code> calls another function <code>func2</code>,
+references to <code>var</code> made from within <code>func2</code> will resolve to the
+local variable <code>var</code> from <code>func1</code>, shadowing any global variable
+named <code>var</code>.
 </p>
 <p>The following script demonstrates this behavior.
 When executed, the script displays
@@ -1896,11 +2022,13 @@ variable is local to the current scope, <code>unset</code> will unset it;
 otherwise the unset will refer to the variable found in any calling scope 
 as described above.
 If a variable at the current local scope is unset, it will remain so
+(appearing as unset)
 until it is reset in that scope or until the function returns.
 Once the function returns, any instance of the variable at a previous
 scope will become visible.
 If the unset acts on a variable at a previous scope, any instance of a   
-variable with that name that had been shadowed will become visible.
+variable with that name that had been shadowed will become visible
+(see below how <code>localvar_unset</code>shell option changes this behavior).
 </p>
 <p>Function names and definitions may be listed with the
 <samp>-f</samp> option to the <code>declare</code> (<code>typeset</code>)
@@ -1909,7 +2037,8 @@ The <samp>-F</samp> option to <code>declare</code> or <code>typeset</code>
 will list the function names only
 (and optionally the source file and line number, if the <code>extdebug</code>
 shell option is enabled).
-Functions may be exported so that subshells
+Functions may be exported so that child shell processes
+(those created when executing a separate shell invocation)
 automatically have them defined with the
 <samp>-f</samp> option to the <code>export</code> builtin
 (see <a href="#Bourne-Shell-Builtins">Bourne Shell Builtins</a>).
@@ -1932,11 +2061,11 @@ Next: <a href="#Shell-Expansions" accesskey="n" rel="next">Shell Expansions</a>,
 <span id="index-shell-variable"></span>
 
 
-<p>A <var>parameter</var> is an entity that stores values.
+<p>A <em>parameter</em> is an entity that stores values.
 It can be a <code>name</code>, a number, or one of the special characters
 listed below.
-A <var>variable</var> is a parameter denoted by a <code>name</code>.
-A variable has a <var>value</var> and zero or more <var>attributes</var>.
+A <em>variable</em> is a parameter denoted by a <code>name</code>.
+A variable has a <code>value</code> and zero or more <code>attributes</code>.
 Attributes are assigned using the <code>declare</code> builtin command
 (see the description of the <code>declare</code> builtin in <a href="#Bash-Builtins">Bash Builtin Commands</a>).
 </p>
@@ -1952,17 +2081,16 @@ the <code>unset</code> builtin command.
 is not given, the variable is assigned the null string.  All
 <var>value</var>s undergo tilde expansion, parameter and variable expansion,
 command substitution, arithmetic expansion, and quote
-removal (detailed below).  If the variable has its <code>integer</code>
+removal (see <a href="#Shell-Parameter-Expansion">Shell Parameter Expansion</a>).
+If the variable has its <code>integer</code>
 attribute set, then <var>value</var> 
 is evaluated as an arithmetic expression even if the <code>$((&hellip;))</code>
 expansion is not used (see <a href="#Arithmetic-Expansion">Arithmetic Expansion</a>).
-Word splitting is not performed, with the exception
-of <code>&quot;$@&quot;</code> as explained below.
-Filename expansion is not performed.
+Word splitting and filename expansion are not performed.
 Assignment statements may also appear as arguments to the
 <code>alias</code>, 
 <code>declare</code>, <code>typeset</code>, <code>export</code>, <code>readonly</code>,
-and <code>local</code> builtin commands (<var>declaration</var> commands).
+and <code>local</code> builtin commands (<em>declaration</em> commands).
 When in <small>POSIX</small> mode (see <a href="#Bash-POSIX-Mode">Bash POSIX Mode</a>), these builtins may appear
 in a command after one or more instances of the <code>command</code> builtin
 and retain these assignment statement properties.
@@ -1972,8 +2100,8 @@ to a shell variable or array index (see <a href="#Arrays">Arrays</a>), the &lsqu
 operator can be used to   
 append to or add to the variable&rsquo;s previous value.
 This includes arguments to builtin commands such as <code>declare</code> that
-accept assignment statements (<var>declaration</var> commands).
-When &lsquo;<samp>+=</samp>&rsquo; is applied to a variable for which the <var>integer</var> attribute
+accept assignment statements (declaration commands).
+When &lsquo;<samp>+=</samp>&rsquo; is applied to a variable for which the <code>integer</code> attribute
 has been set, <var>value</var> is evaluated as an arithmetic expression and
 added to the variable&rsquo;s current value, which is also evaluated.
 When &lsquo;<samp>+=</samp>&rsquo; is applied to an array variable using compound assignment
@@ -1985,10 +2113,10 @@ in an associative array.
 When applied to a string-valued variable, <var>value</var> is expanded and
 appended to the variable&rsquo;s value.
 </p>
-<p>A variable can be assigned the <var>nameref</var> attribute using the
+<p>A variable can be assigned the <code>nameref</code> attribute using the
 <samp>-n</samp> option to the <code>declare</code> or <code>local</code> builtin commands
 (see <a href="#Bash-Builtins">Bash Builtin Commands</a>)
-to create a <var>nameref</var>, or a reference to another variable.
+to create a <em>nameref</em>, or a reference to another variable.
 This allows variables to be manipulated indirectly.
 Whenever the nameref variable is referenced, assigned to, unset, or has
 its attributes modified (other than using or changing the nameref
@@ -2002,9 +2130,9 @@ argument, running
 </p><div class="example">
 <pre class="example">declare -n ref=$1
 </pre></div>
-<p>inside the function creates a nameref variable <var>ref</var> whose value is
+<p>inside the function creates a nameref variable <code>ref</code> whose value is
 the variable name passed as the first argument.
-References and assignments to <var>ref</var>, and changes to its attributes,
+References and assignments to <code>ref</code>, and changes to its attributes,
 are treated as references, assignments, and attribute modifications
 to the variable whose name was passed as <code>$1</code>.
 </p>
@@ -2033,7 +2161,7 @@ Next: <a href="#Special-Parameters" accesskey="n" rel="next">Special Parameters<
 <span id="Positional-Parameters-1"></span><h4 class="subsection">3.4.1 Positional Parameters</h4>
 <span id="index-parameters_002c-positional"></span>
 
-<p>A <var>positional parameter</var> is a parameter denoted by one or more
+<p>A <em>positional parameter</em> is a parameter denoted by one or more
 digits, other than the single digit <code>0</code>.  Positional parameters are
 assigned from the shell&rsquo;s arguments when it is invoked,
 and may be reassigned using the <code>set</code> builtin command.
@@ -2125,7 +2253,7 @@ builtin command, or those set by the shell itself
 </dd>
 <dt id='index-_0024'><span><code>$</code><a href='#index-_0024' class='copiable-anchor'> &para;</a></span></dt>
 <dd><span id="index-_0024_0024"></span>
-<p>($$) Expands to the process <small>ID</small> of the shell.  In a <code>()</code> subshell, it
+<p>($$) Expands to the process <small>ID</small> of the shell.  In a subshell, it
 expands to the process <small>ID</small> of the invoking shell, not the subshell.
 </p>
 </dd>
@@ -2181,14 +2309,14 @@ word splitting;
 and filename expansion.
 </p>
 <p>On systems that can support it, there is an additional expansion
-available: <var>process substitution</var>.
+available: <em>process substitution</em>.
 This is performed at the
 same time as tilde, parameter, variable, and arithmetic expansion and
 command substitution.
 </p>
 <p>After these expansions are performed, quote characters present in the
 original word are removed unless they have been quoted themselves
-(<var>quote removal</var>).
+(<em>quote removal</em>).
 </p>
 <p>Only brace expansion, word splitting, and filename expansion
 can increase the number of words of the expansion; other expansions
@@ -2224,7 +2352,7 @@ Next: <a href="#Tilde-Expansion" accesskey="n" rel="next">Tilde Expansion</a>, U
 
 <p>Brace expansion is a mechanism by which arbitrary strings may be generated.
 This mechanism is similar to
-<var>filename expansion</var> (see <a href="#Filename-Expansion">Filename Expansion</a>),
+<em>filename expansion</em> (see <a href="#Filename-Expansion">Filename Expansion</a>),
 but the filenames generated need not exist.
 Patterns to be brace expanded take the form of an optional <var>preamble</var>,
 followed by either a series of comma-separated strings or a sequence expression
@@ -2244,7 +2372,7 @@ ade ace abe
 </pre></div>
 
 <p>A sequence expression takes the form <code>{<var>x</var>..<var>y</var>[..<var>incr</var>]}</code>,
-where <var>x</var> and <var>y</var> are either integers or single characters,
+where <var>x</var> and <var>y</var> are either integers or letters,
 and <var>incr</var>, an optional increment, is an integer.
 When integers are supplied, the expression expands to each number between
 <var>x</var> and <var>y</var>, inclusive.
@@ -2253,10 +2381,11 @@ same width.
 When either <var>x</var> or <var>y</var> begins with a zero, the shell
 attempts to force all generated terms to contain the same number of digits,
 zero-padding where necessary.
-When characters are supplied, the expression expands to each character
+When letters are supplied, the expression expands to each character
 lexicographically between <var>x</var> and <var>y</var>, inclusive,
 using the default C locale.
-Note that both <var>x</var> and <var>y</var> must be of the same type.
+Note that both <var>x</var> and <var>y</var> must be of the same type
+(integer or letter).
 When the increment is supplied, it is used as the difference between
 each term.  The default increment is 1 or -1 as appropriate.
 </p>
@@ -2301,10 +2430,10 @@ Next: <a href="#Shell-Parameter-Expansion" accesskey="n" rel="next">Shell Parame
 
 <p>If a word begins with an unquoted tilde character (&lsquo;<samp>~</samp>&rsquo;), all of the
 characters up to the first unquoted slash (or all characters,
-if there is no unquoted slash) are considered a <var>tilde-prefix</var>.
+if there is no unquoted slash) are considered a <em>tilde-prefix</em>.
 If none of the characters in the tilde-prefix are quoted, the
 characters in the tilde-prefix following the tilde are treated as a
-possible <var>login name</var>.
+possible <em>login name</em>.
 If this login name is the null string, the tilde is replaced with the
 value of the <code>HOME</code> shell variable.
 If <code>HOME</code> is unset, the home directory of the user executing the
@@ -2375,7 +2504,7 @@ and the shell assigns the expanded value.
 <p>Bash also performs tilde expansion on words satisfying the conditions of
 variable assignments (see <a href="#Shell-Parameters">Shell Parameters</a>)
 when they appear as arguments to simple commands.
-Bash does not do this, except for the <var>declaration</var> commands listed
+Bash does not do this, except for the declaration commands listed
 above, when in <small>POSIX</small> mode.
 </p>
 <hr>
@@ -2411,7 +2540,7 @@ or when <var>parameter</var> is followed by a character that is not to be
 interpreted as part of its name.
 </p>
 <p>If the first character of <var>parameter</var> is an exclamation point (!),
-and <var>parameter</var> is not a <var>nameref</var>,
+and <var>parameter</var> is not a nameref,
 it introduces a level of indirection.
 Bash uses the value formed by expanding the rest of
 <var>parameter</var> as the new <var>parameter</var>; this is then
@@ -2445,6 +2574,12 @@ is not null; if the colon is omitted, the operator tests only for existence.
 <var>word</var> is substituted.  Otherwise, the value of
 <var>parameter</var> is substituted.
 </p>
+<div class="example">
+<pre class="example">$ v=123
+$ echo ${v-unset}
+123
+</pre></div>
+
 </dd>
 <dt><span><code>${<var>parameter</var>:=<var>word</var>}</code></span></dt>
 <dd><p>If <var>parameter</var>
@@ -2454,6 +2589,13 @@ The value of <var>parameter</var> is then substituted.
 Positional parameters and special parameters may not be assigned to
 in this way.
 </p>
+<div class="example">
+<pre class="example">$ var=
+$ : ${var:=DEFAULT}
+$ echo $var
+DEFAULT
+</pre></div>
+
 </dd>
 <dt><span><code>${<var>parameter</var>:?<var>word</var>}</code></span></dt>
 <dd><p>If <var>parameter</var>
@@ -2463,19 +2605,31 @@ is not present) is written to the standard error and the shell, if it
 is not interactive, exits.  Otherwise, the value of <var>parameter</var> is
 substituted.
 </p>
+<div class="example">
+<pre class="example">$ var=
+$ : ${var:?var is unset or null}
+bash: var: var is unset or null
+</pre></div>
+
 </dd>
 <dt><span><code>${<var>parameter</var>:+<var>word</var>}</code></span></dt>
 <dd><p>If <var>parameter</var>
 is null or unset, nothing is substituted, otherwise the expansion of
 <var>word</var> is substituted.
 </p>
+<div class="example">
+<pre class="example">$ var=123
+$ echo ${var:+var is set and not null}
+var is set and not null
+</pre></div>
+
 </dd>
 <dt><span><code>${<var>parameter</var>:<var>offset</var>}</code></span></dt>
 <dt><span><code>${<var>parameter</var>:<var>offset</var>:<var>length</var>}</code></span></dt>
 <dd><p>This is referred to as Substring Expansion.
 It expands to up to <var>length</var> characters of the value of <var>parameter</var>
 starting at the character specified by <var>offset</var>.
-If <var>parameter</var> is &lsquo;<samp>@</samp>&rsquo;, an indexed array subscripted by
+If <var>parameter</var> is &lsquo;<samp>@</samp>&rsquo; or &lsquo;<samp>*</samp>&rsquo;, an indexed array subscripted by
 &lsquo;<samp>@</samp>&rsquo; or &lsquo;<samp>*</samp>&rsquo;, or an associative array name, the results differ as
 described below.
 If <var>length</var> is omitted, it expands to the substring of the value of
@@ -2550,8 +2704,8 @@ bc
 $ echo ${array[0]: -7:-2}
 bcdef
 </pre>
-<p>If <var>parameter</var> is &lsquo;<samp>@</samp>&rsquo;, the result is <var>length</var> positional
-parameters beginning at <var>offset</var>.
+<p>If <var>parameter</var> is &lsquo;<samp>@</samp>&rsquo; or &lsquo;<samp>*</samp>&rsquo;, the result is <var>length</var>
+positional parameters beginning at <var>offset</var>.
 A negative <var>offset</var> is taken relative to one greater than the greatest
 positional parameter, so an offset of -1 evaluates to the last positional
 parameter.
@@ -2682,22 +2836,98 @@ array in turn, and the expansion is the resultant list.
 </p>
 </dd>
 <dt><span><code>${<var>parameter</var>/<var>pattern</var>/<var>string</var>}</code></span></dt>
-<dd>
-<p>The <var>pattern</var> is expanded to produce a pattern just as in
+<dt><span><code>${<var>parameter</var>//<var>pattern</var>/<var>string</var>}</code></span></dt>
+<dt><span><code>${<var>parameter</var>/#<var>pattern</var>/<var>string</var>}</code></span></dt>
+<dt><span><code>${<var>parameter</var>/%<var>pattern</var>/<var>string</var>}</code></span></dt>
+<dd><p>The <var>pattern</var> is expanded to produce a pattern just as in
 filename expansion.
 <var>Parameter</var> is expanded and the longest match of <var>pattern</var>
 against its value is replaced with <var>string</var>.
+<var>string</var> undergoes tilde expansion, parameter and variable expansion,
+arithmetic expansion, command and process substitution, and quote removal.
 The match is performed according to the rules described below
 (see <a href="#Pattern-Matching">Pattern Matching</a>).
-If <var>pattern</var> begins with &lsquo;<samp>/</samp>&rsquo;, all matches of <var>pattern</var> are
-replaced with <var>string</var>.  Normally only the first match is replaced.
-If <var>pattern</var> begins with &lsquo;<samp>#</samp>&rsquo;, it must match at the beginning
-of the expanded value of <var>parameter</var>.
-If <var>pattern</var> begins with &lsquo;<samp>%</samp>&rsquo;, it must match at the end
-of the expanded value of <var>parameter</var>.
-If <var>string</var> is null, matches of <var>pattern</var> are deleted
-and the <code>/</code> following <var>pattern</var> may be omitted.
-If the <code>nocasematch</code> shell option   
+</p>
+<p>In the first form above, only the first match is replaced.
+If there are two slashes separating <var>parameter</var> and <var>pattern</var>
+(the second form above), all matches of <var>pattern</var> are
+replaced with <var>string</var>.
+If <var>pattern</var> is preceded by &lsquo;<samp>#</samp>&rsquo; (the third form above),
+it must match at the beginning of the expanded value of <var>parameter</var>.
+If <var>pattern</var> is preceded by &lsquo;<samp>%</samp>&rsquo; (the fourth form above),
+it must match at the end of the expanded value of <var>parameter</var>.
+If the expansion of <var>string</var> is null,
+matches of <var>pattern</var> are deleted.
+If <var>string</var> is null,
+matches of <var>pattern</var> are deleted
+and the &lsquo;<samp>/</samp>&rsquo; following <var>pattern</var> may be omitted.
+</p>
+<p>If the <code>patsub_replacement</code> shell option is enabled using <code>shopt</code>,
+any unquoted instances of &lsquo;<samp>&amp;</samp>&rsquo; in <var>string</var> are replaced with the
+matching portion of <var>pattern</var>.
+This is intended to duplicate a common <code>sed</code> idiom.
+</p>
+<p>Quoting any part of <var>string</var> inhibits replacement in the
+expansion of the quoted portion, including replacement strings stored
+in shell variables.
+Backslash will escape &lsquo;<samp>&amp;</samp>&rsquo; in <var>string</var>; the backslash is removed
+in order to permit a literal &lsquo;<samp>&amp;</samp>&rsquo; in the replacement string.
+Users should take care if <var>string</var> is double-quoted to avoid
+unwanted interactions between the backslash and double-quoting, since
+backslash has special meaning within double quotes.
+Pattern substitution performs the check for unquoted &lsquo;<samp>&amp;</samp>&rsquo; after
+expanding <var>string</var>,
+so users should ensure to properly quote any occurrences of &lsquo;<samp>&amp;</samp>&rsquo;
+they want to be taken literally in the replacement
+and ensure any instances of &lsquo;<samp>&amp;</samp>&rsquo; they want to be replaced are unquoted.
+</p>
+<p>For instance,
+</p>
+<div class="example">
+<pre class="example">var=abcdef
+rep='&amp; '
+echo ${var/abc/&amp; }
+echo &quot;${var/abc/&amp; }&quot;
+echo ${var/abc/$rep}
+echo &quot;${var/abc/$rep}&quot;
+</pre></div>
+
+<p>will display four lines of &quot;abc def&quot;, while
+</p>
+<div class="example">
+<pre class="example">var=abcdef
+rep='&amp; '
+echo ${var/abc/\&amp; }
+echo &quot;${var/abc/\&amp; }&quot;
+echo ${var/abc/&quot;&amp; &quot;}
+echo ${var/abc/&quot;$rep&quot;}
+</pre></div>
+
+<p>will display four lines of &quot;&amp; def&quot;.
+Like the pattern removal operators, double quotes surrounding the
+replacement string quote the expanded characters, while double quotes
+enclosing the entire parameter substitution do not, since
+the expansion is performed in a
+context that doesn&rsquo;t take any enclosing double quotes into account.
+</p>
+<p>Since backslash can escape &lsquo;<samp>&amp;</samp>&rsquo;, it can also escape a backslash in
+the replacement string.
+This means that &lsquo;<samp>\\</samp>&rsquo; will insert a literal
+backslash into the replacement, so these two <code>echo</code> commands
+</p>
+<div class="example">
+<pre class="example">var=abcdef
+rep='\\&amp;xyz'
+echo ${var/abc/\\&amp;xyz}
+echo ${var/abc/$rep}
+</pre></div>
+
+<p>will both output &lsquo;<samp>\abcxyzdef</samp>&rsquo;.
+</p>
+<p>It should rarely be necessary to enclose only <var>string</var> in double
+quotes.
+</p>
+<p>If the <code>nocasematch</code> shell option   
 (see the description of <code>shopt</code> in <a href="#The-Shopt-Builtin">The Shopt Builtin</a>)
 is enabled, the match is performed without regard to the case   
 of alphabetic characters.
@@ -2720,7 +2950,8 @@ filename expansion.
 Each character in the expanded value of <var>parameter</var> is tested against
 <var>pattern</var>, and, if it matches the pattern, its case is converted.
 The pattern should not attempt to match more than one character.
-The &lsquo;<samp>^</samp>&rsquo; operator converts lowercase letters matching <var>pattern</var>
+</p>
+<p>The &lsquo;<samp>^</samp>&rsquo; operator converts lowercase letters matching <var>pattern</var>
 to uppercase; the &lsquo;<samp>,</samp>&rsquo; operator converts matching uppercase letters
 to lowercase.
 The &lsquo;<samp>^^</samp>&rsquo; and &lsquo;<samp>,,</samp>&rsquo; expansions convert each matched character in the
@@ -2728,7 +2959,8 @@ expanded value; the &lsquo;<samp>^</samp>&rsquo; and &lsquo;<samp>,</samp>&rsquo
 the first character in the expanded value.
 If <var>pattern</var> is omitted, it is treated like a &lsquo;<samp>?</samp>&rsquo;, which matches
 every character.
-If <var>parameter</var> is &lsquo;<samp>@</samp>&rsquo; or &lsquo;<samp>*</samp>&rsquo;,
+</p>
+<p>If <var>parameter</var> is &lsquo;<samp>@</samp>&rsquo; or &lsquo;<samp>*</samp>&rsquo;,
 the case modification operation is applied to each positional
 parameter in turn, and the expansion is the resultant list.
 If <var>parameter</var>
@@ -2781,6 +3013,10 @@ indexed and associative arrays as a sequence of quoted key-value pairs
 <dt><span><code>a</code></span></dt>
 <dd><p>The expansion is a string consisting of flag values representing
 <var>parameter</var>&rsquo;s attributes.
+</p></dd>
+<dt><span><code>k</code></span></dt>
+<dd><p>Like the &lsquo;<samp>K</samp>&rsquo; transformation, but expands the keys and values of
+indexed and associative arrays to separate words after word splitting.
 </p></dd>
 </dl>
 
@@ -2858,8 +3094,10 @@ and the substitution of the result.  The format for arithmetic expansion is:
 <pre class="example">$(( <var>expression</var> ))
 </pre></div>
 
-<p>The expression is treated as if it were within double quotes, but
-a double quote inside the parentheses is not treated specially.
+<p>The <var>expression</var> undergoes the same expansions
+as if it were within double quotes,
+but double quote characters in <var>expression</var> are not treated specially
+and are removed.
 All tokens in the expression undergo parameter and variable expansion,
 command substitution, and quote removal.
 The result is treated as the arithmetic expression to be evaluated.
@@ -2992,9 +3230,13 @@ without regard to the case of alphabetic characters.
 <p>When a pattern is used for filename expansion, the character &lsquo;<samp>.</samp>&rsquo;
 at the start of a filename or immediately following a slash
 must be matched explicitly, unless the shell option <code>dotglob</code> is set.
-The filenames &lsquo;<samp>.</samp>&rsquo; and &lsquo;<samp>..</samp>&rsquo; must always be matched explicitly,
+In order to match the filenames &lsquo;<samp>.</samp>&rsquo; and &lsquo;<samp>..</samp>&rsquo;,
+the pattern must begin with &lsquo;<samp>.</samp>&rsquo; (for example, &lsquo;<samp>.?</samp>&rsquo;),
 even if <code>dotglob</code> is set.
-In other cases, the &lsquo;<samp>.</samp>&rsquo; character is not treated specially.
+If the <code>globskipdots</code> shell option is enabled, the filenames
+&lsquo;<samp>.</samp>&rsquo; and &lsquo;<samp>..</samp>&rsquo; are never matched, even if the pattern begins
+with a &lsquo;<samp>.</samp>&rsquo;.
+When not matching filenames, the &lsquo;<samp>.</samp>&rsquo; character is not treated specially.
 </p>
 <p>When matching a filename, the slash character must always be
 matched explicitly by a slash in the pattern, but in other matching
@@ -3003,6 +3245,7 @@ below (see <a href="#Pattern-Matching">Pattern Matching</a>).
 </p>
 <p>See the description of <code>shopt</code> in <a href="#The-Shopt-Builtin">The Shopt Builtin</a>,
 for a description of the <code>nocaseglob</code>, <code>nullglob</code>,
+<code>globskipdots</code>,
 <code>failglob</code>, and <code>dotglob</code> options.
 </p>
 <p>The <code>GLOBIGNORE</code>
@@ -3071,20 +3314,22 @@ then any character not enclosed is matched.  A &lsquo;<samp>-</samp>&rsquo;
 may be matched by including it as the first or last character
 in the set.  A &lsquo;<samp>]</samp>&rsquo; may be matched by including it as the first
 character in the set.
-The sorting order of characters in range expressions is determined by
+The sorting order of characters in range expressions,
+and the characters included in the range,
+are determined by
 the current locale and the values of the
 <code>LC_COLLATE</code> and <code>LC_ALL</code> shell variables, if set.
 </p>
 <p>For example, in the default C locale, &lsquo;<samp>[a-dx-z]</samp>&rsquo; is equivalent to
 &lsquo;<samp>[abcdxyz]</samp>&rsquo;.  Many locales sort characters in dictionary order, and in
 these locales &lsquo;<samp>[a-dx-z]</samp>&rsquo; is typically not equivalent to &lsquo;<samp>[abcdxyz]</samp>&rsquo;;
-it might be equivalent to &lsquo;<samp>[aBbCcDdxXyYz]</samp>&rsquo;, for example.  To obtain
+it might be equivalent to &lsquo;<samp>[aBbCcDdxYyZz]</samp>&rsquo;, for example.  To obtain
 the traditional interpretation of ranges in bracket expressions, you can
 force the use of the C locale by setting the <code>LC_COLLATE</code> or
 <code>LC_ALL</code> environment variable to the value &lsquo;<samp>C</samp>&rsquo;, or enable the
 <code>globasciiranges</code> shell option.
 </p>
-<p>Within &lsquo;<samp>[</samp>&rsquo; and &lsquo;<samp>]</samp>&rsquo;, <var>character classes</var> can be specified
+<p>Within &lsquo;<samp>[</samp>&rsquo; and &lsquo;<samp>]</samp>&rsquo;, <em>character classes</em> can be specified
 using the syntax
 <code>[:</code><var>class</var><code>:]</code>, where <var>class</var> is one of the
 following classes defined in the <small>POSIX</small> standard:
@@ -3096,7 +3341,7 @@ print   punct   space   upper   word    xdigit
 The <code>word</code> character class matches letters, digits, and the character
 &lsquo;<samp>_</samp>&rsquo;.
 </p>
-<p>Within &lsquo;<samp>[</samp>&rsquo; and &lsquo;<samp>]</samp>&rsquo;, an <var>equivalence class</var> can be
+<p>Within &lsquo;<samp>[</samp>&rsquo; and &lsquo;<samp>]</samp>&rsquo;, an <em>equivalence class</em> can be
 specified using the syntax <code>[=</code><var>c</var><code>=]</code>, which
 matches all characters with the same collation weight (as defined
 by the current locale) as the character <var>c</var>.
@@ -3107,9 +3352,11 @@ matches the collating symbol <var>symbol</var>.
 </dl>
 
 <p>If the <code>extglob</code> shell option is enabled using the <code>shopt</code>
-builtin, several extended pattern matching operators are recognized.
+builtin, the shell recognizes several extended pattern matching operators.
 In the following description, a <var>pattern-list</var> is a list of one
 or more patterns separated by a &lsquo;<samp>|</samp>&rsquo;.
+When matching filenames, the <code>dotglob</code> shell option determines
+the set of filenames that are tested, as described above.
 Composite patterns may be formed using one or more of the following
 sub-patterns:
 </p>
@@ -3135,6 +3382,23 @@ sub-patterns:
 </p></dd>
 </dl>
 
+<p>The <code>extglob</code> option changes the behavior of the parser, since the
+parentheses are normally treated as operators with syntactic meaning.
+To ensure that extended matching patterns are parsed correctly, make sure
+that <code>extglob</code> is enabled before parsing constructs containing the
+patterns, including shell functions and command substitutions.
+</p>
+<p>When matching filenames, the <code>dotglob</code> shell option determines
+the set of filenames that are tested:
+when <code>dotglob</code> is enabled, the set of filenames includes all files
+beginning with &lsquo;<samp>.</samp>&rsquo;, but the filenames
+&lsquo;<samp>.</samp>&rsquo; and &lsquo;<samp>..</samp>&rsquo; must be matched by a
+pattern or sub-pattern that begins with a dot;
+when it is disabled, the set does not
+include any filenames beginning with &ldquo;.&rdquo; unless the pattern
+or sub-pattern begins with a &lsquo;<samp>.</samp>&rsquo;.
+As above, &lsquo;<samp>.</samp>&rsquo; only has a special meaning when matching filenames. 
+</p>
 <p>Complicated extended pattern matching against long strings is slow,
 especially when the patterns contain alternations and the strings
 contain multiple matches.
@@ -3167,9 +3431,9 @@ Next: <a href="#Executing-Commands" accesskey="n" rel="next">Executing Commands<
 <span id="index-redirection"></span>
 
 <p>Before a command is executed, its input and output
-may be <var>redirected</var>
+may be <em>redirected</em>
 using a special notation interpreted by the shell.
-Redirection allows commands&rsquo; file handles to be
+<em>Redirection</em> allows commands&rsquo; file handles to be
 duplicated, opened, closed,
 made to refer to different files,
 and can change the files the command reads from and writes to.
@@ -3190,6 +3454,8 @@ descriptor to close.
 If {<var>varname</var>} is supplied, the redirection persists beyond
 the scope of the command, allowing the shell programmer to manage
 the file descriptor&rsquo;s lifetime manually.
+The <code>varredir_close</code> shell option manages this behavior
+(see <a href="#The-Shopt-Builtin">The Shopt Builtin</a>).
 </p>
 <p>In the following descriptions, if the file descriptor number is
 omitted, and the first character of the redirection operator is
@@ -3532,7 +3798,11 @@ and quote removal before being assigned to the variable.
 </li></ol>
 
 <p>If no command name results, the variable assignments affect the current
-shell environment.  Otherwise, the variables are added to the environment
+shell environment.
+In the case of such a command (one that consists only of assignment
+statements and redirections), assignment statements are performed before
+redirections.
+Otherwise, the variables are added to the environment
 of the executed command and do not affect the current shell environment.
 If any of the assignments attempts to assign a value to a readonly variable,
 an error occurs, and the command exits with a non-zero status.
@@ -3596,7 +3866,7 @@ to the command are set to the arguments supplied, if any.
 
 </li><li> If this execution fails because the file is not in executable
 format, and the file is not a directory, it is assumed to be a
-<var>shell script</var> and the shell executes it as described in
+<em>shell script</em> and the shell executes it as described in
 <a href="#Shell-Scripts">Shell Scripts</a>.
 
 </li><li> If the command was not begun asynchronously, the shell waits for
@@ -3614,7 +3884,7 @@ Next: <a href="#Environment" accesskey="n" rel="next">Environment</a>, Previous:
 <span id="Command-Execution-Environment-1"></span><h4 class="subsection">3.7.3 Command Execution Environment</h4>
 <span id="index-execution-environment"></span>
 
-<p>The shell has an <var>execution environment</var>, which consists of the
+<p>The shell has an <em>execution environment</em>, which consists of the
 following:
 </p>
 <ul>
@@ -3673,6 +3943,8 @@ shell&rsquo;s parent, and traps ignored by the shell are ignored
 <p>A command invoked in this separate environment cannot affect the
 shell&rsquo;s execution environment.
 </p>
+<p>A <em>subshell</em> is a copy of the shell process.
+</p>
 <p>Command substitution, commands grouped with parentheses,
 and asynchronous commands are invoked in a
 subshell environment that is a duplicate of the shell environment,
@@ -3702,13 +3974,13 @@ Next: <a href="#Exit-Status" accesskey="n" rel="next">Exit Status</a>, Previous:
 <span id="index-environment"></span>
 
 <p>When a program is invoked it is given an array of strings
-called the <var>environment</var>.
+called the <em>environment</em>.
 This is a list of name-value pairs, of the form <code>name=value</code>.
 </p>
 <p>Bash provides several ways to manipulate the environment.
 On invocation, the shell scans its own environment and
 creates a parameter for each name found, automatically marking
-it for <var>export</var>
+it for <code>export</code>
 to child processes.  Executed commands inherit the environment.
 The <code>export</code> and &lsquo;<samp>declare -x</samp>&rsquo;
 commands allow parameters and functions to be added to and
@@ -3746,7 +4018,7 @@ Next: <a href="#Signals" accesskey="n" rel="next">Signals</a>, Previous: <a href
 <span id="index-exit-status-1"></span>
 
 <p>The exit status of an executed command is the value returned by the
-<var>waitpid</var> system call or equivalent function.  Exit statuses    
+<code>waitpid</code> system call or equivalent function.  Exit statuses    
 fall between 0 and 255, though, as explained below, the shell may
 use values above 125 specially.  Exit statuses from shell builtins and
 compound commands are also limited to this range.  Under certain
@@ -3778,6 +4050,9 @@ and a non-zero status on failure, so they may be used by the
 conditional and list constructs.
 All builtins return an exit status of 2 to indicate incorrect usage,
 generally invalid options or missing arguments.
+</p>
+<p>The exit status of the last command is available in the special
+parameter $? (see <a href="#Special-Parameters">Special Parameters</a>).
 </p>
 <hr>
 </div>
@@ -3831,6 +4106,35 @@ which a trap has been set will cause the <code>wait</code> builtin to return
 immediately with an exit status greater than 128, immediately after
 which the trap is executed.
 </p>
+<p>When job control is not enabled, and Bash is waiting for a foreground
+command to complete, the shell receives keyboard-generated signals
+such as <code>SIGINT</code> (usually generated by &lsquo;<samp>^C</samp>&rsquo;) that users
+commonly intend to send to that command.
+This happens because the shell and the command are in the same process
+group as the terminal, and &lsquo;<samp>^C</samp>&rsquo; sends <code>SIGINT</code> to all processes
+in that process group.
+See <a href="#Job-Control">Job Control</a>, for a more in-depth discussion of process groups.
+</p>
+<p>When Bash is running without job control enabled and receives <code>SIGINT</code>
+while waiting for a foreground command, it waits until that foreground
+command terminates and then decides what to do about the <code>SIGINT</code>:
+</p>
+<ol>
+<li> If the command terminates due to the <code>SIGINT</code>, Bash concludes
+that the user meant to end the entire script, and acts on the
+<code>SIGINT</code> (e.g., by running a <code>SIGINT</code> trap or exiting itself);
+
+</li><li> If the pipeline does not terminate due to <code>SIGINT</code>, the program
+handled the <code>SIGINT</code> itself and did not treat it as a fatal signal.
+In that case, Bash does not treat <code>SIGINT</code> as a fatal signal,
+either, instead assuming that the <code>SIGINT</code> was used as part of the
+program&rsquo;s normal operation (e.g., <code>emacs</code> uses it to abort editing
+commands) or deliberately discarded. However, Bash will run any
+trap set on <code>SIGINT</code>, as it does with any other trapped signal it
+receives while it is waiting for the foreground command to
+complete, for compatibility.
+</li></ol>
+
 <hr>
 </div>
 </div>
@@ -3860,8 +4164,10 @@ are unset.
 </p>
 <p>A shell script may be made executable by using the <code>chmod</code> command
 to turn on the execute bit.  When Bash finds such a file while
-searching the <code>$PATH</code> for a command, it spawns a subshell to
-execute it.  In other words, executing
+searching the <code>$PATH</code> for a command, it creates a
+new instance of itself
+to execute it.
+In other words, executing
 </p><div class="example">
 <pre class="example">filename <var>arguments</var>
 </pre></div>
@@ -3984,18 +4290,19 @@ The return status is zero.
 
 <p>Read and execute commands from the <var>filename</var> argument in the
 current shell context.  If <var>filename</var> does not contain a slash,
-the <code>PATH</code> variable is used to find <var>filename</var>.
-When Bash is not in <small>POSIX</small> mode, the current directory is searched
+the <code>PATH</code> variable is used to find <var>filename</var>,
+but <var>filename</var> does not need to be executable.
+When Bash is not in <small>POSIX</small> mode, it searches the current directory
 if <var>filename</var> is not found in <code>$PATH</code>.
 If any <var>arguments</var> are supplied, they become the positional
 parameters when <var>filename</var> is executed.  Otherwise the positional
 parameters are unchanged.
-If the <samp>-T</samp> option is enabled, <code>source</code> inherits any trap on
+If the <samp>-T</samp> option is enabled, <code>.</code> inherits any trap on
 <code>DEBUG</code>; if it is not, any <code>DEBUG</code> trap string is saved and
-restored around the call to <code>source</code>, and <code>source</code> unsets the
+restored around the call to <code>.</code>, and <code>.</code> unsets the
 <code>DEBUG</code> trap while it executes.
 If <samp>-T</samp> is not set, and the sourced file changes
-the <code>DEBUG</code> trap, the new value is retained when <code>source</code> completes.
+the <code>DEBUG</code> trap, the new value is retained when <code>.</code> completes.
 The return status is the exit status of the last command executed, or
 zero if no commands are executed.  If <var>filename</var> is not found, or
 cannot be read, the return status is non-zero.
@@ -4021,7 +4328,6 @@ The return status is zero unless <var>n</var> is not greater than or equal to 1.
 <p>Change the current working directory to <var>directory</var>.
 If <var>directory</var> is not supplied, the value of the <code>HOME</code>
 shell variable is used.
-Any additional arguments following <var>directory</var> are ignored.
 If the shell variable
 <code>CDPATH</code> exists, it is used as a search path:
 each directory name in <code>CDPATH</code> is searched for
@@ -4056,6 +4362,11 @@ before the directory change is attempted.
 &lsquo;<samp>-</samp>&rsquo; is the first argument, and the directory change is
 successful, the absolute pathname of the new working directory is
 written to the standard output.
+</p>
+<p>If the directory change is successful, <code>cd</code> sets the value of the
+<code>PWD</code> environment variable to the new directory name, and sets the
+<code>OLDPWD</code> environment variable to the value of the current working
+directory before the change.
 </p>
 <p>The return status is zero if the directory is successfully changed,
 non-zero otherwise.
@@ -4130,7 +4441,7 @@ Any trap on <code>EXIT</code> is executed before the shell terminates.
 in the environment.  If the <samp>-f</samp> option is supplied, the <var>name</var>s
 refer to shell functions; otherwise the names refer to shell variables.
 The <samp>-n</samp> option means to no longer mark each <var>name</var> for export.
-If no <var>names</var> are supplied, or if the <samp>-p</samp> option is given, a
+If no <var>name</var>s are supplied, or if the <samp>-p</samp> option is given, a
 list of names of all exported variables is displayed.
 The <samp>-p</samp> option displays output in a form that may be reused as input.
 If a variable name is followed by =<var>value</var>, the value of
@@ -4395,11 +4706,18 @@ argument.
 
 </dd>
 <dt><span>4 arguments</span></dt>
-<dd><p>If the first argument is &lsquo;<samp>!</samp>&rsquo;, the result is the negation of
-the three-argument expression composed of the remaining arguments.
-Otherwise, the expression is parsed and evaluated according to
-precedence using the rules listed above.
+<dd><p>The following conditions are applied in the order listed.
 </p>
+<ol>
+<li> If the first argument is &lsquo;<samp>!</samp>&rsquo;, the result is the negation of
+the three-argument expression composed of the remaining arguments.
+</li><li> If the first argument is exactly &lsquo;<samp>(</samp>&rsquo; and the fourth argument is
+exactly &lsquo;<samp>)</samp>&rsquo;, the result is the two-argument test of the second
+and third arguments.
+</li><li> Otherwise, the expression is parsed and evaluated according to
+precedence using the rules listed above.
+</li></ol>
+
 </dd>
 <dt><span>5 or more arguments</span></dt>
 <dd><p>The expression is parsed and evaluated according to precedence
@@ -4514,7 +4832,7 @@ If the <samp>-v</samp> option is given, each
 If the <samp>-f</samp> option is given, the <var>name</var>s refer to shell
 functions, and the function definition is removed.
 If the <samp>-n</samp> option is supplied, and <var>name</var> is a variable with
-the <var>nameref</var> attribute, <var>name</var> will be unset rather than the
+the <code>nameref</code> attribute, <var>name</var> will be unset rather than the
 variable it references.
 <samp>-n</samp> has no effect if the <samp>-f</samp> option is supplied.
 If no options are supplied, each <var>name</var> refers to a variable; if
@@ -4523,7 +4841,7 @@ unset.
 Readonly variables and functions may not be unset.
 Some shell variables lose their special behavior if they are unset; such
 behavior is noted in the description of the individual variables.
-The return status is zero unless a <var>name</var> is readonly.
+The return status is zero unless a <var>name</var> is readonly or may not be unset.
 </p></dd>
 </dl>
 
@@ -4563,6 +4881,7 @@ bind [-m <var>keymap</var>] -f <var>filename</var>
 bind [-m <var>keymap</var>] -x <var>keyseq:shell-command</var>
 bind [-m <var>keymap</var>] <var>keyseq:function-name</var>
 bind [-m <var>keymap</var>] <var>keyseq:readline-command</var>
+bind <var>readline-command-line</var>
 </pre></div>
 
 <p>Display current Readline (see <a href="#Command-Line-Editing">Command Line Editing</a>)
@@ -4649,6 +4968,9 @@ When <var>shell-command</var> is executed, the shell sets the
 buffer and the <code>READLINE_POINT</code> and <code>READLINE_MARK</code> variables
 to the current location of the insertion point and the saved insertion
 point (the <var>mark</var>), respectively.
+The shell assigns any numeric argument the user supplied to the
+<code>READLINE_ARGUMENT</code> variable.
+If there was no argument, that variable is not set.
 If the executed command changes the value of any of <code>READLINE_LINE</code>,
 <code>READLINE_POINT</code>, or <code>READLINE_MARK</code>, those new values will be
 reflected in the editing state.
@@ -4756,7 +5078,7 @@ the global scope, even when <code>declare</code> is executed in a shell function
 It is ignored in all other cases.
 </p>
 <p>The <samp>-I</samp> option causes local variables to inherit the attributes
-(except the <var>nameref</var> attribute)
+(except the <code>nameref</code> attribute)
 and value of any existing variable with the same
 <var>name</var> at a surrounding scope.
 If there is no existing variable, the local variable is initially unset.
@@ -4790,7 +5112,7 @@ The upper-case attribute is disabled.
 </p>
 </dd>
 <dt><span><code>-n</code></span></dt>
-<dd><p>Give each <var>name</var> the <var>nameref</var> attribute, making
+<dd><p>Give each <var>name</var> the <code>nameref</code> attribute, making
 it a name reference to another variable.
 That other variable is defined by the value of <var>name</var>.
 All references, assignments, and attribute modifications
@@ -4842,7 +5164,7 @@ an attempt is made to define a function using &lsquo;<samp>-f foo=bar</samp>&rsq
 an attempt is made to assign a value to a readonly variable,
 an attempt is made to assign a value to an array variable without
 using the compound assignment syntax (see <a href="#Arrays">Arrays</a>),
-one of the <var>names</var> is not a valid shell variable name,
+one of the <var>name</var>s is not a valid shell variable name,
 an attempt is made to turn off readonly status for a readonly variable,
 an attempt is made to turn off array status for an array variable,
 or an attempt is made to display a non-existent function with <samp>-f</samp>.
@@ -4940,12 +5262,20 @@ each builtin with an indication of whether or not it is enabled.
 </p>
 <p>The <samp>-f</samp> option means to load the new builtin command <var>name</var>
 from shared object <var>filename</var>, on systems that support dynamic loading.
+Bash will use the value of the <code>BASH_LOADABLES_PATH</code> variable as a
+colon-separated list of directories in which to search for <var>filename</var>.
+The default is system-dependent.
 The <samp>-d</samp> option will delete a builtin loaded with <samp>-f</samp>.
 </p>
 <p>If there are no options, a list of the shell builtins is displayed.
 The <samp>-s</samp> option restricts <code>enable</code> to the <small>POSIX</small> special
 builtins.  If <samp>-s</samp> is used with <samp>-f</samp>, the new builtin becomes
 a special builtin (see <a href="#Special-Builtins">Special Builtins</a>).
+</p>
+<p>If no options are supplied and a <var>name</var> is not a shell builtin,
+<code>enable</code> will attempt to load <var>name</var> from a shared object named
+<var>name</var>, as if the command were
+&lsquo;<samp>enable -f <var>name</var> <var>name</var></samp>&rsquo;.
 </p>
 <p>The return status is zero unless a <var>name</var> is not a shell builtin
 or there is an error loading a new builtin from a shared object.
@@ -5109,6 +5439,10 @@ corresponding <var>argument</var> in the same way as <code>echo -e</code>
 <dd><p>Causes <code>printf</code> to output the
 corresponding <var>argument</var> in a format that can be reused as shell input.
 </p></dd>
+<dt><span><code>%Q</code></span></dt>
+<dd><p>like <code>%q</code>, but applies any supplied precision to the <var>argument</var>
+before quoting it.
+</p></dd>
 <dt><span><code>%(<var>datefmt</var>)T</code></span></dt>
 <dd><p>Causes <code>printf</code> to output the date-time string resulting from using
 <var>datefmt</var> as a format string for <code>strftime</code>(3).
@@ -5237,8 +5571,10 @@ from regular files.
 If <code>read</code> times out, <code>read</code> saves any partial input read into
 the specified variable <var>name</var>.
 If <var>timeout</var> is 0, <code>read</code> returns immediately, without trying to
-read any data.  The exit status is 0 if input is available on
-the specified file descriptor, non-zero otherwise.
+read any data.
+The exit status is 0 if input is available on the specified file descriptor,
+or the read will return EOF,
+non-zero otherwise.
 The exit status is greater than 128 if the timeout is exceeded.
 </p>
 </dd>
@@ -5312,7 +5648,7 @@ is not also used.
 <p>If the <samp>-f</samp> option is used, <code>type</code> does not attempt to find
 shell functions, as with the <code>command</code> builtin.
 </p>
-<p>The return status is zero if all of the <var>names</var> are found, non-zero
+<p>The return status is zero if all of the <var>name</var>s are found, non-zero
 if any are not found.
 </p>
 </dd>
@@ -5507,8 +5843,8 @@ parameters, or to display the names and values of shell variables.
 <dl compact="compact">
 <dt id='index-set'><span><code>set</code><a href='#index-set' class='copiable-anchor'> &para;</a></span></dt>
 <dd><div class="example">
-<pre class="example">set [--abefhkmnptuvxBCEHPT] [-o <var>option-name</var>] [<var>argument</var> &hellip;]
-set [+abefhkmnptuvxBCEHPT] [+o <var>option-name</var>] [<var>argument</var> &hellip;]
+<pre class="example">set [-abefhkmnptuvxBCEHPT] [-o <var>option-name</var>] [--] [-] [<var>argument</var> &hellip;]
+set [+abefhkmnptuvxBCEHPT] [+o <var>option-name</var>] [--] [-] [<var>argument</var> &hellip;]
 </pre></div>
 
 <p>If no options or arguments are supplied, <code>set</code> displays the names
@@ -5731,13 +6067,20 @@ Turning this option off causes the effective user
 and group ids to be set to the real user and group ids.
 </p>
 </dd>
+<dt><span><code>-r</code></span></dt>
+<dd><p>Enable restricted shell mode.
+This option cannot be unset once it has been set.
+</p>
+</dd>
 <dt><span><code>-t</code></span></dt>
 <dd><p>Exit after reading and executing one command.
 </p>
 </dd>
 <dt><span><code>-u</code></span></dt>
 <dd><p>Treat unset variables and parameters other than the special parameters
-&lsquo;<samp>@</samp>&rsquo; or &lsquo;<samp>*</samp>&rsquo; as an error when performing parameter expansion.
+&lsquo;<samp>@</samp>&rsquo; or &lsquo;<samp>*</samp>&rsquo;,
+or array variables subscripted with &lsquo;<samp>@</samp>&rsquo; or &lsquo;<samp>*</samp>&rsquo;,
+as an error when performing parameter expansion.
 An error message will be written to the standard error, and a non-interactive
 shell will exit.
 </p>
@@ -5858,7 +6201,7 @@ The settings can be either those listed below, or, if the
 option to the <code>set</code> builtin command (see <a href="#The-Set-Builtin">The Set Builtin</a>).
 With no options, or with the <samp>-p</samp> option, a list of all settable
 options is displayed, with an indication of whether or not each is set;
-if <var>optnames</var> are supplied, the output is restricted to those options.
+if <var>optname</var>s are supplied, the output is restricted to those options.
 The <samp>-p</samp> option causes output to be displayed in a form that
 may be reused as input.
 Other options have the following meanings:
@@ -5876,7 +6219,7 @@ Other options have the following meanings:
 <dd><p>Suppresses normal output; the return status
 indicates whether the <var>optname</var> is set or unset.
 If multiple <var>optname</var> arguments are given with <samp>-q</samp>,
-the return status is zero if all <var>optnames</var> are enabled;
+the return status is zero if all <var>optname</var>s are enabled;
 non-zero otherwise.
 </p>
 </dd>
@@ -5894,7 +6237,7 @@ those options which are set or unset, respectively.
 <p>Unless otherwise noted, the <code>shopt</code> options are disabled (off)
 by default.
 </p>
-<p>The return status when listing options is zero if all <var>optnames</var>
+<p>The return status when listing options is zero if all <var>optname</var>s
 are enabled, non-zero otherwise.  When setting or unsetting options,
 the return status is zero unless an <var>optname</var> is not a valid shell
 option.
@@ -5992,7 +6335,7 @@ versions through 4.2.
 <dt><span><code>direxpand</code></span></dt>
 <dd><p>If set, Bash
 replaces directory names with the results of word expansion when performing
-filename completion.  This changes the contents of the readline editing
+filename completion.  This changes the contents of the Readline editing
 buffer.
 If not set, Bash attempts to preserve what the user typed.
 </p>
@@ -6090,6 +6433,13 @@ is not taken into account, so
 and upper-case and lower-case ASCII characters will collate together.   
 </p>
 </dd>
+<dt><span><code>globskipdots</code></span></dt>
+<dd><p>If set, filename expansion will never match the filenames
+&lsquo;<samp>.</samp>&rsquo; and &lsquo;<samp>..</samp>&rsquo;,
+even if the pattern begins with a &lsquo;<samp>.</samp>&rsquo;.
+This option is enabled by default.
+</p>
+</dd>
 <dt><span><code>globstar</code></span></dt>
 <dd><p>If set, the pattern &lsquo;<samp>**</samp>&rsquo; used in a filename expansion context will
 match all files and zero or more directories and subdirectories.
@@ -6160,7 +6510,7 @@ embedded newlines rather than using semicolon separators where possible.
 <dt><span><code>localvar_inherit</code></span></dt>
 <dd><p>If set, local variables inherit the value and attributes of a variable of
 the same name that exists at a previous scope before any new value is
-assigned.  The <var>nameref</var> attribute is not inherited.
+assigned.  The <code>nameref</code> attribute is not inherited.
 </p>
 </dd>
 <dt><span><code>localvar_unset</code></span></dt>
@@ -6196,14 +6546,29 @@ performing filename expansion.
 <dt><span><code>nocasematch</code></span></dt>
 <dd><p>If set, Bash matches patterns in a case-insensitive fashion when
 performing matching while executing <code>case</code> or <code>[[</code>
-conditional commands,
+conditional commands (see <a href="#Conditional-Constructs">Conditional Constructs</a>,
 when performing pattern substitution word expansions,
 or when filtering possible completions as part of programmable completion.
+</p>
+</dd>
+<dt><span><code>noexpand_translation</code></span></dt>
+<dd><p>If set, Bash
+encloses the translated results of $&quot;...&quot; quoting in single quotes
+instead of double quotes.
+If the string is not translated, this has no effect.
 </p>
 </dd>
 <dt><span><code>nullglob</code></span></dt>
 <dd><p>If set, Bash allows filename patterns which match no
 files to expand to a null string, rather than themselves.
+</p>
+</dd>
+<dt><span><code>patsub_replacement</code></span></dt>
+<dd><p>If set, Bash
+expands occurrences of &lsquo;<samp>&amp;</samp>&rsquo; in the replacement string of pattern
+substitution to the text matched by the pattern, as described
+above (see <a href="#Shell-Parameter-Expansion">Shell Parameter Expansion</a>).
+This option is enabled by default.
 </p>
 </dd>
 <dt><span><code>progcomp</code></span></dt>
@@ -6242,9 +6607,15 @@ number of positional parameters.
 </p>
 </dd>
 <dt><span><code>sourcepath</code></span></dt>
-<dd><p>If set, the <code>source</code> builtin uses the value of <code>PATH</code>
+<dd><p>If set, the <code>.</code> (<code>source</code>) builtin uses the value of <code>PATH</code>
 to find the directory containing the file supplied as an argument.
 This option is enabled by default.
+</p>
+</dd>
+<dt><span><code>varredir_close</code></span></dt>
+<dd><p>If set, the shell automatically closes file descriptors assigned using the
+<code>{varname}</code> redirection syntax (see <a href="#Redirections">Redirections</a>) instead of
+leaving them open when the command completes.
 </p>
 </dd>
 <dt><span><code>xpg_echo</code></span></dt>
@@ -6547,7 +6918,7 @@ to read before executing the script.  See <a href="#Bash-Startup-Files">Bash Sta
 </dd>
 <dt id='index-BASH_005fLINENO'><span><code>BASH_LINENO</code><a href='#index-BASH_005fLINENO' class='copiable-anchor'> &para;</a></span></dt>
 <dd><p>An array variable whose members are the line numbers in source files
-where each corresponding member of <var>FUNCNAME</var> was invoked.
+where each corresponding member of <code>FUNCNAME</code> was invoked.
 <code>${BASH_LINENO[$i]}</code> is the line number in the source file
 (<code>${BASH_SOURCE[$i+1]}</code>) where
 <code>${FUNCNAME[$i]}</code> was called (or <code>${BASH_LINENO[$i-1]}</code> if
@@ -6595,11 +6966,11 @@ The values assigned to the array members are as follows:
 </p>
 <dl compact="compact">
 <dt><span><code>BASH_VERSINFO[0]</code></span></dt>
-<dd><p>The major version number (the <var>release</var>).
+<dd><p>The major version number (the <em>release</em>).
 </p>
 </dd>
 <dt><span><code>BASH_VERSINFO[1]</code></span></dt>
-<dd><p>The minor version number (the <var>version</var>).
+<dd><p>The minor version number (the <em>version</em>).
 </p>
 </dd>
 <dt><span><code>BASH_VERSINFO[2]</code></span></dt>
@@ -6611,7 +6982,7 @@ The values assigned to the array members are as follows:
 </p>
 </dd>
 <dt><span><code>BASH_VERSINFO[4]</code></span></dt>
-<dd><p>The release status (e.g., <var>beta1</var>).
+<dd><p>The release status (e.g., <code>beta1</code>).
 </p>
 </dd>
 <dt><span><code>BASH_VERSINFO[5]</code></span></dt>
@@ -6682,7 +7053,7 @@ programmable completion facilities (see <a href="#Programmable-Completion">Progr
 <dt id='index-COMP_005fTYPE'><span><code>COMP_TYPE</code><a href='#index-COMP_005fTYPE' class='copiable-anchor'> &para;</a></span></dt>
 <dd><p>Set to an integer value corresponding to the type of completion attempted
 that caused a completion function to be called:
-<var>TAB</var>, for normal completion,
+<tt class="key">TAB</tt>, for normal completion,
 &lsquo;<samp>?</samp>&rsquo;, for listing completions after successive tabs,
 &lsquo;<samp>!</samp>&rsquo;, for listing alternatives on partial word completion,
 &lsquo;<samp>@</samp>&rsquo;, to list completions if the word is not unmodified,
@@ -6747,7 +7118,7 @@ Emacs shell buffer and disables line editing.
 </p>
 </dd>
 <dt id='index-ENV'><span><code>ENV</code><a href='#index-ENV' class='copiable-anchor'> &para;</a></span></dt>
-<dd><p>Expanded and executed similarlty to <code>BASH_ENV</code>
+<dd><p>Expanded and executed similarly to <code>BASH_ENV</code>
 (see <a href="#Bash-Startup-Files">Bash Startup Files</a>)
 when an interactive shell is invoked in
 <small>POSIX</small> Mode (see <a href="#Bash-POSIX-Mode">Bash POSIX Mode</a>).
@@ -6756,7 +7127,7 @@ when an interactive shell is invoked in
 <dt id='index-EPOCHREALTIME'><span><code>EPOCHREALTIME</code><a href='#index-EPOCHREALTIME' class='copiable-anchor'> &para;</a></span></dt>
 <dd><p>Each time this parameter is referenced, it expands to the number of seconds
 since the Unix Epoch as a floating point value with micro-second granularity
-(see the documentation for the C library function <var>time</var> for the
+(see the documentation for the C library function <code>time</code> for the
 definition of Epoch).
 Assignments to <code>EPOCHREALTIME</code> are ignored.
 If <code>EPOCHREALTIME</code>
@@ -6767,7 +7138,7 @@ it is subsequently reset.
 <dt id='index-EPOCHSECONDS'><span><code>EPOCHSECONDS</code><a href='#index-EPOCHSECONDS' class='copiable-anchor'> &para;</a></span></dt>
 <dd><p>Each time this parameter is referenced, it expands to the number of seconds
 since the Unix Epoch (see the documentation for the C library function
-<var>time</var> for the definition of Epoch).
+<code>time</code> for the definition of Epoch).
 Assignments to <code>EPOCHSECONDS</code> are ignored.
 If <code>EPOCHSECONDS</code>
 is unset, it loses its special properties, even if
@@ -6860,7 +7231,7 @@ subsequently reset.
 <dd><p>Up to three characters which control history expansion, quick
 substitution, and tokenization (see <a href="#History-Interaction">History Expansion</a>).
 The first character is the
-<var>history expansion</var> character, that is, the character which signifies the
+<em>history expansion</em> character, that is, the character which signifies the
 start of a history expansion, normally &lsquo;<samp>!</samp>&rsquo;.  The second character is the
 character which signifies &lsquo;quick substitution&rsquo; when seen as the first
 character on a line, normally &lsquo;<samp>^</samp>&rsquo;.  The optional third character is the
@@ -6952,7 +7323,7 @@ The shell sets the default value to 500 after reading any startup files.
 </dd>
 <dt id='index-HISTTIMEFORMAT'><span><code>HISTTIMEFORMAT</code><a href='#index-HISTTIMEFORMAT' class='copiable-anchor'> &para;</a></span></dt>
 <dd><p>If this variable is set and not null, its value is used as a format string
-for <var>strftime</var> to print the time stamp associated with each history
+for <code>strftime</code> to print the time stamp associated with each history
 entry displayed by the <code>history</code> builtin.
 If this variable is set, time stamps are written to the history file so
 they may be preserved across shell sessions.
@@ -7004,7 +7375,7 @@ starts, it assumes that the shell is running in an Emacs shell buffer
 and may disable line editing depending on the value of <code>TERM</code>.
 </p>
 </dd>
-<dt id='index-LANG'><span><code>LANG</code><a href='#index-LANG' class='copiable-anchor'> &para;</a></span></dt>
+<dt id='index-LANG-1'><span><code>LANG</code><a href='#index-LANG-1' class='copiable-anchor'> &para;</a></span></dt>
 <dd><p>Used to determine the locale category for any category not specifically
 selected with a variable starting with <code>LC_</code>.
 </p>
@@ -7143,7 +7514,7 @@ and before the command is executed.
 </p>
 </dd>
 <dt id='index-PS4'><span><code>PS4</code><a href='#index-PS4' class='copiable-anchor'> &para;</a></span></dt>
-<dd><p>The value of this parameter is expanded like <var>PS1</var>
+<dd><p>The value of this parameter is expanded like <code>PS1</code>
 and the expanded value is the prompt printed before the command line
 is echoed when the <samp>-x</samp> option is set (see <a href="#The-Set-Builtin">The Set Builtin</a>).
 The first character of the expanded value is replicated multiple times,
@@ -7164,17 +7535,23 @@ is unset, it loses its special properties, even if it is
 subsequently reset.
 </p>
 </dd>
+<dt id='index-READLINE_005fARGUMENT'><span><code>READLINE_ARGUMENT</code><a href='#index-READLINE_005fARGUMENT' class='copiable-anchor'> &para;</a></span></dt>
+<dd><p>Any numeric argument given to a Readline command that was defined using
+&lsquo;<samp>bind -x</samp>&rsquo; (see <a href="#Bash-Builtins">Bash Builtin Commands</a>
+when it was invoked.
+</p>
+</dd>
 <dt id='index-READLINE_005fLINE'><span><code>READLINE_LINE</code><a href='#index-READLINE_005fLINE' class='copiable-anchor'> &para;</a></span></dt>
 <dd><p>The contents of the Readline line buffer, for use
 with &lsquo;<samp>bind -x</samp>&rsquo; (see <a href="#Bash-Builtins">Bash Builtin Commands</a>).
 </p>
 </dd>
 <dt id='index-READLINE_005fMARK'><span><code>READLINE_MARK</code><a href='#index-READLINE_005fMARK' class='copiable-anchor'> &para;</a></span></dt>
-<dd><p>The position of the <var>mark</var> (saved insertion point) in the
+<dd><p>The position of the <em>mark</em> (saved insertion point) in the
 Readline line buffer, for use
 with &lsquo;<samp>bind -x</samp>&rsquo; (see <a href="#Bash-Builtins">Bash Builtin Commands</a>).
 The characters between the insertion point and the mark are often
-called the <var>region</var>.
+called the <em>region</em>.
 </p>
 </dd>
 <dt id='index-READLINE_005fPOINT'><span><code>READLINE_POINT</code><a href='#index-READLINE_005fPOINT' class='copiable-anchor'> &para;</a></span></dt>
@@ -7187,12 +7564,11 @@ with &lsquo;<samp>bind -x</samp>&rsquo; (see <a href="#Bash-Builtins">Bash Built
 </p>
 </dd>
 <dt id='index-SECONDS'><span><code>SECONDS</code><a href='#index-SECONDS' class='copiable-anchor'> &para;</a></span></dt>
-<dd><p>This variable expands to the number of seconds since the
-shell was started.  Assignment to this variable resets
-the count to the value assigned, and the expanded value
-becomes the value assigned plus the number of seconds
+<dd><p>This variable expands to the number of seconds since the shell was started. 
+Assignment to this variable resets the count to the value assigned, and the
+expanded value becomes the value assigned plus the number of seconds
 since the assignment.
-The number of seconds at shell invocation and the current time is always
+The number of seconds at shell invocation and the current time are always
 determined by querying the system clock.
 If <code>SECONDS</code>
 is unset, it loses its special properties,
@@ -7626,10 +8002,12 @@ No other startup files are read.
 <span id="Invoked-by-remote-shell-daemon"></span><h4 class="subsubheading">Invoked by remote shell daemon</h4>
 
 <p>Bash attempts to determine when it is being run with its standard input
-connected to a network connection, as when executed by the remote shell
-daemon, usually <code>rshd</code>, or the secure shell daemon <code>sshd</code>.
-If Bash determines it is being run in
-this fashion, it reads and executes commands from <samp>~/.bashrc</samp>, if that
+connected to a network connection, as when executed by
+the historical remote shell daemon, usually <code>rshd</code>,
+or the secure shell daemon <code>sshd</code>.
+If Bash
+determines it is being run non-interactively in this fashion,
+it reads and executes commands from <samp>~/.bashrc</samp>, if that
 file exists and is readable.
 It will not do this if invoked as <code>sh</code>.
 The <samp>--norc</samp> option may be used to inhibit this behavior, and the
@@ -7674,8 +8052,9 @@ Next: <a href="#Is-this-Shell-Interactive_003f" accesskey="n" rel="next">Is this
 <span id="What-is-an-Interactive-Shell_003f-1"></span><h4 class="subsection">6.3.1 What is an Interactive Shell?</h4>
 
 <p>An interactive shell
-is one started without non-option arguments, unless <samp>-s</samp> is
-specified, without specifying the <samp>-c</samp> option, and
+is one started without non-option arguments
+(unless <samp>-s</samp> is specified)
+and without specifying the <samp>-c</samp> option,
 whose input and error output are both
 connected to terminals (as determined by <code>isatty(3)</code>),
 or one started with the <samp>-i</samp> option.
@@ -7746,7 +8125,7 @@ executing it.
 See <a href="#Controlling-the-Prompt">Controlling the Prompt</a>, for a complete list of prompt
 string escape sequences.
 
-</li><li> Bash executes the values of the set elements of the <code>PROMPT_COMMANDS</code>
+</li><li> Bash executes the values of the set elements of the <code>PROMPT_COMMAND</code>
 array variable as commands before printing the primary prompt, <code>$PS1</code>
 (see <a href="#Bash-Variables">Bash Variables</a>).
 
@@ -7801,9 +8180,11 @@ status will not cause the shell to exit (see <a href="#Bash-POSIX-Mode">Bash POS
 
 </li><li> Parser syntax errors will not cause the shell to exit.
 
-</li><li> Simple spelling correction for directory arguments to the <code>cd</code>
-builtin is enabled by default (see the description of the <code>cdspell</code>
+</li><li> If the <code>cdspell</code> shell option is enabled, the shell will attempt
+simple spelling correction for directory arguments to the <code>cd</code>
+builtin (see the description of the <code>cdspell</code>
 option to the <code>shopt</code> builtin in <a href="#The-Shopt-Builtin">The Shopt Builtin</a>).
+The <code>cdspell</code> option is only effective in interactive shells.
 
 </li><li> The shell will check the value of the <code>TMOUT</code> variable and exit
 if a command is not read within the specified number of seconds after
@@ -7823,7 +8204,10 @@ Next: <a href="#Shell-Arithmetic" accesskey="n" rel="next">Shell Arithmetic</a>,
 <span id="index-expressions_002c-conditional"></span>
 
 <p>Conditional expressions are used by the <code>[[</code> compound command
-and the <code>test</code> and <code>[</code> builtin commands. The <code>test</code>
+(see <a href="#Conditional-Constructs">Conditional Constructs</a>)
+and the <code>test</code> and <code>[</code> builtin commands
+(see <a href="#Bourne-Shell-Builtins">Bourne Shell Builtins</a>).
+The <code>test</code>
 and <code>[</code> commands determine their behavior based on the number
 of arguments; see the descriptions of those commands for any other
 command-specific actions.
@@ -8115,9 +8499,9 @@ A shell variable that is null or unset evaluates to 0 when referenced
 by name without using the parameter expansion syntax.
 The value of a variable is evaluated as an arithmetic expression
 when it is referenced, or when a variable which has been given the  
-<var>integer</var> attribute using &lsquo;<samp>declare -i</samp>&rsquo; is assigned a value.
+<code>integer</code> attribute using &lsquo;<samp>declare -i</samp>&rsquo; is assigned a value.
 A null value evaluates to 0.
-A shell variable need not have its <var>integer</var> attribute turned on
+A shell variable need not have its <code>integer</code> attribute turned on
 to be used in an expression.
 </p>
 <p>Integer constants follow the C language definition, without suffixes or
@@ -8150,7 +8534,7 @@ Next: <a href="#Arrays" accesskey="n" rel="next">Arrays</a>, Previous: <a href="
 <span id="Aliases-1"></span><h3 class="section">6.6 Aliases</h3>
 <span id="index-alias-expansion"></span>
 
-<p><var>Aliases</var> allow a string to be substituted for a word when it is used
+<p><em>Aliases</em> allow a string to be substituted for a word when it is used
 as the first word of a simple command.
 The shell maintains a list of aliases that may be set and unset with
 the <code>alias</code> and <code>unalias</code> builtin commands.
@@ -8170,7 +8554,7 @@ This means that one may alias <code>ls</code> to <code>&quot;ls -F&quot;</code>,
 for instance, and Bash does not try to recursively expand the
 replacement text.
 If the last character of the alias value is a
-<var>blank</var>, then the next command word following the
+<code>blank</code>, then the next command word following the
 alias is also checked for alias expansion.
 </p>
 <p>Aliases are created and listed with the <code>alias</code>
@@ -8178,7 +8562,7 @@ command, and removed with the <code>unalias</code> command.
 </p>
 <p>There is no mechanism for using arguments in the replacement text,
 as in <code>csh</code>.
-If arguments are needed, a shell function should be used
+If arguments are needed, use a shell function
 (see <a href="#Shell-Functions">Shell Functions</a>).
 </p>
 <p>Aliases are not expanded when the shell is not interactive,
@@ -8293,6 +8677,9 @@ interpreted as relative to one greater than the maximum index of
 <var>name</var>, so negative indices count back from the end of the
 array, and an index of -1 references the last element.
 </p>
+<p>The &lsquo;<samp>+=</samp>&rsquo; operator will append to an array variable when assigning
+using the compound assignment syntax; see <a href="#Shell-Parameters">Shell Parameters</a> above.
+</p>
 <p>Any element of an array may be referenced using
 <code>${<var>name</var>[<var>subscript</var>]}</code>.
 The braces are required to avoid
@@ -8343,8 +8730,14 @@ destroys the array element at index <var>subscript</var>.
 Negative subscripts to indexed arrays are interpreted as described above.
 Unsetting the last element of an array variable does not unset the variable.
 <code>unset <var>name</var></code>, where <var>name</var> is an array, removes the
-entire array.  A subscript of &lsquo;<samp>*</samp>&rsquo; or &lsquo;<samp>@</samp>&rsquo; also removes the
 entire array.
+<code>unset <var>name</var>[<var>subscript</var>]</code> behaves differently
+depending on the array type when given a
+subscript of &lsquo;<samp>*</samp>&rsquo; or &lsquo;<samp>@</samp>&rsquo;.
+When <var>name</var> is an associative array, it removes the element with key
+&lsquo;<samp>*</samp>&rsquo; or &lsquo;<samp>@</samp>&rsquo;.
+If <var>name</var> is an indexed array, <code>unset</code> removes all of the elements,
+but does not remove the array itself.
 </p>
 <p>When using a variable name with a subscript as an argument to a command,
 such as with <code>unset</code>, without using the word expansion syntax
@@ -8440,11 +8833,16 @@ with zero.
 <pre class="example">popd [-n] [+<var>N</var> | -<var>N</var>]
 </pre></div>
 
-<p>When no arguments are given, <code>popd</code>
-removes the top directory from the stack and
-performs a <code>cd</code> to the new top directory.
+<p>Removes elements from the directory stack.
 The elements are numbered from 0 starting at the first directory
-listed with <code>dirs</code>; that is, <code>popd</code> is equivalent to <code>popd +0</code>.
+listed by <code>dirs</code>;
+that is, <code>popd</code> is equivalent to <code>popd +0</code>.
+</p>
+<p>When no arguments are given, <code>popd</code>
+removes the top directory from the stack and changes to
+the new top directory.
+</p>
+<p>Arguments, if supplied, have the following meanings:
 </p>
 <dl compact="compact">
 <dt><span><code>-n</code></span></dt>
@@ -8453,14 +8851,27 @@ from the stack, so that only the stack is manipulated.
 </p></dd>
 <dt><span><code>+<var>N</var></code></span></dt>
 <dd><p>Removes the <var>N</var>th directory (counting from the left of the
-list printed by <code>dirs</code>), starting with zero.
+list printed by <code>dirs</code>), starting with zero, from the stack.
 </p></dd>
 <dt><span><code>-<var>N</var></code></span></dt>
 <dd><p>Removes the <var>N</var>th directory (counting from the right of the
-list printed by <code>dirs</code>), starting with zero.
+list printed by <code>dirs</code>), starting with zero, from the stack.
 </p></dd>
 </dl>
 
+<p>If the top element of the directory stack is modified, and
+the <samp>-n</samp> option was not supplied, <code>popd</code> uses the <code>cd</code>
+builtin to change to the directory at the top of the stack.
+If the <code>cd</code> fails, <code>popd</code> returns a non-zero value.
+</p>
+<p>Otherwise, <code>popd</code> returns an unsuccessful status if
+an invalid option is encountered, the directory stack
+is empty, or a non-existent directory stack entry is specified.
+</p>
+<p>If the <code>popd</code> command is successful,
+Bash runs <code>dirs</code> to show the final contents of the directory stack,
+and the return status is 0.
+</p>
 <span id="index-pushd"></span>
 </dd>
 <dt><span><code>pushd</code></span></dt>
@@ -8468,10 +8879,13 @@ list printed by <code>dirs</code>), starting with zero.
 <pre class="example">pushd [-n] [<var>+N</var> | <var>-N</var> | <var>dir</var>]
 </pre></div>
 
-<p>Save the current directory on the top of the directory stack
-and then <code>cd</code> to <var>dir</var>.
-With no arguments, <code>pushd</code> exchanges the top two directories
-and makes the new top the current directory.
+<p>Adds a directory to the top of the directory stack, or rotates
+the stack, making the new top of the stack the current working
+directory.
+With no arguments, <code>pushd</code> exchanges the top two elements
+of the directory stack.
+</p>
+<p>Arguments, if supplied, have the following meanings:
 </p>
 <dl compact="compact">
 <dt><span><code>-n</code></span></dt>
@@ -8489,11 +8903,24 @@ list printed by <code>dirs</code>, starting with zero) to the top of
 the list by rotating the stack.
 </p></dd>
 <dt><span><code><var>dir</var></code></span></dt>
-<dd><p>Makes <var>dir</var> be the top of the stack, making
-it the new current directory as if it had been supplied as an argument
-to the <code>cd</code> builtin.
+<dd><p>Makes <var>dir</var> be the top of the stack.
 </p></dd>
 </dl>
+
+<p>After the stack has been modified, if the <samp>-n</samp> option was not
+supplied, <code>pushd</code> uses the <code>cd</code> builtin to change to the
+directory at the top of the stack.
+If the <code>cd</code> fails, <code>pushd</code> returns a non-zero value.
+</p>
+<p>Otherwise, if no arguments are supplied, <code>pushd</code> returns 0 unless the
+directory stack is empty.
+When rotating the directory stack, <code>pushd</code> returns 0 unless
+the directory stack is empty or a non-existent directory stack element
+is specified.
+</p>
+<p>If the <code>pushd</code> command is successful,
+Bash runs <code>dirs</code> to show the final contents of the directory stack.
+</p>
 </dd>
 </dl>
 
@@ -8508,9 +8935,9 @@ Next: <a href="#The-Restricted-Shell" accesskey="n" rel="next">The Restricted Sh
 <span id="Controlling-the-Prompt-1"></span><h3 class="section">6.9 Controlling the Prompt</h3>
 <span id="index-prompting"></span>
 
-<p>Bash examines the value of the array variable <code>PROMPT_COMMANDS</code> just before
+<p>Bash examines the value of the array variable <code>PROMPT_COMMAND</code> just before
 printing each primary prompt.
-If any elements in  <code>PROMPT_COMMANDS</code> are set and non-null, Bash
+If any elements in  <code>PROMPT_COMMAND</code> are set and non-null, Bash
 executes each value, in numeric order,
 just as if it had been typed on the command line.
 </p>
@@ -8577,7 +9004,8 @@ following the final slash).
 <dd><p>The release of Bash, version + patchlevel (e.g., 2.00.0)
 </p></dd>
 <dt><span><code>\w</code></span></dt>
-<dd><p>The current working directory, with <code>$HOME</code> abbreviated with a tilde
+<dd><p>The value of the <code>PWD</code> shell variable (<code>$PWD</code>),
+with <code>$HOME</code> abbreviated with a tilde
 (uses the <code>$PROMPT_DIRTRIM</code> variable).
 </p></dd>
 <dt><span><code>\W</code></span></dt>
@@ -8663,7 +9091,7 @@ option to the <code>hash</code> builtin command.
 <samp>-f</samp> and <samp>-d</samp> options to the <code>enable</code> builtin.
 </li><li> Using the <code>enable</code> builtin command to enable disabled shell builtins.
 </li><li> Specifying the <samp>-p</samp> option to the <code>command</code> builtin.
-</li><li> Turning off restricted mode with &lsquo;<samp>set +r</samp>&rsquo; or &lsquo;<samp>set +o restricted</samp>&rsquo;.
+</li><li> Turning off restricted mode with &lsquo;<samp>set +r</samp>&rsquo; or &lsquo;<samp>shopt -u restricted_shell</samp>&rsquo;.
 </li></ul>
 
 <p>These restrictions are enforced after any startup files are read.
@@ -8675,8 +9103,8 @@ the shell spawned to execute the script.
 <p>The restricted shell mode is only one component of a useful restricted
 environment. It should be accompanied by setting <code>PATH</code> to a value
 that allows execution of only a few verified commands (commands that
-allow shell escapes are particularly vulnerable), leaving the user
-in a non-writable directory other than his home directory after login,
+allow shell escapes are particularly vulnerable), changing the current
+directory to a non-writable directory other than <code>$HOME</code> after login,
 not allowing the restricted shell to execute shell scripts, and cleaning
 the environment of variables that cause some commands to modify their
 behavior (e.g., <code>VISUAL</code> or <code>PAGER</code>).
@@ -8727,6 +9155,12 @@ example, <code>SIGTSTP</code>.
 
 </li><li> Reserved words appearing in a context where reserved words are recognized
 do not undergo alias expansion.
+
+</li><li> Alias expansion is performed when initially parsing a command substitution.
+The default mode generally defers it, when enabled, until the command
+substitution is executed. This means that command substitution will not
+expand aliases that are defined after the command substitution is initially
+parsed (e.g., as part of a function definition).
 
 </li><li> The <small>POSIX</small> <code>PS1</code> and <code>PS2</code> expansions of &lsquo;<samp>!</samp>&rsquo; to
 the history number and &lsquo;<samp>!!</samp>&rsquo; to &lsquo;<samp>!</samp>&rsquo; are enabled,
@@ -8798,7 +9232,10 @@ a value to a readonly variable.
 
 </li><li> A non-interactive shell exits with an error status if a variable
 assignment error occurs in an assignment statement preceding a special
-builtin, but not with any other simple command.
+builtin, but not with any other simple command. For any other simple
+command, the shell aborts execution of that command, and execution continues
+at the top level (&quot;the shell shall not perform any further processing of the
+command in which the error occurred&quot;).
 
 </li><li> A non-interactive shell exits with an error status if the iteration
 variable in a <code>for</code> statement or the selection variable in a
@@ -8819,7 +9256,7 @@ the <code>eval</code> builtin.
 </li><li> While variable indirection is available, it may not be applied to the
 &lsquo;<samp>#</samp>&rsquo; and &lsquo;<samp>?</samp>&rsquo; special parameters.
 
-</li><li> When expanding the &lsquo;<samp>*</samp>&rsquo; special parameter in a pattern context where the
+</li><li> Expanding the &lsquo;<samp>*</samp>&rsquo; special parameter in a pattern context where the
 expansion is double-quoted does not treat the <code>$*</code> as if it were
 double-quoted.
 
@@ -8883,15 +9320,15 @@ shell function names and definitions.
 variable values without quotes, unless they contain shell metacharacters,
 even if the result contains nonprinting characters.
 
-</li><li> When the <code>cd</code> builtin is invoked in <var>logical</var> mode, and the pathname
+</li><li> When the <code>cd</code> builtin is invoked in logical mode, and the pathname
 constructed from <code>$PWD</code> and the directory name supplied as an argument
 does not refer to an existing directory, <code>cd</code> will fail instead of
-falling back to <var>physical</var> mode.
+falling back to physical mode.
 
 </li><li> When the <code>cd</code> builtin cannot change a directory because the
 length of the pathname 
 constructed from <code>$PWD</code> and the directory name supplied as an argument
-exceeds <var>PATH_MAX</var> when all symbolic links are expanded, <code>cd</code> will
+exceeds <code>PATH_MAX</code> when all symbolic links are expanded, <code>cd</code> will
 fail instead of attempting to use only the supplied directory name.
 
 </li><li> The <code>pwd</code> builtin verifies that the value it prints is the same as the
@@ -8927,6 +9364,11 @@ has been set.
 If Bash receives a trapped signal while executing <code>read</code>, the trap
 handler executes and <code>read</code> returns an exit status greater than 128.
 
+</li><li> The <code>printf</code> builtin uses <code>double</code> (via <code>strtod</code>) to convert
+arguments corresponding to floating point conversion specifiers, instead of
+<code>long double</code> if it&rsquo;s available. The &lsquo;<samp>L</samp>&rsquo; length modifier forces
+<code>printf</code> to use <code>long double</code> if it&rsquo;s available.
+
 </li><li> Bash removes an exited background process&rsquo;s status from the list of such
 statuses after the <code>wait</code> builtin is used to obtain it.
 
@@ -8961,8 +9403,8 @@ Previous: <a href="#Bash-POSIX-Mode" accesskey="p" rel="prev">Bash POSIX Mode</a
 <span id="index-Compatibility-Level"></span>
 <span id="index-Compatibility-Mode"></span>
 
-<p>Bash-4.0 introduced the concept of a &lsquo;shell compatibility level&rsquo;, specified
-as a set of options to the shopt builtin
+<p>Bash-4.0 introduced the concept of a <em>shell compatibility level</em>,
+specified as a set of options to the shopt builtin
 (<code>compat31</code>,
 <code>compat32</code>,
 <code>compat40</code>,
@@ -8978,7 +9420,7 @@ behavior. It&rsquo;s intended to be a temporary solution.
 <p>This section does not mention behavior that is standard for a particular
 version (e.g., setting <code>compat32</code> means that quoting the rhs of the regexp
 matching operator quotes special regexp characters in the word, which is
-default behavior in bash-3.2 and above). 
+default behavior in bash-3.2 and subsequent versions). 
 </p>
 <p>If a user enables, say, <code>compat32</code>, it may affect the behavior of other
 compatibility levels up to and including the current compatibility level.
@@ -9075,7 +9517,7 @@ are not special within double-quoted word expansions
 <dd><ul>
 <li> the shell does not print a warning message if an attempt is made to
 use a quoted compound assignment as an argument to declare
-(declare -a foo=&rsquo;(1 2)&rsquo;). Later versions warn that this usage is
+(e.g., declare -a foo=&rsquo;(1 2)&rsquo;). Later versions warn that this usage is
 deprecated
 </li><li> word expansion errors are considered non-fatal errors that cause the
 current command to fail, even in posix mode
@@ -9114,6 +9556,41 @@ so seeding the random number generator by assigning a value to
 printed an informational message to that effect, even when producing
 output that can be reused as input. Bash-5.1 suppresses that message
 when the <samp>-l</samp> option is supplied.
+</li></ul>
+
+</dd>
+<dt><span><code>compat51 (set using BASH_COMPAT)</code></span></dt>
+<dd><ul>
+<li> The <code>unset</code> builtin will unset the array <code>a</code> given an argument like
+&lsquo;<samp>a[@]</samp>&rsquo;.
+Bash-5.2 will unset an element with key &lsquo;<samp>@</samp>&rsquo; (associative arrays)
+or remove all the elements without unsetting the array (indexed arrays)
+</li><li> arithmetic commands ( ((...)) ) and the expressions in an arithmetic for
+statement can be expanded more than once
+</li><li> expressions used as arguments to arithmetic operators in the <code>[[</code>
+conditional command can be expanded more than once
+</li><li> the expressions in substring parameter brace expansion can be
+expanded more than once
+</li><li> the expressions in the $(( ... )) word expansion can be expanded
+more than once
+</li><li> arithmetic expressions used as indexed array subscripts can be
+expanded more than once
+</li><li> <code>test -v</code>, when given an argument of &lsquo;<samp>A[@]</samp>&rsquo;, where <var>A</var> is
+an existing associative array, will return true if the array has any set
+elements.
+Bash-5.2 will look for and report on a key named &lsquo;<samp>@</samp>&rsquo;
+</li><li> the ${<var>parameter</var>[:]=<var>value</var>} word expansion will return
+<var>value</var>, before any variable-specific transformations have been
+performed (e.g., converting to lowercase).
+Bash-5.2 will return the final value assigned to the variable.
+</li><li> Parsing command substitutions will behave as if extended glob
+(see <a href="#The-Shopt-Builtin">The Shopt Builtin</a>)
+is enabled, so that parsing a command substitution containing an extglob
+pattern (say, as part of a shell function) will not fail.
+This assumes the intent is to enable extglob before the command is executed
+and word expansions are performed.
+It will fail at word expansion time if extglob hasn&rsquo;t been
+enabled by the time the command is executed.
 </li></ul>
 </dd>
 </dl>
@@ -9188,9 +9665,9 @@ which, unless caught, suspends the process.
 </p>
 <p>If the operating system on which Bash is running supports
 job control, Bash contains facilities to use it.  Typing the
-<var>suspend</var> character (typically &lsquo;<samp>^Z</samp>&rsquo;, Control-Z) while a
+<em>suspend</em> character (typically &lsquo;<samp>^Z</samp>&rsquo;, Control-Z) while a
 process is running causes that process to be stopped and returns
-control to Bash.  Typing the <var>delayed suspend</var> character
+control to Bash.  Typing the <em>delayed suspend</em> character
 (typically &lsquo;<samp>^Y</samp>&rsquo;, Control-Y) causes the process to be stopped
 when it attempts to read input from the terminal, and control to
 be returned to Bash.  The user then manipulates the state of
@@ -9201,7 +9678,7 @@ takes effect immediately, and has the additional side effect of
 causing pending output and typeahead to be discarded. 
 </p>
 <p>There are a number of ways to refer to a job in the shell.  The
-character &lsquo;<samp>%</samp>&rsquo; introduces a job specification (<var>jobspec</var>).
+character &lsquo;<samp>%</samp>&rsquo; introduces a job specification (<em>jobspec</em>).
 </p>
 <p>Job number <code>n</code> may be referred to as &lsquo;<samp>%n</samp>&rsquo;.
 The symbols &lsquo;<samp>%%</samp>&rsquo; and  &lsquo;<samp>%+</samp>&rsquo; refer to the shell&rsquo;s notion of the
@@ -9370,7 +9847,7 @@ the last-executed process substitution, if its process id is the same as
 <var>$!</var>,
 and the return status is zero.
 If the <samp>-n</samp> option is supplied, <code>wait</code> waits for a single job
-from the list of <var>pids</var> or <var>jobspecs</var> or, if no arguments are
+from the list of <var>pid</var>s or <var>jobspec</var>s or, if no arguments are
 supplied, any job, 
 to complete and returns its exit status.
 If none of the supplied arguments is a child of the shell, or if no arguments
@@ -9383,10 +9860,14 @@ The variable will be unset initially, before any assignment.
 This is useful only when the <samp>-n</samp> option is supplied.
 Supplying the <samp>-f</samp> option, when job control is enabled,
 forces <code>wait</code> to wait for each <var>pid</var> or <var>jobspec</var> to
-terminate before returning its status, intead of returning when it changes
+terminate before returning its status, instead of returning when it changes
 status.
 If neither <var>jobspec</var> nor <var>pid</var> specifies an active child process
 of the shell, the return status is 127.
+If <code>wait</code> is interrupted by a signal, the return status will be greater
+than 128, as described above (see <a href="#Signals">Signals</a>).
+Otherwise, the return status is the exit  status
+of the last process or job waited for.
 </p>
 </dd>
 <dt id='index-disown'><span><code>disown</code><a href='#index-disown' class='copiable-anchor'> &para;</a></span></dt>
@@ -9413,9 +9894,17 @@ argument restricts operation to running jobs.
 
 <p>Suspend the execution of this shell until it receives a
 <code>SIGCONT</code> signal.
-A login shell cannot be suspended; the <samp>-f</samp>
+A login shell,
+or a shell without job control enabled,
+cannot be suspended; the <samp>-f</samp>
 option can be used to override this and force the suspension.
-</p></dd>
+The return status is 0 unless the shell is a login shell
+or job control is not enabled
+and
+<samp>-f</samp>
+is not supplied.
+</p>
+</dd>
 </dl>
 
 <p>When job control is not active, the <code>kill</code> and <code>wait</code>
@@ -9617,7 +10106,7 @@ empty line.
 </p></dd>
 </dl>
 
-<p>(Depending on your configuration, the <tt class="key">Backspace</tt> key be set to
+<p>(Depending on your configuration, the <tt class="key">Backspace</tt> key might be set to
 delete the character to the left of the cursor and the <tt class="key">DEL</tt> key set
 to delete the character underneath the cursor, like <kbd>C-d</kbd>, rather
 than the character to the left of the cursor.)
@@ -9703,7 +10192,7 @@ Word boundaries are the same as those used by <kbd>M-f</kbd>.
 </p>
 </dd>
 <dt><span><kbd>M-<span class="key">DEL</span></kbd></span></dt>
-<dd><p>Kill from the cursor the start of the current word, or, if between
+<dd><p>Kill from the cursor to the start of the current word, or, if between
 words, to the start of the previous word.
 Word boundaries are the same as those used by <kbd>M-b</kbd>.
 </p>
@@ -9817,7 +10306,8 @@ Next: <a href="#Bindable-Readline-Commands" accesskey="n" rel="next">Bindable Re
 keybindings installed by default, it is possible to use a different set
 of keybindings.
 Any user can customize programs that use Readline by putting
-commands in an <em>inputrc</em> file, conventionally in his home directory.
+commands in an <em>inputrc</em> file,
+conventionally in their home directory.
 The name of this
 file is taken from the value of the shell variable <code>INPUTRC</code>.  If
 that variable is unset, the default is <samp>~/.inputrc</samp>.  If that
@@ -9888,6 +10378,32 @@ variables.
 </p>
 <span id="index-variables_002c-readline"></span>
 <dl compact="compact">
+<dt id='index-active_002dregion_002dstart_002dcolor'><span><code>active-region-start-color</code><a href='#index-active_002dregion_002dstart_002dcolor' class='copiable-anchor'> &para;</a></span></dt>
+<dd><p>A string variable that controls the text color and background when displaying
+the text in the active region (see the description of
+<code>enable-active-region</code> below).
+This string must not take up any physical character positions on the display,
+so it should consist only of terminal escape sequences.
+It is output to the terminal before displaying the text in the active region.
+This variable is reset to the default value whenever the terminal type changes.
+The default value is the string that puts the terminal in standout mode,
+as obtained from the terminal&rsquo;s terminfo description.
+A sample value might be &lsquo;<samp>\e[01;33m</samp>&rsquo;.
+</p>
+</dd>
+<dt id='index-active_002dregion_002dend_002dcolor'><span><code>active-region-end-color</code><a href='#index-active_002dregion_002dend_002dcolor' class='copiable-anchor'> &para;</a></span></dt>
+<dd><p>A string variable that &quot;undoes&quot; the effects of <code>active-region-start-color</code>
+and restores &quot;normal&quot; terminal display appearance after displaying text
+in the active region.
+This string must not take up any physical character positions on the display,
+so it should consist only of terminal escape sequences.
+It is output to the terminal after displaying the text in the active region.
+This variable is reset to the default value whenever the terminal type changes.
+The default value is the string that restores the terminal from standout mode,
+as obtained from the terminal&rsquo;s terminfo description.
+A sample value might be &lsquo;<samp>\e[0m</samp>&rsquo;.
+</p>
+</dd>
 <dt id='index-bell_002dstyle'><span><code>bell-style</code><a href='#index-bell_002dstyle' class='copiable-anchor'> &para;</a></span></dt>
 <dd><p>Controls what happens when Readline wants to ring the terminal bell.
 If set to &lsquo;<samp>none</samp>&rsquo;, Readline never rings the bell.  If set to
@@ -9913,6 +10429,9 @@ is &lsquo;<samp>off</samp>&rsquo;.
 common prefix of the set of possible completions using a different color.
 The color definitions are taken from the value of the <code>LS_COLORS</code>
 environment variable.
+If there is a color definition in <code>LS_COLORS</code> for the custom suffix
+&lsquo;<samp>readline-colored-completion-prefix</samp>&rsquo;, Readline uses this color for
+the common prefix instead of its default.
 The default is &lsquo;<samp>off</samp>&rsquo;.
 </p>
 </dd>
@@ -9965,8 +10484,9 @@ asked whether the list of possibilities should be displayed.
 If the number of possible completions is greater than or equal to this value,
 Readline will ask whether or not the user wishes to view them;
 otherwise, they are simply listed.
-This variable must be set to an integer value greater than or equal to 0.
-A negative value means Readline should never ask.
+This variable must be set to an integer value greater than or equal to zero.
+A zero value means Readline should never ask; negative values are
+treated as zero.
 The default limit is <code>100</code>.
 </p>
 </dd>
@@ -9974,9 +10494,12 @@ The default limit is <code>100</code>.
 <dd><p>If set to &lsquo;<samp>on</samp>&rsquo;, Readline will convert characters with the
 eighth bit set to an <small>ASCII</small> key sequence by stripping the eighth
 bit and prefixing an <tt class="key">ESC</tt> character, converting them to a
-meta-prefixed key sequence.  The default value is &lsquo;<samp>on</samp>&rsquo;, but
+meta-prefixed key sequence.
+The default value is &lsquo;<samp>on</samp>&rsquo;, but
 will be set to &lsquo;<samp>off</samp>&rsquo; if the locale is one that contains
 eight-bit characters.
+This variable is dependent on the <code>LC_CTYPE</code> locale category, and
+may change if the locale is changed.
 </p>
 </dd>
 <dt id='index-disable_002dcompletion'><span><code>disable-completion</code><a href='#index-disable_002dcompletion' class='copiable-anchor'> &para;</a></span></dt>
@@ -9987,7 +10510,7 @@ been mapped to <code>self-insert</code>.  The default is &lsquo;<samp>off</samp>
 </dd>
 <dt id='index-echo_002dcontrol_002dcharacters'><span><code>echo-control-characters</code><a href='#index-echo_002dcontrol_002dcharacters' class='copiable-anchor'> &para;</a></span></dt>
 <dd><p>When set to &lsquo;<samp>on</samp>&rsquo;, on operating systems that indicate they support it,
-readline echoes a character corresponding to a signal generated from the
+Readline echoes a character corresponding to a signal generated from the
 keyboard.  The default is &lsquo;<samp>on</samp>&rsquo;.
 </p>
 </dd>
@@ -10010,12 +10533,29 @@ sequence into the mode string.
 The default is &lsquo;<samp>@</samp>&rsquo;.
 </p>
 </dd>
+<dt id='index-enable_002dactive_002dregion'><span><code>enable-active-region</code><a href='#index-enable_002dactive_002dregion' class='copiable-anchor'> &para;</a></span></dt>
+<dd><p>The <em>point</em> is the current cursor position, and <em>mark</em> refers
+to a saved cursor position (see <a href="#Commands-For-Moving">Commands For Moving</a>).
+The text between the point and mark is referred to as the <em>region</em>.
+When this variable is set to &lsquo;<samp>On</samp>&rsquo;, Readline allows certain commands
+to designate the region as <em>active</em>.
+When the region is active, Readline highlights the text in the region using
+the value of the <code>active-region-start-color</code>, which defaults to the
+string that enables
+the terminal&rsquo;s standout mode.
+The active region shows the text inserted by bracketed-paste and any
+matching text found by incremental and non-incremental history searches.
+The default is &lsquo;<samp>On</samp>&rsquo;.
+</p>
+</dd>
 <dt id='index-enable_002dbracketed_002dpaste'><span><code>enable-bracketed-paste</code><a href='#index-enable_002dbracketed_002dpaste' class='copiable-anchor'> &para;</a></span></dt>
-<dd><p>When set to &lsquo;<samp>On</samp>&rsquo;, Readline will configure the terminal in a way
-that will enable it to insert each paste into the editing buffer as a
-single string of characters, instead of treating each character as if
-it had been read from the keyboard.  This can prevent pasted characters
-from being interpreted as editing commands.  The default is &lsquo;<samp>On</samp>&rsquo;.
+<dd><p>When set to &lsquo;<samp>On</samp>&rsquo;, Readline configures the terminal to insert each
+paste into the editing buffer as a single string of characters, instead
+of treating each character as if it had been read from the keyboard.
+This is called putting the terminal into <em>bracketed paste mode</em>;
+it prevents Readline from executing any editing commands bound to key
+sequences appearing in the pasted text.
+The default is &lsquo;<samp>On</samp>&rsquo;.
 </p>
 </dd>
 <dt id='index-enable_002dkeypad'><span><code>enable-keypad</code><a href='#index-enable_002dkeypad' class='copiable-anchor'> &para;</a></span></dt>
@@ -10071,6 +10611,8 @@ regardless of what the terminal claims it can support.  The
 default value is &lsquo;<samp>off</samp>&rsquo;, but Readline will set it to &lsquo;<samp>on</samp>&rsquo; if the 
 locale contains eight-bit characters.
 The name <code>meta-flag</code> is a synonym for this variable.
+This variable is dependent on the <code>LC_CTYPE</code> locale category, and
+may change if the locale is changed.
 </p>
 </dd>
 <dt id='index-isearch_002dterminators'><span><code>isearch-terminators</code><a href='#index-isearch_002dterminators' class='copiable-anchor'> &para;</a></span></dt>
@@ -10155,6 +10697,8 @@ eighth bit set directly rather than as a meta-prefixed escape
 sequence.
 The default is &lsquo;<samp>off</samp>&rsquo;, but Readline will set it to &lsquo;<samp>on</samp>&rsquo; if the
 locale contains eight-bit characters.
+This variable is dependent on the <code>LC_CTYPE</code> locale category, and
+may change if the locale is changed.
 </p>
 </dd>
 <dt id='index-page_002dcompletions'><span><code>page-completions</code><a href='#index-page_002dcompletions' class='copiable-anchor'> &para;</a></span></dt>
@@ -10173,7 +10717,7 @@ The default is &lsquo;<samp>off</samp>&rsquo;.
 <dd><p>If set to &lsquo;<samp>on</samp>&rsquo;, Readline will undo all changes to history lines
 before returning when <code>accept-line</code> is executed.  By default,
 history lines may be modified and retain individual undo lists across
-calls to <code>readline</code>.  The default is &lsquo;<samp>off</samp>&rsquo;.
+calls to <code>readline()</code>.  The default is &lsquo;<samp>off</samp>&rsquo;.
 </p>
 </dd>
 <dt id='index-show_002dall_002dif_002dambiguous'><span><code>show-all-if-ambiguous</code><a href='#index-show_002dall_002dif_002dambiguous' class='copiable-anchor'> &para;</a></span></dt>
@@ -10205,7 +10749,7 @@ The default value is &lsquo;<samp>off</samp>&rsquo;.
 <dt id='index-skip_002dcompleted_002dtext'><span><code>skip-completed-text</code><a href='#index-skip_002dcompleted_002dtext' class='copiable-anchor'> &para;</a></span></dt>
 <dd><p>If set to &lsquo;<samp>on</samp>&rsquo;, this alters the default completion behavior when
 inserting a single match into the line.  It&rsquo;s only active when
-performing completion in the middle of a word.  If enabled, readline
+performing completion in the middle of a word.  If enabled, Readline
 does not insert characters from the completion that match characters
 after point in the word being completed, so portions of the word
 following the cursor are not duplicated.
@@ -10267,11 +10811,11 @@ interpreted as part of the key name.
 The name of the key can be expressed in different ways, depending on
 what you find most comfortable.
 </p>
-<p>In addition to command names, readline allows keys to be bound
+<p>In addition to command names, Readline allows keys to be bound
 to a string that is inserted when the key is pressed (a <var>macro</var>).
 </p>
 <p>The <code>bind&nbsp;<span class="nolinebreak">-p</span></code><!-- /@w --> command displays Readline function names and
-bindings in a format that can put directly into an initialization file.
+bindings in a format that can be put directly into an initialization file.
 See <a href="#Bash-Builtins">Bash Builtin Commands</a>.
 </p>
 <dl compact="compact">
@@ -10877,6 +11421,12 @@ A numeric argument, if supplied, specifies the history entry to use instead
 of the current line.
 </p>
 </dd>
+<dt id='index-fetch_002dhistory-_0028_0029'><span><code>fetch-history ()</code><a href='#index-fetch_002dhistory-_0028_0029' class='copiable-anchor'> &para;</a></span></dt>
+<dd><p>With a numeric argument, fetch that entry from the history list
+and make it the current line.
+Without an argument, move back to the first entry in the history list.
+</p>
+</dd>
 </dl>
 
 <hr>
@@ -11281,7 +11831,7 @@ in the macro appear as if typed at the keyboard.
 </p>
 </dd>
 <dt id='index-print_002dlast_002dkbd_002dmacro-_0028_0029'><span><code>print-last-kbd-macro ()</code><a href='#index-print_002dlast_002dkbd_002dmacro-_0028_0029' class='copiable-anchor'> &para;</a></span></dt>
-<dd><p>Print the last keboard macro defined in a format suitable for the
+<dd><p>Print the last keyboard macro defined in a format suitable for the
 <var>inputrc</var> file.
 </p>
 </dd>
@@ -11344,12 +11894,12 @@ the saved position, and the old cursor position is saved as the mark.
 </dd>
 <dt id='index-character_002dsearch-_0028C_002d_005d_0029'><span><code>character-search (C-])</code><a href='#index-character_002dsearch-_0028C_002d_005d_0029' class='copiable-anchor'> &para;</a></span></dt>
 <dd><p>A character is read and point is moved to the next occurrence of that
-character.  A negative count searches for previous occurrences.
+character.  A negative argument searches for previous occurrences.
 </p>
 </dd>
 <dt id='index-character_002dsearch_002dbackward-_0028M_002dC_002d_005d_0029'><span><code>character-search-backward (M-C-])</code><a href='#index-character_002dsearch_002dbackward-_0028M_002dC_002d_005d_0029' class='copiable-anchor'> &para;</a></span></dt>
 <dd><p>A character is read and point is moved to the previous occurrence
-of that character.  A negative count searches for subsequent
+of that character.  A negative argument searches for subsequent
 occurrences.
 </p>
 </dd>
@@ -11358,7 +11908,7 @@ occurrences.
 defined for keys like Home and End.  Such sequences begin with a
 Control Sequence Indicator (CSI), usually ESC-[.  If this sequence is
 bound to &quot;\e[&quot;, keys producing such sequences will have no effect
-unless explicitly bound to a readline command, instead of inserting
+unless explicitly bound to a Readline command, instead of inserting
 stray characters into the editing buffer.  This is unbound by default,
 but usually bound to ESC-[.
 </p>
@@ -11397,6 +11947,12 @@ of an <var>inputrc</var> file.  This command is unbound by default.
 strings they output.  If a numeric argument is supplied,
 the output is formatted in such a way that it can be made part
 of an <var>inputrc</var> file.  This command is unbound by default.
+</p>
+</dd>
+<dt id='index-spell_002dcorrect_002dword-_0028C_002dx-s_0029'><span><code>spell-correct-word (C-x s)</code><a href='#index-spell_002dcorrect_002dword-_0028C_002dx-s_0029' class='copiable-anchor'> &para;</a></span></dt>
+<dd><p>Perform spelling correction on the current word, treating it as a directory
+or filename, in the same way as the <code>cdspell</code> shell option.
+Word boundaries are the same as those used by <code>shell-forward-word</code>.
 </p>
 </dd>
 <dt id='index-glob_002dcomplete_002dword-_0028M_002dg_0029'><span><code>glob-complete-word (M-g)</code><a href='#index-glob_002dcomplete_002dword-_0028M_002dg_0029' class='copiable-anchor'> &para;</a></span></dt>
@@ -11894,6 +12450,7 @@ completions:
 <dt><span><code>-C <var>command</var></code></span></dt>
 <dd><p><var>command</var> is executed in a subshell environment, and its output is
 used as the possible completions.
+Arguments are passed as with the <samp>-F</samp> option.
 </p>
 </dd>
 <dt><span><code>-F <var>function</var></code></span></dt>
@@ -12084,7 +12641,7 @@ via <var>CDPATH</var>: Readline can&rsquo;t tell those completions are directori
 The <samp>-o nospace</samp> option tells Readline to not append a space
 character to the directory name, in case we want to append to it.
 The <samp>-o bashdefault</samp> option brings in the rest of the &quot;Bash default&quot;
-completions &ndash; possible completion that Bash adds to the default Readline
+completions &ndash; possible completions that Bash adds to the default Readline
 set.  These include things like command name completion, variable completion
 for words beginning with &lsquo;<samp>$</samp>&rsquo; or &lsquo;<samp>${</samp>&rsquo;, completions containing pathname
 expansion patterns (see <a href="#Filename-Expansion">Filename Expansion</a>), and so on.
@@ -12292,8 +12849,9 @@ end of the history, and an index of &lsquo;<samp>-1</samp>&rsquo; refers to the 
 </p>
 </dd>
 <dt><span><code>-d <var>start</var>-<var>end</var></code></span></dt>
-<dd><p>Delete the history entries between positions <var>start</var> and <var>end</var>,
-inclusive.  Positive and negative values for <var>start</var> and <var>end</var>
+<dd><p>Delete the range of history entries between positions <var>start</var> and
+<var>end</var>, inclusive.
+Positive and negative values for <var>start</var> and <var>end</var>
 are interpreted as described above.
 </p>
 </dd>
@@ -12330,10 +12888,15 @@ the history list as a single entry.
 </dd>
 </dl>
 
-<p>When any of the <samp>-w</samp>, <samp>-r</samp>, <samp>-a</samp>, or <samp>-n</samp> options is
-used, if <var>filename</var>
-is given, then it is used as the history file.  If not, then
-the value of the <code>HISTFILE</code> variable is used.
+<p>If a <var>filename</var> argument is supplied
+when any of the <samp>-w</samp>, <samp>-r</samp>, <samp>-a</samp>, or <samp>-n</samp> options
+is used, Bash uses <var>filename</var> as the history file.
+If not, then the value of the <code>HISTFILE</code> variable is used.
+</p>
+<p>The return value is 0 unless an invalid option is encountered, an
+error occurs while reading or writing the history file, an invalid
+<var>offset</var> or range is supplied as an argument to <samp>-d</samp>, or the
+history expansion supplied as an argument to <samp>-p</samp> fails.
 </p>
 </dd>
 </dl>
@@ -12623,7 +13186,7 @@ substituted, or, if no previous history substitutions took place,
 the last <var>string</var>
 in a !?<var>string</var><code>[?]</code>
 search.
-If <var>new</var> is is null, each matching <var>old</var> is deleted.
+If <var>new</var> is null, each matching <var>old</var> is deleted.
 The final delimiter is optional if it is the last
 character on the input line.
 </p>
@@ -12708,7 +13271,14 @@ reporting script.
 </li><li> Optionally, type &lsquo;<samp>make tests</samp>&rsquo; to run the Bash test suite.
 
 </li><li> Type &lsquo;<samp>make install</samp>&rsquo; to install <code>bash</code> and <code>bashbug</code>.
-This will also install the manual pages and Info file.
+This will also install the manual pages and Info file, message translation
+files, some supplemental documentation, a number of example loadable
+builtin commands, and a set of header files for developing loadable
+builtins.
+You may need additional privileges to install <code>bash</code> to your
+desired destination, so &lsquo;<samp>sudo make install</samp>&rsquo; might be required.
+More information about controlling the locations where <code>bash</code> and
+other files are installed is below (see <a href="#Installation-Names">Installation Names</a>).
 
 </li></ol>
 
@@ -12716,7 +13286,7 @@ This will also install the manual pages and Info file.
 values for various system-dependent variables used during
 compilation.  It uses those values to create a <samp>Makefile</samp> in
 each directory of the package (the top directory, the
-<samp>builtins</samp>, <samp>doc</samp>, and <samp>support</samp> directories,
+<samp>builtins</samp>, <samp>doc</samp>, <samp>po</samp>, and <samp>support</samp> directories,
 each directory under <samp>lib</samp>, and several others).  It also creates a
 <samp>config.h</samp> file containing system-dependent definitions. 
 Finally, it creates a shell script named <code>config.status</code> that you
@@ -12760,10 +13330,10 @@ to do them, and mail diffs or instructions to
 considered for the next release.
 </p>
 <p>The file <samp>configure.ac</samp> is used to create <code>configure</code>
-by a program called Autoconf.  You only need
-<samp>configure.ac</samp> if you want to change it or regenerate
-<code>configure</code> using a newer version of Autoconf.  If
-you do this, make sure you are using Autoconf version 2.50 or
+by a program called Autoconf.
+You only need <samp>configure.ac</samp> if you want to change it or regenerate
+<code>configure</code> using a newer version of Autoconf.
+If you do this, make sure you are using Autoconf version 2.69 or
 newer.
 </p>
 <p>You can remove the program binaries and object files from the
@@ -12821,7 +13391,7 @@ supply the <samp>--srcdir=PATH</samp> argument to tell <code>configure</code> wh
 source files are.  <code>configure</code> automatically checks for the
 source code in the directory that <code>configure</code> is in and in &lsquo;..&rsquo;.
 </p>
-<p>If you have to use a <code>make</code> that does not supports the <code>VPATH</code>
+<p>If you have to use a <code>make</code> that does not support the <code>VPATH</code>
 variable, you can compile Bash for one architecture at a
 time in the source code directory.  After you have installed
 Bash for one architecture, use &lsquo;<samp>make distclean</samp>&rsquo; before
@@ -12851,18 +13421,48 @@ Next: <a href="#Specifying-the-System-Type" accesskey="n" rel="next">Specifying 
 <span id="Installation-Names-1"></span><h3 class="section">10.4 Installation Names</h3>
 
 <p>By default, &lsquo;<samp>make install</samp>&rsquo; will install into
-<samp>/usr/local/bin</samp>, <samp>/usr/local/man</samp>, etc.  You can
-specify an installation prefix other than <samp>/usr/local</samp> by
+<samp>/usr/local/bin</samp>, <samp>/usr/local/man</samp>, etc.;
+that is, the <em>installation prefix</em> defaults to <samp>/usr/local</samp>.
+You can specify an installation prefix other than <samp>/usr/local</samp> by
 giving <code>configure</code> the option <samp>--prefix=<var>PATH</var></samp>,
-or by specifying a value for the <code>DESTDIR</code> &lsquo;<samp>make</samp>&rsquo;
-variable when running &lsquo;<samp>make install</samp>&rsquo;.
+or by specifying a value for the <code>prefix</code> &lsquo;<samp>make</samp>&rsquo;
+variable when running &lsquo;<samp>make install</samp>&rsquo;
+(e.g., &lsquo;<samp>make install prefix=<var>PATH</var></samp>&rsquo;).
+The <code>prefix</code> variable provides a default for <code>exec_prefix</code> and
+other variables used when installing bash.
 </p>
 <p>You can specify separate installation prefixes for
 architecture-specific files and architecture-independent files. 
 If you give <code>configure</code> the option
 <samp>--exec-prefix=<var>PATH</var></samp>, &lsquo;<samp>make install</samp>&rsquo; will use
 <var>PATH</var> as the prefix for installing programs and libraries.
-Documentation and other data files will still use the regular prefix. 
+Documentation and other data files will still use the regular prefix.
+</p>
+<p>If you would like to change the installation locations for a single run,
+you can specify these variables as arguments to <code>make</code>:
+&lsquo;<samp>make install exec_prefix=/</samp>&rsquo; will install <code>bash</code> and
+<code>bashbug</code> into <samp>/bin</samp> instead of the default <samp>/usr/local/bin</samp>.
+</p>
+<p>If you want to see the files bash will install and where it will install
+them without changing anything on your system, specify the variable
+<code>DESTDIR</code> as an argument to <code>make</code>. Its value should be the
+absolute directory path you&rsquo;d like to use as the root of your sample
+installation tree. For example,
+</p>
+<div class="example">
+<pre class="example">mkdir /fs1/bash-install
+make install DESTDIR=/fs1/bash-install
+</pre></div>
+
+<p>will install <code>bash</code> into <samp>/fs1/bash-install/usr/local/bin/bash</samp>,
+the documentation into directories within
+<samp>/fs1/bash-install/usr/local/share</samp>, the example loadable builtins into
+<samp>/fs1/bash-install/usr/local/lib/bash</samp>, and so on.
+You can use the usual <code>exec_prefix</code> and <code>prefix</code> variables to alter
+the directory paths beneath the value of <code>DESTDIR</code>.
+</p>
+<p>The GNU Makefile standards provide a more complete description of these
+variables and their effects.
 </p>
 <hr>
 </div>
@@ -12874,7 +13474,7 @@ Next: <a href="#Sharing-Defaults" accesskey="n" rel="next">Sharing Defaults</a>,
 <span id="Specifying-the-System-Type-1"></span><h3 class="section">10.5 Specifying the System Type</h3>
 
 <p>There may be some features <code>configure</code> can not figure out
-automatically, but need to determine by the type of host Bash
+automatically, but needs to determine by the type of host Bash
 will run on.  Usually <code>configure</code> can figure that
 out, but if it prints a message saying it can not guess the host
 type, give it the <samp>--host=TYPE</samp> option.  &lsquo;<samp>TYPE</samp>&rsquo; can
@@ -13012,9 +13612,14 @@ the installed version of Readline in subdirectories of that directory
 <var>PREFIX</var>/<code>lib</code>).
 </p>
 </dd>
-<dt><span><code>--with-purify</code></span></dt>
-<dd><p>Define this to use the Purify memory allocation checker from Rational
-Software.
+<dt><span><code>--with-libintl-prefix[=<var>PREFIX</var>]</code></span></dt>
+<dd><p>Define this to make Bash link with a locally-installed version of the
+libintl library instead of the version in <samp>lib/intl</samp>.
+</p>
+</dd>
+<dt><span><code>--with-libiconv-prefix[=<var>PREFIX</var>]</code></span></dt>
+<dd><p>Define this to make Bash look for libiconv in <var>PREFIX</var> instead of the
+standard system locations. There is no version included with Bash.
 </p>
 </dd>
 <dt><span><code>--enable-minimal-config</code></span></dt>
@@ -13024,7 +13629,7 @@ Bourne shell.
 </dl>
 
 <p>There are several <samp>--enable-</samp> options that alter how Bash is
-compiled and linked, rather than changing run-time features.
+compiled, linked, and installed, rather than changing run-time features.
 </p>
 <dl compact="compact">
 <dt><span><code>--enable-largefile</code></span></dt>
@@ -13038,18 +13643,28 @@ default, if the operating system provides large file support.
 processed by <code>gprof</code> each time it is executed.
 </p>
 </dd>
+<dt><span><code>--enable-separate-helpfiles</code></span></dt>
+<dd><p>Use external files for the documentation displayed by the <code>help</code> builtin
+instead of storing the text internally.
+</p>
+</dd>
 <dt><span><code>--enable-static-link</code></span></dt>
 <dd><p>This causes Bash to be linked statically, if <code>gcc</code> is being used.
 This could be used to build a version to use as root&rsquo;s shell.
-</p></dd>
+</p>
+</dd>
 </dl>
 
 <p>The &lsquo;<samp>minimal-config</samp>&rsquo; option can be used to disable all of
 the following options, but it is processed first, so individual
 options may be enabled using &lsquo;<samp>enable-<var>feature</var></samp>&rsquo;. 
 </p>
-<p>All of the following options except for &lsquo;<samp>disabled-builtins</samp>&rsquo;,
-&lsquo;<samp>direxpand-default</samp>&rsquo;, and
+<p>All of the following options except for
+&lsquo;<samp>alt-array-implementation</samp>&rsquo;,
+&lsquo;<samp>disabled-builtins</samp>&rsquo;,
+&lsquo;<samp>direxpand-default</samp>&rsquo;,
+&lsquo;<samp>strict-posix-default</samp>&rsquo;,
+and
 &lsquo;<samp>xpg-echo-default</samp>&rsquo; are
 enabled by default, unless the operating system does not provide the
 necessary support.
@@ -13058,6 +13673,12 @@ necessary support.
 <dt><span><code>--enable-alias</code></span></dt>
 <dd><p>Allow alias expansion and include the <code>alias</code> and <code>unalias</code>
 builtins (see <a href="#Aliases">Aliases</a>).
+</p>
+</dd>
+<dt><span><code>--enable-alt-array-implementation</code></span></dt>
+<dd><p>This builds bash using an alternate implementation of arrays
+(see <a href="#Arrays">Arrays</a>) that provides faster access at the expense of using
+more memory (sometimes many times more, depending on how sparse an array is).
 </p>
 </dd>
 <dt><span><code>--enable-arith-for-command</code></span></dt>
@@ -13084,7 +13705,7 @@ See <a href="#Brace-Expansion">Brace Expansion</a>, for a complete description.
 </dd>
 <dt><span><code>--enable-casemod-attributes</code></span></dt>
 <dd><p>Include support for case-modifying attributes in the <code>declare</code> builtin
-and assignment statements.  Variables with the <var>uppercase</var> attribute,
+and assignment statements.  Variables with the <code>uppercase</code> attribute,
 for example, will have their values converted to uppercase upon assignment.
 </p>
 </dd>
@@ -13156,7 +13777,7 @@ above under <a href="#Pattern-Matching">Pattern Matching</a>.
 </p>
 </dd>
 <dt><span><code>--enable-extended-glob-default</code></span></dt>
-<dd><p>Set the default value of the <var>extglob</var> shell option described
+<dd><p>Set the default value of the <code>extglob</code> shell option described
 above under <a href="#The-Shopt-Builtin">The Shopt Builtin</a> to be enabled.
 </p>
 </dd>
@@ -13167,7 +13788,7 @@ default.
 </p>
 </dd>
 <dt><span><code>--enable-glob-asciirange-default</code></span></dt>
-<dd><p>Set the default value of the <var>globasciiranges</var> shell option described
+<dd><p>Set the default value of the <code>globasciiranges</code> shell option described
 above under <a href="#The-Shopt-Builtin">The Shopt Builtin</a> to be enabled.
 This controls the behavior of character ranges when used in pattern matching
 bracket expressions.
@@ -13234,11 +13855,6 @@ when called as <code>rbash</code>, enters a restricted mode.  See
 simple menus (see <a href="#Conditional-Constructs">Conditional Constructs</a>).
 </p>
 </dd>
-<dt><span><code>--enable-separate-helpfiles</code></span></dt>
-<dd><p>Use external files for the documentation displayed by the <code>help</code> builtin
-instead of storing the text internally.
-</p>
-</dd>
 <dt><span><code>--enable-single-help-strings</code></span></dt>
 <dd><p>Store the text displayed by the <code>help</code> builtin as a single string for
 each help topic.  This aids in translating the text to different languages.
@@ -13248,6 +13864,11 @@ literals.
 </dd>
 <dt><span><code>--enable-strict-posix-default</code></span></dt>
 <dd><p>Make Bash <small>POSIX</small>-conformant by default (see <a href="#Bash-POSIX-Mode">Bash POSIX Mode</a>).
+</p>
+</dd>
+<dt><span><code>--enable-translatable-strings</code></span></dt>
+<dd><p>Enable support for <code>$&quot;<var>string</var>&quot;</code> translatable strings
+(see <a href="#Locale-Translation">Locale-Specific Translation</a>).
 </p>
 </dd>
 <dt><span><code>--enable-usg-echo-default</code></span></dt>
@@ -13288,7 +13909,8 @@ But first, you should
 make sure that it really is a bug, and that it appears in the latest
 version of Bash.
 The latest version of Bash is always available for FTP from
-<a href="ftp://ftp.gnu.org/pub/gnu/bash/">ftp://ftp.gnu.org/pub/gnu/bash/</a>.
+<a href="ftp://ftp.gnu.org/pub/gnu/bash/">ftp://ftp.gnu.org/pub/gnu/bash/</a> and from
+<a href="http://git.savannah.gnu.org/cgit/bash.git/snapshot/bash-master.tar.gz">http://git.savannah.gnu.org/cgit/bash.git/snapshot/bash-master.tar.gz</a>.
 </p>
 <p>Once you have determined that a bug actually exists, use the
 <code>bashbug</code> command to submit a bug report.
@@ -13424,15 +14046,15 @@ which expands to the substring of <code>var</code>&rsquo;s value of length
 (see <a href="#Shell-Parameter-Expansion">Shell Parameter Expansion</a>).
 
 </li><li> The expansion
-<code>${var/[/]</code><var>pattern</var><code>[/</code><var>replacement</var><code>]}</code>,
+<code>${<var>var</var>/[/]</code><var>pattern</var><code>[/</code><var>replacement</var><code>]}</code>,
 which matches <var>pattern</var> and replaces it with <var>replacement</var> in
-the value of <code>var</code>, is available (see <a href="#Shell-Parameter-Expansion">Shell Parameter Expansion</a>).
+the value of <var>var</var>, is available (see <a href="#Shell-Parameter-Expansion">Shell Parameter Expansion</a>).
 
 </li><li> The expansion <code>${!<var>prefix</var>*}</code> expansion, which expands to
 the names of all shell variables whose names begin with <var>prefix</var>,
 is available (see <a href="#Shell-Parameter-Expansion">Shell Parameter Expansion</a>).
 
-</li><li> Bash has <var>indirect</var> variable expansion using <code>${!word}</code>
+</li><li> Bash has indirect variable expansion using <code>${!word}</code>
 (see <a href="#Shell-Parameter-Expansion">Shell Parameter Expansion</a>).
 
 </li><li> Bash can expand positional parameters beyond <code>$9</code> using
@@ -13461,8 +14083,8 @@ to negate the set of characters between the brackets.
 The Bourne shell uses only &lsquo;<samp>!</samp>&rsquo;.
 
 </li><li> Bash implements the full set of <small>POSIX</small> filename expansion operators,
-including <var>character classes</var>, <var>equivalence classes</var>, and
-<var>collating symbols</var> (see <a href="#Filename-Expansion">Filename Expansion</a>).
+including character classes, equivalence classes, and
+collating symbols (see <a href="#Filename-Expansion">Filename Expansion</a>).
 
 </li><li> Bash implements extended pattern matching features when the <code>extglob</code>
 shell option is enabled (see <a href="#Pattern-Matching">Pattern Matching</a>).
@@ -13580,7 +14202,7 @@ which specifies the behavior based on the number of arguments.
 
 </li><li> Bash includes the <code>caller</code> builtin, which displays the context of
 any active subroutine call (a shell function or a script executed with
-the <code>.</code> or <code>source</code> builtins).  This supports the bash
+the <code>.</code> or <code>source</code> builtins).  This supports the Bash
 debugger.
 
 </li><li> The <code>trap</code> builtin (see <a href="#Bourne-Shell-Builtins">Bourne Shell Builtins</a>) allows a
@@ -13605,7 +14227,7 @@ The <code>ERR</code> trap is not inherited by shell functions unless the
 <p>The <code>trap</code> builtin (see <a href="#Bourne-Shell-Builtins">Bourne Shell Builtins</a>) allows a
 <code>RETURN</code> pseudo-signal specification, similar to
 <code>EXIT</code> and <code>DEBUG</code>.
-Commands specified with an <code>RETURN</code> trap are executed before
+Commands specified with a <code>RETURN</code> trap are executed before
 execution resumes after a shell function or a shell script executed with
 <code>.</code> or <code>source</code> returns.
 The <code>RETURN</code> trap is not inherited by shell functions unless the
@@ -14630,6 +15252,8 @@ Next: <a href="#Function-Index" accesskey="n" rel="next">Function Index</a>, Pre
 <tr><td></td><td valign="top"><a href="#index-_005f"><code>_</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Bash-Variables">Bash Variables</a></td></tr>
 <tr><td colspan="4"> <hr></td></tr>
 <tr><th id="Variable-Index_vr_letter-A">A</th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-active_002dregion_002dend_002dcolor"><code>active-region-end-color</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Readline-Init-File-Syntax">Readline Init File Syntax</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-active_002dregion_002dstart_002dcolor"><code>active-region-start-color</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Readline-Init-File-Syntax">Readline Init File Syntax</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-auto_005fresume"><code>auto_resume</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Job-Control-Variables">Job Control Variables</a></td></tr>
 <tr><td colspan="4"> <hr></td></tr>
 <tr><th id="Variable-Index_vr_letter-B">B</th><td></td><td></td></tr>
@@ -14689,6 +15313,7 @@ Next: <a href="#Function-Index" accesskey="n" rel="next">Function Index</a>, Pre
 <tr><td></td><td valign="top"><a href="#index-editing_002dmode"><code>editing-mode</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Readline-Init-File-Syntax">Readline Init File Syntax</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-EMACS"><code>EMACS</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Bash-Variables">Bash Variables</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-emacs_002dmode_002dstring"><code>emacs-mode-string</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Readline-Init-File-Syntax">Readline Init File Syntax</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-enable_002dactive_002dregion"><code>enable-active-region</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Readline-Init-File-Syntax">Readline Init File Syntax</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-enable_002dbracketed_002dpaste"><code>enable-bracketed-paste</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Readline-Init-File-Syntax">Readline Init File Syntax</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-enable_002dkeypad"><code>enable-keypad</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Readline-Init-File-Syntax">Readline Init File Syntax</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-ENV"><code>ENV</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Bash-Variables">Bash Variables</a></td></tr>
@@ -14737,11 +15362,12 @@ Next: <a href="#Function-Index" accesskey="n" rel="next">Function Index</a>, Pre
 <tr><td></td><td valign="top"><a href="#index-keymap"><code>keymap</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Readline-Init-File-Syntax">Readline Init File Syntax</a></td></tr>
 <tr><td colspan="4"> <hr></td></tr>
 <tr><th id="Variable-Index_vr_letter-L">L</th><td></td><td></td></tr>
-<tr><td></td><td valign="top"><a href="#index-LANG"><code>LANG</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Bash-Variables">Bash Variables</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-LANG"><code>LANG</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Creating-Internationalized-Scripts">Creating Internationalized Scripts</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-LANG-1"><code>LANG</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Bash-Variables">Bash Variables</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-LC_005fALL"><code>LC_ALL</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Bash-Variables">Bash Variables</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-LC_005fCOLLATE"><code>LC_COLLATE</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Bash-Variables">Bash Variables</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-LC_005fCTYPE"><code>LC_CTYPE</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Bash-Variables">Bash Variables</a></td></tr>
-<tr><td></td><td valign="top"><a href="#index-LC_005fMESSAGES"><code>LC_MESSAGES</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Locale-Translation">Locale Translation</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-LC_005fMESSAGES"><code>LC_MESSAGES</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Creating-Internationalized-Scripts">Creating Internationalized Scripts</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-LC_005fMESSAGES-1"><code>LC_MESSAGES</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Bash-Variables">Bash Variables</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-LC_005fNUMERIC"><code>LC_NUMERIC</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Bash-Variables">Bash Variables</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-LC_005fTIME"><code>LC_TIME</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Bash-Variables">Bash Variables</a></td></tr>
@@ -14785,6 +15411,7 @@ Next: <a href="#Function-Index" accesskey="n" rel="next">Function Index</a>, Pre
 <tr><td colspan="4"> <hr></td></tr>
 <tr><th id="Variable-Index_vr_letter-R">R</th><td></td><td></td></tr>
 <tr><td></td><td valign="top"><a href="#index-RANDOM"><code>RANDOM</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Bash-Variables">Bash Variables</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-READLINE_005fARGUMENT"><code>READLINE_ARGUMENT</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Bash-Variables">Bash Variables</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-READLINE_005fLINE"><code>READLINE_LINE</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Bash-Variables">Bash Variables</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-READLINE_005fMARK"><code>READLINE_MARK</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Bash-Variables">Bash Variables</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-READLINE_005fPOINT"><code>READLINE_POINT</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Bash-Variables">Bash Variables</a></td></tr>
@@ -14803,8 +15430,8 @@ Next: <a href="#Function-Index" accesskey="n" rel="next">Function Index</a>, Pre
 <tr><td></td><td valign="top"><a href="#index-SRANDOM"><code>SRANDOM</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Bash-Variables">Bash Variables</a></td></tr>
 <tr><td colspan="4"> <hr></td></tr>
 <tr><th id="Variable-Index_vr_letter-T">T</th><td></td><td></td></tr>
-<tr><td></td><td valign="top"><a href="#index-TEXTDOMAIN"><code>TEXTDOMAIN</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Locale-Translation">Locale Translation</a></td></tr>
-<tr><td></td><td valign="top"><a href="#index-TEXTDOMAINDIR"><code>TEXTDOMAINDIR</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Locale-Translation">Locale Translation</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-TEXTDOMAIN"><code>TEXTDOMAIN</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Creating-Internationalized-Scripts">Creating Internationalized Scripts</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-TEXTDOMAINDIR"><code>TEXTDOMAINDIR</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Creating-Internationalized-Scripts">Creating Internationalized Scripts</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-TIMEFORMAT"><code>TIMEFORMAT</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Bash-Variables">Bash Variables</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-TMOUT"><code>TMOUT</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Bash-Variables">Bash Variables</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-TMPDIR"><code>TMPDIR</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Bash-Variables">Bash Variables</a></td></tr>
@@ -14985,6 +15612,7 @@ Next: <a href="#Concept-Index" accesskey="n" rel="next">Concept Index</a>, Previ
 <tr><td></td><td valign="top"><a href="#index-exchange_002dpoint_002dand_002dmark-_0028C_002dx-C_002dx_0029"><code>exchange-point-and-mark (C-x C-x)</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Miscellaneous-Commands">Miscellaneous Commands</a></td></tr>
 <tr><td colspan="4"> <hr></td></tr>
 <tr><th id="Function-Index_fn_letter-F">F</th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-fetch_002dhistory-_0028_0029"><code>fetch-history ()</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Commands-For-History">Commands For History</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-forward_002dbackward_002ddelete_002dchar-_0028_0029"><code>forward-backward-delete-char ()</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Commands-For-Text">Commands For Text</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-forward_002dchar-_0028C_002df_0029"><code>forward-char (C-f)</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Commands-For-Moving">Commands For Moving</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-forward_002dsearch_002dhistory-_0028C_002ds_0029"><code>forward-search-history (C-s)</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Commands-For-History">Commands For History</a></td></tr>
@@ -15060,6 +15688,7 @@ Next: <a href="#Concept-Index" accesskey="n" rel="next">Concept Index</a>, Previ
 <tr><td></td><td valign="top"><a href="#index-shell_002dkill_002dword-_0028M_002dC_002dd_0029"><code>shell-kill-word (M-C-d)</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Commands-For-Killing">Commands For Killing</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-shell_002dtranspose_002dwords-_0028M_002dC_002dt_0029"><code>shell-transpose-words (M-C-t)</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Commands-For-Killing">Commands For Killing</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-skip_002dcsi_002dsequence-_0028_0029"><code>skip-csi-sequence ()</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Miscellaneous-Commands">Miscellaneous Commands</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-spell_002dcorrect_002dword-_0028C_002dx-s_0029"><code>spell-correct-word (C-x s)</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Miscellaneous-Commands">Miscellaneous Commands</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-start_002dkbd_002dmacro-_0028C_002dx-_0028_0029"><code>start-kbd-macro (C-x ()</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Keyboard-Macros">Keyboard Macros</a></td></tr>
 <tr><td colspan="4"> <hr></td></tr>
 <tr><th id="Function-Index_fn_letter-T">T</th><td></td><td></td></tr>
@@ -15262,6 +15891,7 @@ Previous: <a href="#Function-Index" accesskey="p" rel="prev">Function Index</a>,
 <tr><td></td><td valign="top"><a href="#index-interactive-shell">interactive shell</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Invoking-Bash">Invoking Bash</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-interactive-shell-1">interactive shell</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Interactive-Shells">Interactive Shells</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-internationalization">internationalization</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Locale-Translation">Locale Translation</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-internationalized-scripts">internationalized scripts</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Creating-Internationalized-Scripts">Creating Internationalized Scripts</a></td></tr>
 <tr><td colspan="4"> <hr></td></tr>
 <tr><th id="Concept-Index_cp_letter-J">J</th><td></td><td></td></tr>
 <tr><td></td><td valign="top"><a href="#index-job">job</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Definitions">Definitions</a></td></tr>
@@ -15327,6 +15957,7 @@ Previous: <a href="#Function-Index" accesskey="p" rel="prev">Function Index</a>,
 <tr><td></td><td valign="top"><a href="#index-special-builtin">special builtin</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Definitions">Definitions</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-special-builtin-1">special builtin</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Special-Builtins">Special Builtins</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-startup-files">startup files</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Bash-Startup-Files">Bash Startup Files</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-string-translations">string translations</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Creating-Internationalized-Scripts">Creating Internationalized Scripts</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-suspending-jobs">suspending jobs</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Job-Control-Basics">Job Control Basics</a></td></tr>
 <tr><td colspan="4"> <hr></td></tr>
 <tr><th id="Concept-Index_cp_letter-T">T</th><td></td><td></td></tr>

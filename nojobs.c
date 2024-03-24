@@ -3,7 +3,7 @@
 /* This file works under BSD, System V, minix, and Posix systems.  It does
    not implement job control. */
 
-/* Copyright (C) 1987-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1987-2022 Free Software Foundation, Inc.
 
    This file is part of GNU Bash, the Bourne Again SHell.
 
@@ -575,6 +575,8 @@ make_child (command, flags)
 	last_asynchronous_pid = getpid ();
 #endif
 
+      subshell_environment |= SUBSHELL_IGNTRAP;
+
       default_tty_job_signals ();
     }
   else
@@ -662,7 +664,7 @@ wait_for_single_pid (pid, flags)
   if (pstatus == PROC_BAD)
     {
       internal_error (_("wait: pid %ld is not a child of this shell"), (long)pid);
-      return (127);
+      return (257);
     }
 
   if (pstatus != PROC_STILL_ALIVE)
@@ -705,18 +707,20 @@ wait_for_single_pid (pid, flags)
 
 /* Wait for all of the shell's children to exit.  Called by the `wait'
    builtin. */
-void
+int
 wait_for_background_pids (ps)
      struct procstat *ps;
 {
   pid_t got_pid;
   WAIT status;
+  int njobs;
 
   /* If we aren't using job control, we let the kernel take care of the
      bookkeeping for us.  wait () will return -1 and set errno to ECHILD
      when there are no more unwaited-for child processes on both
      4.2 BSD-based and System V-based systems. */
 
+  njobs = 0;
   siginterrupt (SIGINT, 1);
 
   /* Wait for ECHILD */
@@ -724,6 +728,7 @@ wait_for_background_pids (ps)
   while ((got_pid = WAITPID (-1, &status, 0)) != -1)
     {
       waiting_for_child = 0;
+      njobs++;
       set_pid_status (got_pid, status);
       if (ps)
 	{
@@ -747,6 +752,8 @@ wait_for_background_pids (ps)
 
   mark_dead_jobs_as_notified (1);
   cleanup_dead_jobs ();
+
+  return njobs;
 }
 
 void
