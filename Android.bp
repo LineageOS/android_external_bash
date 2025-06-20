@@ -154,6 +154,7 @@ cc_binary {
         "-Wno-int-conversion",
         "-Wno-missing-field-initializers",
     ],
+    c_std: "gnu89",
     local_include_dirs: [
         "include",
         "lib",
