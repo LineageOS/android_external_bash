@@ -1,6 +1,6 @@
 /* config-top.h - various user-settable options not under the control of autoconf. */
 
-/* Copyright (C) 2002-2009 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2021 Free Software Foundation, Inc.
 
    This file is part of GNU Bash, the Bourne Again SHell.
 
@@ -77,6 +77,12 @@
   "/product/bin:/apex/com.android.runtime/bin:/apex/com.android.art/bin:/system_ext/bin:/system/bin:/system/xbin:/odm/bin:/vendor/bin:/vendor/xbin:/system_ext/etc:/system/etc"
 #endif
 
+/* The default path for enable -f */
+#ifndef DEFAULT_LOADABLE_BUILTINS_PATH
+#define DEFAULT_LOADABLE_BUILTINS_PATH \
+  "/usr/local/lib/bash:/usr/lib/bash:/opt/local/lib/bash:/usr/pkg/lib/bash:/opt/pkg/lib/bash:."
+#endif
+
 /* Default primary and secondary prompt strings. */
 #define PPROMPT "\\s-\\v\\$ "
 #define SPROMPT "> "
@@ -108,7 +114,7 @@
 
 /* Define if you want the case-toggling operators (~[~]) and the
    `capcase' variable attribute (declare -c). */
-/* TAG: bash-5.2 disable */
+/* TAG: bash-5.2 disable? */
 #define CASEMOD_TOGGLECASE
 #define CASEMOD_CAPCASE
 
