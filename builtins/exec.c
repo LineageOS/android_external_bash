@@ -66,7 +66,7 @@ exec_builtin (list)
   int cleanenv, login, opt, orig_job_control;
   char *argv0, *command, **args, **env, *newname, *com2;
 
-  cleanenv = login = 0;
+  cleanenv = login = orig_job_control = 0;
   exec_argv0 = argv0 = (char *)NULL;
 
   reset_internal_getopt ();
@@ -177,7 +177,7 @@ exec_builtin (list)
     maybe_save_shell_history ();
 #endif /* HISTORY */
 
-  restore_original_signals ();
+  reset_signal_handlers ();		/* leave trap strings in place */
 
 #if defined (JOB_CONTROL)
   orig_job_control = job_control;	/* XXX - was also interactive_shell */
@@ -215,7 +215,7 @@ failed_exec:
   FREE (command);
 
   if (subshell_environment || (interactive == 0 && no_exit_on_failed_exec == 0))
-    exit_shell (exit_value);
+    exit_shell (last_command_exit_value = exit_value);
 
   if (args)
     strvec_dispose (args);
@@ -223,8 +223,11 @@ failed_exec:
   if (env && env != export_env)
     strvec_dispose (env);
 
-  initialize_traps ();
+  /* If we're not exiting after the exec fails, we restore the shell signal
+     handlers and then modify the signal dispositions based on the trap strings
+     before the failed exec. */
   initialize_signals (1);
+  restore_traps ();
 
 #if defined (JOB_CONTROL)
   if (orig_job_control)

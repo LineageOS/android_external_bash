@@ -1,7 +1,7 @@
 /* suspend.c, created from suspend.def. */
 #line 22 "./suspend.def"
 
-#line 38 "./suspend.def"
+#line 40 "./suspend.def"
 
 #include <config.h>
 
@@ -63,16 +63,15 @@ suspend_builtin (list)
       }
       
   list = loptend;
-
-  if (job_control == 0)
-    {
-      sh_nojobs (_("cannot suspend"));
-      return (EXECUTION_FAILURE);
-    }
+  no_args (list);
 
   if (force == 0)  
     {
-      no_args (list);
+      if (job_control == 0)
+	{
+	  sh_nojobs (_("cannot suspend"));
+	  return (EXECUTION_FAILURE);
+	}
 
       if (login_shell)
 	{

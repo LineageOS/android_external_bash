@@ -51,10 +51,14 @@ extern int check_jobs_at_exit;
 extern int autocd;
 extern int glob_star;
 extern int glob_asciirange;
+extern int glob_always_skip_dot_and_dotdot;
 extern int lastpipe_opt;
 extern int inherit_errexit;
 extern int localvar_inherit;
 extern int localvar_unset;
+extern int varassign_redir_autoclose;
+extern int singlequote_translations;
+extern int patsub_replacement;
 
 #if defined (EXTENDED_GLOB)
 extern int extended_glob;
@@ -82,6 +86,7 @@ extern int debugging_mode;
 #if defined (ARRAY_VARS)
 extern int assoc_expand_once;
 extern int array_expand_once;
+int expand_once_flag;
 #endif
 
 #if defined (SYSLOG_HISTORY)
@@ -100,6 +105,10 @@ static int set_restricted_shell PARAMS((char *, int));
 #if defined (READLINE)
 static int shopt_enable_hostname_completion PARAMS((char *, int));
 static int shopt_set_complete_direxpand PARAMS((char *, int));
+#endif
+
+#if defined (ARRAY_VARS)
+static int set_assoc_expand PARAMS((char *, int));
 #endif
 
 static int shopt_set_debug_mode PARAMS((char *, int));
@@ -125,7 +134,7 @@ static struct {
 } shopt_vars[] = {
   { "autocd", &autocd, (shopt_set_func_t *)NULL },
 #if defined (ARRAY_VARS)
-  { "assoc_expand_once", &assoc_expand_once, (shopt_set_func_t *)NULL },
+  { "assoc_expand_once", &expand_once_flag, set_assoc_expand },
 #endif
   { "cdable_vars", &cdable_vars, (shopt_set_func_t *)NULL },
   { "cdspell", &cdspelling, (shopt_set_func_t *)NULL },
@@ -164,6 +173,7 @@ static struct {
   { "force_fignore", &force_fignore, (shopt_set_func_t *)NULL },
 #endif
   { "globasciiranges", &glob_asciirange, (shopt_set_func_t *)NULL },
+  { "globskipdots", &glob_always_skip_dot_and_dotdot, (shopt_set_func_t *)NULL },
   { "globstar", &glob_star, (shopt_set_func_t *)NULL },
   { "gnu_errfmt", &gnu_error_format, (shopt_set_func_t *)NULL },
 #if defined (HISTORY)
@@ -190,7 +200,9 @@ static struct {
 #endif
   { "nocaseglob", &glob_ignore_case, (shopt_set_func_t *)NULL },
   { "nocasematch", &match_ignore_case, (shopt_set_func_t *)NULL },
+  { "noexpand_translation", &singlequote_translations, (shopt_set_func_t *)NULL },
   { "nullglob",	&allow_null_glob_expansion, (shopt_set_func_t *)NULL },
+  { "patsub_replacement", &patsub_replacement, (shopt_set_func_t *)NULL },
 #if defined (PROGRAMMABLE_COMPLETION)
   { "progcomp", &prog_completion_enabled, (shopt_set_func_t *)NULL },
 #  if defined (ALIAS)
@@ -206,6 +218,7 @@ static struct {
 #if defined (SYSLOG_HISTORY) && defined (SYSLOG_SHOPT)
   { "syslog_history", &syslog_history, (shopt_set_func_t *)NULL },
 #endif
+  { "varredir_close", &varassign_redir_autoclose, (shopt_set_func_t *)NULL },
   { "xpg_echo", &xpg_echo, (shopt_set_func_t *)NULL },
   { (char *)0, (int *)0, (shopt_set_func_t *)NULL }
 };
@@ -314,6 +327,9 @@ reset_shopt_options ()
   glob_ignore_case = match_ignore_case = 0;
   print_shift_error = 0;
   source_uses_path = promptvars = 1;
+  varassign_redir_autoclose = 0;
+  singlequote_translations = 0;
+  patsub_replacement = 1;
 
 #if defined (JOB_CONTROL)
   check_jobs_at_exit = 0;
@@ -324,7 +340,7 @@ reset_shopt_options ()
 #endif
 
 #if defined (ARRAY_VARS)
-  assoc_expand_once = 0;
+  expand_once_flag = assoc_expand_once = 0;
 #endif
 
 #if defined (HISTORY)
@@ -592,8 +608,13 @@ set_compatibility_level (option_name, mode)
      char *option_name;
      int mode;
 {
-  int ind;
+  int ind, oldval;
   char *rhs;
+
+  /* If we're unsetting one of the compatibility options, make sure the
+     current value is in the range of the compatNN space. */
+  if (mode == 0)
+    oldval = shell_compatibility_level;
 
   /* If we're setting something, redo some of the work we did above in
      toggle_shopt().  Unset everything and reset the appropriate option
@@ -622,6 +643,8 @@ set_compatibility_level (option_name, mode)
     shell_compatibility_level = 43;
   else if (shopt_compat44)
     shell_compatibility_level = 44;
+  else if (oldval > 44 && shell_compatibility_level < DEFAULT_COMPAT_LEVEL)
+    ;
   else
     shell_compatibility_level = DEFAULT_COMPAT_LEVEL;
 
@@ -644,6 +667,8 @@ set_compatibility_opts ()
   switch (shell_compatibility_level)
     {
       case DEFAULT_COMPAT_LEVEL:
+      case 51:			/* completeness */
+      case 50:
 	break;
       case 44:
 	shopt_compat44 = 1; break;
@@ -859,3 +884,17 @@ initialize_bashopts (no_bashopts)
   /* Set up the $BASHOPTS variable. */
   set_bashopts ();
 }
+
+#if defined (ARRAY_VARS)
+static int
+set_assoc_expand (option_name, mode)
+     char *option_name;
+     int mode;
+{
+#if 0 /* leave this disabled */
+  if (shell_compatibility_level <= 51)
+#endif
+    assoc_expand_once = expand_once_flag;
+  return 0;
+}
+#endif

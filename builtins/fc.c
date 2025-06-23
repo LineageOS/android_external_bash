@@ -404,6 +404,8 @@ fc_builtin (list)
   for (i = reverse ? histend : histbeg; reverse ? i >= histbeg : i <= histend; reverse ? i-- : i++)
     {
       QUIT;
+      if (hlist[i] == 0)
+	continue;
       if (numbering)
 	fprintf (stream, "%d", i + history_base);
       if (listing)
@@ -413,7 +415,8 @@ fc_builtin (list)
 	  else
 	    fprintf (stream, "\t%c", histdata (i) ? '*' : ' ');
 	}
-      fprintf (stream, "%s\n", histline (i));
+      if (histline (i))
+	fprintf (stream, "%s\n", histline (i));
     }
 
   if (listing)

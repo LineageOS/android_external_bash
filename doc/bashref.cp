@@ -25,97 +25,99 @@
 \entry{internationalization}{7}{internationalization}
 \entry{native languages}{7}{native languages}
 \entry{translation, native languages}{7}{translation, native languages}
-\entry{comments, shell}{7}{comments, shell}
-\entry{commands, shell}{8}{commands, shell}
-\entry{reserved words}{8}{reserved words}
-\entry{commands, simple}{8}{commands, simple}
-\entry{pipeline}{8}{pipeline}
-\entry{commands, pipelines}{8}{commands, pipelines}
-\entry{command timing}{8}{command timing}
-\entry{commands, lists}{9}{commands, lists}
-\entry{commands, compound}{10}{commands, compound}
-\entry{commands, looping}{10}{commands, looping}
-\entry{commands, conditional}{11}{commands, conditional}
-\entry{commands, grouping}{15}{commands, grouping}
-\entry{coprocess}{15}{coprocess}
-\entry{shell function}{18}{shell function}
-\entry{functions, shell}{18}{functions, shell}
-\entry{parameters}{20}{parameters}
-\entry{variable, shell}{20}{variable, shell}
-\entry{shell variable}{20}{shell variable}
-\entry{parameters, positional}{21}{parameters, positional}
-\entry{parameters, special}{21}{parameters, special}
-\entry{expansion}{22}{expansion}
-\entry{brace expansion}{23}{brace expansion}
-\entry{expansion, brace}{23}{expansion, brace}
-\entry{tilde expansion}{24}{tilde expansion}
-\entry{expansion, tilde}{24}{expansion, tilde}
-\entry{parameter expansion}{25}{parameter expansion}
-\entry{expansion, parameter}{25}{expansion, parameter}
-\entry{command substitution}{31}{command substitution}
-\entry{expansion, arithmetic}{31}{expansion, arithmetic}
-\entry{arithmetic expansion}{31}{arithmetic expansion}
-\entry{process substitution}{32}{process substitution}
-\entry{word splitting}{32}{word splitting}
-\entry{expansion, filename}{33}{expansion, filename}
-\entry{expansion, pathname}{33}{expansion, pathname}
-\entry{filename expansion}{33}{filename expansion}
-\entry{pathname expansion}{33}{pathname expansion}
-\entry{pattern matching}{33}{pattern matching}
-\entry{matching, pattern}{33}{matching, pattern}
-\entry{redirection}{35}{redirection}
-\entry{command expansion}{39}{command expansion}
-\entry{command execution}{39}{command execution}
-\entry{command search}{39}{command search}
-\entry{execution environment}{40}{execution environment}
-\entry{environment}{41}{environment}
-\entry{exit status}{41}{exit status}
-\entry{signal handling}{42}{signal handling}
-\entry{shell script}{42}{shell script}
-\entry{special builtin}{72}{special builtin}
-\entry{login shell}{88}{login shell}
-\entry{interactive shell}{88}{interactive shell}
-\entry{startup files}{88}{startup files}
-\entry{interactive shell}{89}{interactive shell}
-\entry{shell, interactive}{89}{shell, interactive}
-\entry{expressions, conditional}{91}{expressions, conditional}
-\entry{arithmetic, shell}{93}{arithmetic, shell}
-\entry{shell arithmetic}{93}{shell arithmetic}
-\entry{expressions, arithmetic}{93}{expressions, arithmetic}
-\entry{evaluation, arithmetic}{93}{evaluation, arithmetic}
-\entry{arithmetic evaluation}{93}{arithmetic evaluation}
-\entry{alias expansion}{94}{alias expansion}
-\entry{arrays}{95}{arrays}
-\entry{directory stack}{97}{directory stack}
-\entry{prompting}{98}{prompting}
-\entry{restricted shell}{100}{restricted shell}
-\entry{POSIX Mode}{101}{POSIX Mode}
-\entry{Compatibility Level}{104}{Compatibility Level}
-\entry{Compatibility Mode}{104}{Compatibility Mode}
-\entry{job control}{107}{job control}
-\entry{foreground}{107}{foreground}
-\entry{background}{107}{background}
-\entry{suspending jobs}{107}{suspending jobs}
-\entry{Readline, how to use}{110}{Readline, how to use}
-\entry{interaction, readline}{111}{interaction, readline}
-\entry{notation, readline}{112}{notation, readline}
-\entry{command editing}{112}{command editing}
-\entry{editing command lines}{112}{editing command lines}
-\entry{killing text}{113}{killing text}
-\entry{yanking text}{113}{yanking text}
-\entry{kill ring}{113}{kill ring}
-\entry{initialization file, readline}{114}{initialization file, readline}
-\entry{variables, readline}{115}{variables, readline}
-\entry{programmable completion}{137}{programmable completion}
-\entry{completion builtins}{139}{completion builtins}
-\entry{History, how to use}{145}{History, how to use}
-\entry{command history}{146}{command history}
-\entry{history list}{146}{history list}
-\entry{history builtins}{146}{history builtins}
-\entry{history expansion}{148}{history expansion}
-\entry{event designators}{149}{event designators}
-\entry{history events}{149}{history events}
-\entry{installation}{152}{installation}
-\entry{configuration}{152}{configuration}
-\entry{Bash installation}{152}{Bash installation}
-\entry{Bash configuration}{152}{Bash configuration}
+\entry{internationalized scripts}{7}{internationalized scripts}
+\entry{string translations}{7}{string translations}
+\entry{comments, shell}{9}{comments, shell}
+\entry{commands, shell}{9}{commands, shell}
+\entry{reserved words}{9}{reserved words}
+\entry{commands, simple}{9}{commands, simple}
+\entry{pipeline}{10}{pipeline}
+\entry{commands, pipelines}{10}{commands, pipelines}
+\entry{command timing}{10}{command timing}
+\entry{commands, lists}{10}{commands, lists}
+\entry{commands, compound}{11}{commands, compound}
+\entry{commands, looping}{11}{commands, looping}
+\entry{commands, conditional}{12}{commands, conditional}
+\entry{commands, grouping}{17}{commands, grouping}
+\entry{coprocess}{18}{coprocess}
+\entry{shell function}{19}{shell function}
+\entry{functions, shell}{19}{functions, shell}
+\entry{parameters}{21}{parameters}
+\entry{variable, shell}{21}{variable, shell}
+\entry{shell variable}{21}{shell variable}
+\entry{parameters, positional}{23}{parameters, positional}
+\entry{parameters, special}{23}{parameters, special}
+\entry{expansion}{24}{expansion}
+\entry{brace expansion}{24}{brace expansion}
+\entry{expansion, brace}{24}{expansion, brace}
+\entry{tilde expansion}{25}{tilde expansion}
+\entry{expansion, tilde}{25}{expansion, tilde}
+\entry{parameter expansion}{26}{parameter expansion}
+\entry{expansion, parameter}{26}{expansion, parameter}
+\entry{command substitution}{34}{command substitution}
+\entry{expansion, arithmetic}{34}{expansion, arithmetic}
+\entry{arithmetic expansion}{34}{arithmetic expansion}
+\entry{process substitution}{34}{process substitution}
+\entry{word splitting}{35}{word splitting}
+\entry{expansion, filename}{35}{expansion, filename}
+\entry{expansion, pathname}{35}{expansion, pathname}
+\entry{filename expansion}{35}{filename expansion}
+\entry{pathname expansion}{35}{pathname expansion}
+\entry{pattern matching}{36}{pattern matching}
+\entry{matching, pattern}{36}{matching, pattern}
+\entry{redirection}{38}{redirection}
+\entry{command expansion}{42}{command expansion}
+\entry{command execution}{42}{command execution}
+\entry{command search}{42}{command search}
+\entry{execution environment}{43}{execution environment}
+\entry{environment}{44}{environment}
+\entry{exit status}{44}{exit status}
+\entry{signal handling}{45}{signal handling}
+\entry{shell script}{46}{shell script}
+\entry{special builtin}{77}{special builtin}
+\entry{login shell}{93}{login shell}
+\entry{interactive shell}{93}{interactive shell}
+\entry{startup files}{93}{startup files}
+\entry{interactive shell}{94}{interactive shell}
+\entry{shell, interactive}{94}{shell, interactive}
+\entry{expressions, conditional}{96}{expressions, conditional}
+\entry{arithmetic, shell}{98}{arithmetic, shell}
+\entry{shell arithmetic}{98}{shell arithmetic}
+\entry{expressions, arithmetic}{98}{expressions, arithmetic}
+\entry{evaluation, arithmetic}{98}{evaluation, arithmetic}
+\entry{arithmetic evaluation}{98}{arithmetic evaluation}
+\entry{alias expansion}{100}{alias expansion}
+\entry{arrays}{100}{arrays}
+\entry{directory stack}{102}{directory stack}
+\entry{prompting}{104}{prompting}
+\entry{restricted shell}{105}{restricted shell}
+\entry{POSIX Mode}{106}{POSIX Mode}
+\entry{Compatibility Level}{110}{Compatibility Level}
+\entry{Compatibility Mode}{110}{Compatibility Mode}
+\entry{job control}{113}{job control}
+\entry{foreground}{113}{foreground}
+\entry{background}{113}{background}
+\entry{suspending jobs}{113}{suspending jobs}
+\entry{Readline, how to use}{116}{Readline, how to use}
+\entry{interaction, readline}{117}{interaction, readline}
+\entry{notation, readline}{118}{notation, readline}
+\entry{command editing}{118}{command editing}
+\entry{editing command lines}{118}{editing command lines}
+\entry{killing text}{119}{killing text}
+\entry{yanking text}{119}{yanking text}
+\entry{kill ring}{119}{kill ring}
+\entry{initialization file, readline}{120}{initialization file, readline}
+\entry{variables, readline}{121}{variables, readline}
+\entry{programmable completion}{143}{programmable completion}
+\entry{completion builtins}{146}{completion builtins}
+\entry{History, how to use}{151}{History, how to use}
+\entry{command history}{152}{command history}
+\entry{history list}{152}{history list}
+\entry{history builtins}{152}{history builtins}
+\entry{history expansion}{154}{history expansion}
+\entry{event designators}{155}{event designators}
+\entry{history events}{155}{history events}
+\entry{installation}{158}{installation}
+\entry{configuration}{158}{configuration}
+\entry{Bash installation}{158}{Bash installation}
+\entry{Bash configuration}{158}{Bash configuration}

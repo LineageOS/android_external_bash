@@ -197,7 +197,9 @@ showtrap (i, show_default)
      int i, show_default;
 {
   char *t, *p, *sn;
+  int free_t;
 
+  free_t = 1;
   p = trap_list[i];
   if (p == (char *)DEFAULT_SIG && signal_is_hard_ignored (i) == 0)
     {
@@ -205,6 +207,7 @@ showtrap (i, show_default)
 	t = "-";
       else
 	return;
+      free_t = 0;
     }
   else if (signal_is_hard_ignored (i))
     t = (char *)NULL;
@@ -226,7 +229,7 @@ showtrap (i, show_default)
   else
     printf ("trap -- %s %s\n", t ? t : "''", sn);
 
-  if (show_default == 0)
+  if (free_t)
     FREE (t);
 }
 

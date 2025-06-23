@@ -146,8 +146,7 @@ help_builtin (list)
       return (EXECUTION_FAILURE);
     }
 
-  fflush (stdout);
-  return (EXECUTION_SUCCESS);
+  return (sh_chkwrite (EXECUTION_SUCCESS));
 }
 
 void
