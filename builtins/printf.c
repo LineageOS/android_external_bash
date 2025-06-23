@@ -1,7 +1,7 @@
 /* printf.c, created from printf.def. */
 #line 22 "./printf.def"
 
-#line 55 "./printf.def"
+#line 57 "./printf.def"
 
 #include <config.h>
 
@@ -99,7 +99,7 @@ extern int errno;
       if (vflag) \
 	{ \
 	  SHELL_VAR *v; \
-	  v = builtin_bind_variable  (vname, vbuf, 0); \
+	  v = builtin_bind_variable  (vname, vbuf, bindflags); \
 	  stupidly_hack_special_variables (vname); \
 	  if (v == 0 || readonly_p (v) || noassign_p (v)) \
 	    return (EXECUTION_FAILURE); \
@@ -134,6 +134,10 @@ extern int errno;
 #define SKIP1 "#'-+ 0"
 #define LENMODS "hjlLtz"
 
+#ifndef TIMELEN_MAX
+#  define TIMELEN_MAX 128
+#endif
+
 extern time_t shell_start_time;
 
 #if !HAVE_ASPRINTF
@@ -159,13 +163,16 @@ static uintmax_t getuintmax PARAMS((void));
 
 #if defined (HAVE_LONG_DOUBLE) && HAVE_DECL_STRTOLD && !defined(STRTOLD_BROKEN)
 typedef long double floatmax_t;
+#  define USE_LONG_DOUBLE 1
 #  define FLOATMAX_CONV	"L"
 #  define strtofltmax	strtold
 #else
 typedef double floatmax_t;
+#  define USE_LONG_DOUBLE 0
 #  define FLOATMAX_CONV	""
 #  define strtofltmax	strtod
 #endif
+static double getdouble PARAMS((void));
 static floatmax_t getfloatmax PARAMS((void));
 
 static intmax_t asciicode PARAMS((void));
@@ -176,6 +183,7 @@ static int conversion_error;
 
 /* printf -v var support */
 static int vflag = 0;
+static int bindflags = 0;
 static char *vbuf, *vname;
 static size_t vbsize;
 static int vblen;
@@ -190,8 +198,8 @@ printf_builtin (list)
      WORD_LIST *list;
 {
   int ch, fieldwidth, precision;
-  int have_fieldwidth, have_precision;
-  char convch, thisch, nextch, *format, *modstart, *fmt, *start;
+  int have_fieldwidth, have_precision, use_Lmod, altform;
+  char convch, thisch, nextch, *format, *modstart, *precstart, *fmt, *start;
 #if defined (HANDLE_MULTIBYTE)
   char mbch[25];		/* 25 > MB_LEN_MAX, plus can handle 4-byte UTF-8 and large Unicode characters*/
   int mbind, mblen;
@@ -201,8 +209,6 @@ printf_builtin (list)
 #endif
 
   conversion_error = 0;
-  retval = EXECUTION_SUCCESS;
-
   vflag = 0;
 
   reset_internal_getopt ();
@@ -212,12 +218,14 @@ printf_builtin (list)
 	{
 	case 'v':
 	  vname = list_optarg;
+	  bindflags = 0;
 #if defined (ARRAY_VARS)
-	  arrayflags = assoc_expand_once ? (VA_NOEXPAND|VA_ONEWORD) : 0;
-	  if (legal_identifier (vname) || valid_array_reference (vname, arrayflags))
+	  SET_VFLAGS (list_optflags, arrayflags, bindflags);
+	  retval = legal_identifier (vname) || valid_array_reference (vname, arrayflags);
 #else
-	  if (legal_identifier (vname))
+	  retval = legal_identifier (vname);
 #endif
+	  if (retval)
 	    {
 	      vflag = 1;
 	      if (vbsize == 0)
@@ -260,6 +268,7 @@ printf_builtin (list)
 
   format = list->word->word;
   tw = 0;
+  retval = EXECUTION_SUCCESS;
 
   garglist = orig_arglist = list->next;
 
@@ -280,7 +289,8 @@ printf_builtin (list)
       for (fmt = format; *fmt; fmt++)
 	{
 	  precision = fieldwidth = 0;
-	  have_fieldwidth = have_precision = 0;
+	  have_fieldwidth = have_precision = altform = 0;
+	  precstart = 0;
 
 	  if (*fmt == '\\')
 	    {
@@ -317,9 +327,11 @@ printf_builtin (list)
 	      continue;
 	    }
 
-	  /* found format specification, skip to field width */
+	  /* Found format specification, skip to field width. We check for
+	     alternate form for possible later use. */
 	  for (; *fmt && strchr(SKIP1, *fmt); ++fmt)
-	    ;
+	    if (*fmt == '#')
+	      altform++;
 
 	  /* Skip optional field width. */
 	  if (*fmt == '*')
@@ -354,6 +366,8 @@ printf_builtin (list)
 		  if (*fmt == '-')
 #endif
 		    fmt++;
+		  if (DIGIT (*fmt))
+		    precstart = fmt;
 		  while (DIGIT (*fmt))
 		    fmt++;
 		}
@@ -361,8 +375,12 @@ printf_builtin (list)
 
 	  /* skip possible format modifiers */
 	  modstart = fmt;
+	  use_Lmod = 0;
 	  while (*fmt && strchr (LENMODS, *fmt))
-	    fmt++;
+	    {
+	      use_Lmod |= USE_LONG_DOUBLE && *fmt == 'L';
+	      fmt++;
+	    }
 	    
 	  if (*fmt == 0)
 	    {
@@ -399,7 +417,7 @@ printf_builtin (list)
 
 	    case '(':
 	      {
-		char *timefmt, timebuf[128], *t;
+		char *timefmt, timebuf[TIMELEN_MAX], *t;
 		int n;
 		intmax_t arg;
 		time_t secs;
@@ -481,7 +499,7 @@ printf_builtin (list)
 		if (var && *var)
 		  {
 		    if (legal_identifier (var))
-		      bind_var_to_int (var, tw);
+		      bind_var_to_int (var, tw, 0);
 		    else
 		      {
 			sh_invalidid (var);
@@ -523,12 +541,27 @@ printf_builtin (list)
 	      }
 
 	    case 'q':		/* print with shell quoting */
+	    case 'Q':
 	      {
 		char *p, *xp;
-		int r;
+		int r, mpr;
+		size_t slen;
 
 		r = 0;
 		p = getstr ();
+		/* Decode precision and apply it to the unquoted string. */
+		if (convch == 'Q' && precstart)
+		  {
+		    mpr = *precstart++ - '0';
+		    while (DIGIT (*precstart))
+		      mpr = (mpr * 10) + (*precstart++ - '0');
+		    /* Error if precision > INT_MAX here? */
+		    precision = (mpr < 0 || mpr > INT_MAX) ? INT_MAX : mpr;
+		    slen = strlen (p);
+		    /* printf precision works in bytes. */
+		    if (precision < slen)
+		      p[precision] = '\0';
+		  }
 		if (p && *p == 0)	/* XXX - getstr never returns null */
 		  xp = savestring ("''");
 		else if (ansic_shouldquote (p))
@@ -537,6 +570,12 @@ printf_builtin (list)
 		  xp = sh_backslash_quote (p, 0, 3);
 		if (xp)
 		  {
+		    if (convch == 'Q')
+		      {
+			slen = strlen (xp);
+			if (slen > precision)
+			  precision = slen;
+		      }		    
 		    /* Use printstr to get fieldwidth and precision right. */
 		    r = printstr (start, xp, strlen (xp), fieldwidth, precision);
 		    if (r < 0)
@@ -612,11 +651,24 @@ printf_builtin (list)
 #endif
 	      {
 		char *f;
-		floatmax_t p;
 
-		p = getfloatmax ();
-		f = mklong (start, FLOATMAX_CONV, sizeof(FLOATMAX_CONV) - 1);
-		PF (f, p);
+	      	if (use_Lmod || posixly_correct == 0)
+		  {
+		    floatmax_t p;
+
+		    p = getfloatmax ();
+		    f = mklong (start, "L", 1);
+		    PF (f, p);
+		  }
+		else		/* posixly_correct */
+		  {
+		    double p;
+
+		    p = getdouble ();
+		    f = mklong (start, "", 0);
+		    PF (f, p);
+		  }
+
 		break;
 	      }
 
@@ -710,7 +762,7 @@ printstr (fmt, string, len, fieldwidth, precision)
       fw = (mfw < 0 || mfw > INT_MAX) ? INT_MAX : mfw;
     }
 
-  /* get precision, if present */
+  /* get precision, if present. doesn't handle negative precisions */
   if (*fmt == '.')
     {
       fmt++;
@@ -726,6 +778,8 @@ printstr (fmt, string, len, fieldwidth, precision)
 	    mpr = (mpr * 10) + (*fmt++ - '0');
 	  /* Error if precision > INT_MAX here? */
 	  pr = (mpr < 0 || mpr > INT_MAX) ? INT_MAX : mpr;
+	  if (pr < precision && precision < INT_MAX)
+	    pr = precision;		/* XXX */
 	}
       else
 	pr = 0;		/* "a null digit string is treated as zero" */
@@ -1155,6 +1209,33 @@ getuintmax ()
       /* Same POSIX.2 conversion error requirements as getintmax(). */
       ret = 0;
 #endif
+      conversion_error = 1;
+    }
+  else if (errno == ERANGE)
+    printf_erange (garglist->word->word);
+
+  garglist = garglist->next;
+  return (ret);
+}
+
+static double
+getdouble ()
+{
+  double ret;
+  char *ep;
+
+  if (garglist == 0)
+    return (0);
+
+  if (garglist->word->word[0] == '\'' || garglist->word->word[0] == '"')
+    return asciicode ();
+
+  errno = 0;
+  ret = strtod (garglist->word->word, &ep);
+
+  if (*ep)
+    {
+      sh_invalidnum (garglist->word->word);
       conversion_error = 1;
     }
   else if (errno == ERANGE)

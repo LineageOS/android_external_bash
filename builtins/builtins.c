@@ -3,7 +3,7 @@
 /* This file is manufactured by ./mkbuiltins, and should not be
    edited by hand.  See the source to mkbuiltins for details. */
 
-/* Copyright (C) 1987-2015 Free Software Foundation, Inc.
+/* Copyright (C) 1987-2022 Free Software Foundation, Inc.
 
    This file is part of GNU Bash, the Bourne Again SHell.
 
@@ -74,11 +74,11 @@ struct builtin static_shell_builtins[] = {
      "false", (char *)NULL },
   { "command", command_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | POSIX_BUILTIN, command_doc,
      N_("command [-pVv] command [arg ...]"), (char *)NULL },
-  { "declare", declare_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | ASSIGNMENT_BUILTIN | LOCALVAR_BUILTIN, declare_doc,
-     N_("declare [-aAfFgiIlnrtux] [-p] [name[=value] ...]"), (char *)NULL },
-  { "typeset", declare_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | ASSIGNMENT_BUILTIN | LOCALVAR_BUILTIN, typeset_doc,
-     N_("typeset [-aAfFgiIlnrtux] [-p] name[=value] ..."), (char *)NULL },
-  { "local", local_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | ASSIGNMENT_BUILTIN | LOCALVAR_BUILTIN, local_doc,
+  { "declare", declare_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | ASSIGNMENT_BUILTIN | LOCALVAR_BUILTIN | ARRAYREF_BUILTIN, declare_doc,
+     N_("declare [-aAfFgiIlnrtux] [name[=value] ...] or declare -p [-aAfFilnrtux] [name ...]"), (char *)NULL },
+  { "typeset", declare_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | ASSIGNMENT_BUILTIN | LOCALVAR_BUILTIN | ARRAYREF_BUILTIN, typeset_doc,
+     N_("typeset [-aAfFgiIlnrtux] name[=value] ... or typeset -p [-aAfFilnrtux] [name ...]"), (char *)NULL },
+  { "local", local_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | ASSIGNMENT_BUILTIN | LOCALVAR_BUILTIN | ARRAYREF_BUILTIN, local_doc,
      N_("local [option] name[=value] ..."), (char *)NULL },
 #if defined (V9_ECHO)
   { "echo", echo_builtin, BUILTIN_ENABLED | STATIC_BUILTIN, echo_doc,
@@ -132,15 +132,15 @@ struct builtin static_shell_builtins[] = {
 #endif /* JOB_CONTROL */
   { "kill", kill_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | POSIX_BUILTIN, kill_doc,
      N_("kill [-s sigspec | -n signum | -sigspec] pid | jobspec ... or kill -l [sigspec]"), (char *)NULL },
-  { "let", let_builtin, BUILTIN_ENABLED | STATIC_BUILTIN, let_doc,
+  { "let", let_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | ARRAYREF_BUILTIN, let_doc,
      N_("let arg [arg ...]"), (char *)NULL },
-  { "read", read_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | POSIX_BUILTIN, read_doc,
+  { "read", read_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | POSIX_BUILTIN | ARRAYREF_BUILTIN, read_doc,
      N_("read [-ers] [-a array] [-d delim] [-i text] [-n nchars] [-N nchars] [-p prompt] [-t timeout] [-u fd] [name ...]"), (char *)NULL },
   { "return", return_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | SPECIAL_BUILTIN, return_doc,
      N_("return [n]"), (char *)NULL },
   { "set", set_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | SPECIAL_BUILTIN, set_doc,
-     N_("set [-abefhkmnptuvxBCHP] [-o option-name] [--] [arg ...]"), (char *)NULL },
-  { "unset", unset_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | SPECIAL_BUILTIN, unset_doc,
+     N_("set [-abefhkmnptuvxBCEHPT] [-o option-name] [--] [-] [arg ...]"), (char *)NULL },
+  { "unset", unset_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | SPECIAL_BUILTIN | ARRAYREF_BUILTIN, unset_doc,
      N_("unset [-f] [-v] [-n] [name ...]"), (char *)NULL },
   { "export", export_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | SPECIAL_BUILTIN | ASSIGNMENT_BUILTIN, export_doc,
      N_("export [-fn] [name[=value] ...] or export -p"), (char *)NULL },
@@ -156,9 +156,9 @@ struct builtin static_shell_builtins[] = {
   { "suspend", suspend_builtin, BUILTIN_ENABLED | STATIC_BUILTIN, suspend_doc,
      N_("suspend [-f]"), (char *)NULL },
 #endif /* JOB_CONTROL */
-  { "test", test_builtin, BUILTIN_ENABLED | STATIC_BUILTIN, test_doc,
+  { "test", test_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | ARRAYREF_BUILTIN, test_doc,
      N_("test [expr]"), (char *)NULL },
-  { "[", test_builtin, BUILTIN_ENABLED | STATIC_BUILTIN, test_bracket_doc,
+  { "[", test_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | ARRAYREF_BUILTIN, test_bracket_doc,
      N_("[ arg... ]"), (char *)NULL },
   { "times", times_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | SPECIAL_BUILTIN, times_doc,
      "times", (char *)NULL },
@@ -168,16 +168,16 @@ struct builtin static_shell_builtins[] = {
      N_("type [-afptP] name [name ...]"), (char *)NULL },
 #if !defined (_MINIX)
   { "ulimit", ulimit_builtin, BUILTIN_ENABLED | STATIC_BUILTIN, ulimit_doc,
-     N_("ulimit [-SHabcdefiklmnpqrstuvxPT] [limit]"), (char *)NULL },
+     N_("ulimit [-SHabcdefiklmnpqrstuvxPRT] [limit]"), (char *)NULL },
 #endif /* !_MINIX */
   { "umask", umask_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | POSIX_BUILTIN, umask_doc,
      N_("umask [-p] [-S] [mode]"), (char *)NULL },
 #if defined (JOB_CONTROL)
-  { "wait", wait_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | POSIX_BUILTIN, wait_doc,
+  { "wait", wait_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | POSIX_BUILTIN | ARRAYREF_BUILTIN, wait_doc,
      N_("wait [-fn] [-p var] [id ...]"), (char *)NULL },
 #endif /* JOB_CONTROL */
 #if !defined (JOB_CONTROL)
-  { "wait", wait_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | POSIX_BUILTIN, wait_doc,
+  { "wait", wait_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | POSIX_BUILTIN | ARRAYREF_BUILTIN, wait_doc,
      N_("wait [pid ...]"), (char *)NULL },
 #endif /* !JOB_CONTROL */
   { "for", (sh_builtin_func_t *)0x0, BUILTIN_ENABLED | STATIC_BUILTIN, for_doc,
@@ -193,9 +193,9 @@ struct builtin static_shell_builtins[] = {
   { "if", (sh_builtin_func_t *)0x0, BUILTIN_ENABLED | STATIC_BUILTIN, if_doc,
      N_("if COMMANDS; then COMMANDS; [ elif COMMANDS; then COMMANDS; ]... [ else COMMANDS; ] fi"), (char *)NULL },
   { "while", (sh_builtin_func_t *)0x0, BUILTIN_ENABLED | STATIC_BUILTIN, while_doc,
-     N_("while COMMANDS; do COMMANDS; done"), (char *)NULL },
+     N_("while COMMANDS; do COMMANDS-2; done"), (char *)NULL },
   { "until", (sh_builtin_func_t *)0x0, BUILTIN_ENABLED | STATIC_BUILTIN, until_doc,
-     N_("until COMMANDS; do COMMANDS; done"), (char *)NULL },
+     N_("until COMMANDS; do COMMANDS-2; done"), (char *)NULL },
   { "coproc", (sh_builtin_func_t *)0x0, BUILTIN_ENABLED | STATIC_BUILTIN, coproc_doc,
      N_("coproc [NAME] command [redirections]"), (char *)NULL },
   { "function", (sh_builtin_func_t *)0x0, BUILTIN_ENABLED | STATIC_BUILTIN, function_doc,
@@ -224,7 +224,7 @@ struct builtin static_shell_builtins[] = {
 #endif /* PUSHD_AND_POPD */
   { "shopt", shopt_builtin, BUILTIN_ENABLED | STATIC_BUILTIN, shopt_doc,
      N_("shopt [-pqsu] [-o] [optname ...]"), (char *)NULL },
-  { "printf", printf_builtin, BUILTIN_ENABLED | STATIC_BUILTIN, printf_doc,
+  { "printf", printf_builtin, BUILTIN_ENABLED | STATIC_BUILTIN | ARRAYREF_BUILTIN, printf_doc,
      N_("printf [-v var] format [arguments]"), (char *)NULL },
 #if defined (PROGRAMMABLE_COMPLETION)
   { "complete", complete_builtin, BUILTIN_ENABLED | STATIC_BUILTIN, complete_doc,
@@ -387,7 +387,7 @@ char * const cd_doc[] = {
 N_("Change the shell working directory.\n\
     \n\
     Change the current directory to DIR.  The default DIR is the value of the\n\
-    HOME shell variable.\n\
+    HOME shell variable. If DIR is \"-\", it is converted to $OLDPWD.\n\
     \n\
     The variable CDPATH defines the search path for the directory containing\n\
     DIR.  Alternative directory names in CDPATH are separated by a colon (:).\n\
@@ -998,7 +998,8 @@ N_("Read a line from the standard input and split it into fields.\n\
     splitting, and the first word is assigned to the first NAME, the second\n\
     word to the second NAME, and so on, with any leftover words assigned to\n\
     the last NAME.  Only the characters found in $IFS are recognized as word\n\
-    delimiters.\n\
+    delimiters. By default, the backslash character escapes delimiter characters\n\
+    and newline.\n\
     \n\
     If no NAMEs are supplied, the line read is stored in the REPLY variable.\n\
     \n\
@@ -1245,10 +1246,12 @@ char * const suspend_doc[] = {
 N_("Suspend shell execution.\n\
     \n\
     Suspend the execution of this shell until it receives a SIGCONT signal.\n\
-    Unless forced, login shells cannot be suspended.\n\
+    Unless forced, login shells and shells without job control cannot be\n\
+    suspended.\n\
     \n\
     Options:\n\
-      -f	force the suspend, even if the shell is a login shell\n\
+      -f	force the suspend, even if the shell is a login shell or job\n\
+    		control is not enabled.\n\
     \n\
     Exit Status:\n\
     Returns success unless job control is not enabled or an error occurs."),
@@ -1646,8 +1649,8 @@ char * const while_doc[] = {
 #if defined (HELP_BUILTIN)
 N_("Execute commands as long as a test succeeds.\n\
     \n\
-    Expand and execute COMMANDS as long as the final command in the\n\
-    `while' COMMANDS has an exit status of zero.\n\
+    Expand and execute COMMANDS-2 as long as the final command in COMMANDS has\n\
+    an exit status of zero.\n\
     \n\
     Exit Status:\n\
     Returns the status of the last command executed."),
@@ -1658,8 +1661,8 @@ char * const until_doc[] = {
 #if defined (HELP_BUILTIN)
 N_("Execute commands as long as a test does not succeed.\n\
     \n\
-    Expand and execute COMMANDS as long as the final command in the\n\
-    `until' COMMANDS has an exit status which is not zero.\n\
+    Expand and execute COMMANDS-2 as long as the final command in COMMANDS has\n\
+    an exit status which is not zero.\n\
     \n\
     Exit Status:\n\
     Returns the status of the last command executed."),
@@ -1951,6 +1954,8 @@ N_("Formats and prints ARGUMENTS under control of the FORMAT.\n\
     \n\
       %b	expand backslash escape sequences in the corresponding argument\n\
       %q	quote the argument in a way that can be reused as shell input\n\
+      %Q	like %q, but apply any precision to the unquoted argument before\n\
+    		quoting\n\
       %(fmt)T	output the date-time string resulting from using FMT as a format\n\
     	        string for strftime(3)\n\
     \n\

@@ -97,7 +97,7 @@ hash_builtin (list)
 	    (list_portably == 0 || shell_compatibility_level <= 50))
 	printf (_("%s: hash table empty\n"), this_command_name);
 
-      return (EXECUTION_SUCCESS);
+      return (sh_chkwrite (EXECUTION_SUCCESS));
     }
 
   if (expunge_hash_table)
@@ -136,7 +136,7 @@ hash_builtin (list)
 	continue;
       else if (pathname)
 	{
-	  if (is_directory (pathname))
+	  if (file_isdir (pathname))
 	    {
 #ifdef EISDIR
 	      builtin_error ("%s: %s", pathname, strerror (EISDIR));

@@ -30,6 +30,7 @@
 #define ENABLED  1
 #define DISABLED 2
 #define SPECIAL  4
+#define SILENT	 8	/* affects dyn_load_builtin behavior */
 
 #define AFLAG	0x01
 #define DFLAG	0x02
@@ -65,6 +66,7 @@ enable_builtin (list)
 {
   int result, flags;
   int opt, filter;
+  WORD_LIST *next;
 #if defined (HAVE_DLOPEN) && defined (HAVE_DLSYM)
   char *filename;
 #endif
@@ -133,6 +135,7 @@ enable_builtin (list)
 	filter |= SPECIAL;
 
       list_some_builtins (filter);
+      result = sh_chkwrite (EXECUTION_SUCCESS);
     }
 #if defined (HAVE_DLOPEN) && defined (HAVE_DLSYM)
   else if (flags & FFLAG)
@@ -142,6 +145,8 @@ enable_builtin (list)
 	filter |= SPECIAL;
 
       result = dyn_load_builtin (list, filter, filename);
+      if (result != EXECUTION_SUCCESS)
+	result = EXECUTION_FAILURE;	/* normalize return value */
 #if defined (PROGRAMMABLE_COMPLETION)
       set_itemlist_dirty (&it_builtins);
 #endif
@@ -167,13 +172,37 @@ enable_builtin (list)
       while (list)
 	{
 	  opt = enable_shell_command (list->word->word, flags & NFLAG);
+	  next = list->next;
 
-	  if (opt == EXECUTION_FAILURE)
+#if defined (HAVE_DLOPEN) && defined (HAVE_DLSYM)
+	  /* If we try to enable a non-existent builtin, and we have dynamic
+	     loading, try the equivalent of `enable -f name name'. */
+	  if (opt == EX_NOTFOUND)
+	    {
+	      int dflags, r;
+	      
+	      dflags = ENABLED|SILENT|((flags & SFLAG) ? SPECIAL : 0);
+
+	      list->next = 0;
+	      r = dyn_load_builtin (list, dflags, list->word->word);
+	      list->next = next;
+	      if (r == EXECUTION_SUCCESS)
+		opt = r;
+#if defined (PROGRAMMABLE_COMPLETION)
+	      set_itemlist_dirty (&it_builtins);
+#endif
+	    }
+#endif
+
+	  if (opt == EX_NOTFOUND)
 	    {
 	      sh_notbuiltin (list->word->word);
 	      result = EXECUTION_FAILURE;
 	    }
-	  list = list->next;
+	  else if (opt != EXECUTION_SUCCESS)
+	    result = EXECUTION_FAILURE;
+
+	  list = next;
 	}
     }
   return (result);
@@ -215,7 +244,7 @@ enable_shell_command (name, disable_p)
 
   b = builtin_address_internal (name, 1);
   if (b == 0)
-    return (EXECUTION_FAILURE);
+    return (EX_NOTFOUND);
 
   if (disable_p)
     b->flags &= ~BUILTIN_ENABLED;
@@ -294,11 +323,16 @@ dyn_load_builtin (list, flags, filename)
 
   if (handle == 0)
     {
-      name = printable_filename (filename, 0);
-      builtin_error (_("cannot open shared object %s: %s"), name, dlerror ());
-      if (name != filename)
-	free (name);
-      return (EXECUTION_FAILURE);
+      /* If we've been told to be quiet, don't complain about not finding the
+	 specified shared object. */
+      if ((flags & SILENT) == 0)
+	{
+	  name = printable_filename (filename, 0);
+	  builtin_error (_("cannot open shared object %s: %s"), name, dlerror ());
+	  if (name != filename)
+	    free (name);
+	}
+      return (EX_NOTFOUND);
     }
 
   for (new = 0, l = list; l; l = l->next, new++)
@@ -324,7 +358,7 @@ dyn_load_builtin (list, flags, filename)
 	{
 	  name = printable_filename (filename, 0);
 	  builtin_error (_("cannot find %s in shared object %s: %s"),
-			  struct_name, name, dlerror ());
+			    struct_name, name, dlerror ());
 	  if (name != filename)
 	    free (name);
 	  free (struct_name);

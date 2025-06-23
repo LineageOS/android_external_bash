@@ -24,15 +24,6 @@
 
 /* Template settings for autoconf */
 
-#define __EXTENSIONS__ 1
-#define _ALL_SOURCE 1
-#define _GNU_SOURCE 1
-/* #undef _POSIX_SOURCE */
-/* #undef _POSIX_1_SOURCE */
-#define _POSIX_PTHREAD_SEMANTICS 1
-#define _TANDEM_SOURCE 1
-/* #undef _MINIX */
-
 /* Configuration feature settings controllable by autoconf. */
 
 /* Define JOB_CONTROL if your operating system supports
@@ -205,7 +196,7 @@
 
 /* #undef inline */
 
-#define restrict __restrict
+#define restrict __restrict__
 
 /* #undef volatile */
 
@@ -220,10 +211,10 @@
 
 /* #undef __CHAR_UNSIGNED__ */
 
-/* Define if the compiler supports `long long' variables. */
-#define HAVE_LONG_LONG 1
+/* Define if the compiler supports `long long int' variables. */
+#define HAVE_LONG_LONG_INT 1
 
-#define HAVE_UNSIGNED_LONG_LONG 1
+#define HAVE_UNSIGNED_LONG_LONG_INT 1
 
 /* The number of bytes in a int.  */
 #define SIZEOF_INT 4
@@ -233,6 +224,9 @@
 
 /* The number of bytes in a pointer to char.  */
 #define SIZEOF_CHAR_P 8
+
+/* The number of bytes in a size_t.  */
+#define SIZEOF_SIZE_T 8
 
 /* The number of bytes in a double (hopefully 8). */
 #define SIZEOF_DOUBLE 8
@@ -253,6 +247,8 @@
 /* Characteristics of the system's header files and libraries that affect
    the compilation environment. */
 
+/* These are set by AC_USE_SYSTEM_EXTENSIONS */
+
 /* Define if the system does not provide POSIX.1 features except
    with this defined.  */
 /* #undef _POSIX_1_SOURCE */
@@ -260,11 +256,18 @@
 /* Define if you need to in order for stat and other things to work.  */
 /* #undef _POSIX_SOURCE */
 
-/* Define to use GNU libc extensions */
+/* Define to use GNU libc extensions. */
 #define _GNU_SOURCE 1
 
-/* Define if you have the ANSI C header files.  */
-#define STDC_HEADERS 1
+/* Define to enable general system extensions on Solaris. */
+#define __EXTENSIONS__ 1
+
+/* General system extensions on AIX */
+#define _ALL_SOURCE 1
+
+#define _POSIX_PTHREAD_SEMANTICS 1
+#define _TANDEM_SOURCE 1
+/* #undef _MINIX */
 
 /* Memory management functions. */
 
@@ -401,7 +404,7 @@
    libraries. */
 
 /* Define if `sys_siglist' is declared by <signal.h> or <unistd.h>.  */
-#define HAVE_DECL_SYS_SIGLIST 0
+#define HAVE_DECL_SYS_SIGLIST 1
 /* #undef SYS_SIGLIST_DECLARED */
 
 /* Define if `_sys_siglist' is declared by <signal.h> or <unistd.h>.  */
@@ -514,11 +517,6 @@
 
 #define PGRP_PIPE 1
 
-/* Define if the setvbuf function takes the buffering type as its second
-   argument and the buffer pointer as the third, as on System V
-   before release 3.  */
-/* #undef SETVBUF_REVERSED */
-
 /* #undef STAT_MACROS_BROKEN */
 
 #define ULIMIT_MAXFDS 1
@@ -530,8 +528,6 @@
 #define HAVE_STD_UNSETENV 1
 
 #define HAVE_PRINTF_A_FORMAT 1
-
-#define CTYPE_NON_ASCII 1
 
 /* Define if you have <langinfo.h> and nl_langinfo(CODESET). */
 #define HAVE_LANGINFO_CODESET 1
@@ -554,12 +550,6 @@
 #define ICONV_CONST 
 
 /* Type and behavior of signal handling functions. */
-
-/* Define as the return type of signal handlers (int or void).  */
-#define RETSIGTYPE void
-
-/* Define if return type of signal handlers is void */
-#define VOID_SIGHANDLER 1
 
 /* #undef MUST_REINSTALL_SIGHANDLERS */
 
@@ -1093,8 +1083,6 @@
 /* Define if you have <sys/time.h> */
 #define HAVE_SYS_TIME_H 1
 
-#define TIME_WITH_SYS_TIME 1
-
 /* Define if you have <sys/times.h> */
 #define HAVE_SYS_TIMES_H 1
 
@@ -1105,7 +1093,7 @@
 #define HAVE_SYS_WAIT_H 1
 
 /* Define if you have the <termcap.h> header file.  */
-/* #undef HAVE_TERMCAP_H */
+#define HAVE_TERMCAP_H 1
 
 /* Define if you have the <termio.h> header file.  */
 #define HAVE_TERMIO_H 1
@@ -1169,6 +1157,13 @@
 /* #undef GETCWD_BROKEN */
 
 /* #undef DEV_FD_STAT_BROKEN */
+
+/* An array implementation that prioritizes speed (O(1) access) over space,
+   in array2.c */
+/* #undef ALT_ARRAY_IMPLEMENTATION */
+
+/* Support for $"..." translatable strings. */
+#define TRANSLATABLE_STRINGS 1
 
 /* Additional defines for configuring lib/intl, maintained by autoscan/autoheader */
 

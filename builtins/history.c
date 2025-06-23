@@ -47,6 +47,10 @@ static int expand_and_print_history PARAMS((WORD_LIST *));
 #define CFLAG	0x40
 #define DFLAG	0x80
 
+#ifndef TIMELEN_MAX
+#  define TIMELEN_MAX 128
+#endif
+
 int
 history_builtin (list)
      WORD_LIST *list;
@@ -136,35 +140,29 @@ history_builtin (list)
 	  return (EXECUTION_FAILURE);
 	}
       if (delete_arg[0] == '-' && delete_start < 0)
-        {
-	  /* the_history[history_length] == 0x0, so this is correct */
-          delete_start += history_length;
-	  if (delete_start < history_base)
-	    {
-start_error:
-	      sh_erange (delete_arg, _("history position"));
-	      return (EXECUTION_FAILURE);
-	    }
-        }
+	/* the_history[history_length] == 0x0, so this is correct */
+        delete_start += history_length;
       /* numbers as displayed by display_history are offset by history_base */
       else if (delete_start > 0)
 	delete_start -= history_base;
+
       if (delete_start < 0 || delete_start >= history_length)
-	goto start_error;
+	{
+	  sh_erange (delete_arg, _("history position"));
+	  return (EXECUTION_FAILURE);
+	}
+
       if (range[0] == '-' && delete_end < 0)
-        {
-          delete_end += history_length;
-	  if (delete_end < history_base)
-	    {
-range_error:
-	      sh_erange (range, _("history position"));
-	      return (EXECUTION_FAILURE);
-	    }
-        }
+        delete_end += history_length;
       else if (delete_end > 0)
 	delete_end -= history_base;
+
       if (delete_end < 0 || delete_end >= history_length)
-	goto range_error;
+	{
+	  sh_erange (range, _("history position"));
+	  return (EXECUTION_FAILURE);
+	}
+      /* XXX - print error if end < start? */
       result = bash_delete_history_range (delete_start, delete_end);
       if (where_history () > history_length)
 	history_set_pos (history_length);
@@ -184,7 +182,7 @@ range_error:
 	     that history -d -1 will delete the last history entry, which at
 	     this point is the history -d -1 we just added. */
 	  ind = history_length + delete_offset;
-	  if (ind < history_base)
+	  if (ind < 0)		/* offset by history_base below */
 	    {
 	      sh_erange (delete_arg, _("history position"));
 	      return (EXECUTION_FAILURE);
@@ -275,7 +273,7 @@ histtime (hlist, histtimefmt)
      HIST_ENTRY *hlist;
      const char *histtimefmt;
 {
-  static char timestr[128];
+  static char timestr[TIMELEN_MAX];
   time_t t;
   struct tm *tm;
 
