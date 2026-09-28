@@ -638,7 +638,7 @@ get_working_directory (for_whom)
        * out if PWD isn't defined when starting it up on bionic
        */
       char *d = (char *)malloc(sizeof(char) * PATH_MAX);
-      the_current_working_directory = getcwd (d, sizeof(d));
+      the_current_working_directory = getcwd (d, PATH_MAX);
       if (the_current_working_directory)
         the_current_working_directory = d;
       else
